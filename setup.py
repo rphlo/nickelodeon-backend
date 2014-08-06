@@ -4,17 +4,21 @@ import os
 from setuptools import setup
 from distutils.command.install import INSTALL_SCHEMES
 import importlib
+from pip.req import parse_requirements
 
-package_name = 'nickelodeon'
+package_name = 'django-nickelodeon'
+import_name = 'nickelodeon'
 
 for scheme in INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
-
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
+install_reqs = parse_requirements('requirements.pip')
+requirements = [str(ir.req) for ir in install_reqs]
+
 packages, data_files = [], []
-for dirpath, dirnames, filenames in os.walk(package_name, followlinks=True):
+for dirpath, dirnames, filenames in os.walk(import_name, followlinks=True):
     # Ignore dirnames that start with '.'
     for i, dirname in enumerate(dirnames):
         if dirname.startswith('.') or dirname == 'tests':
@@ -24,7 +28,7 @@ for dirpath, dirnames, filenames in os.walk(package_name, followlinks=True):
     elif filenames:
         data_files.append([dirpath,
                            [os.path.join(dirpath, f) for f in filenames]])
-mod = importlib.import_module(package_name)
+mod = importlib.import_module(import_name)
 setup(
     name=package_name,
     version='.'.join(str(x) for x in mod.__version__),
@@ -45,10 +49,5 @@ setup(
       'Operating System :: OS Independent',
       'Programming Language :: Python',
     ],
-    install_requires=[
-        'common_base',
-        'djangorestframework',
-        'celery',
-        'scandir',
-    ],
+    install_requires=requirements,
 )
