@@ -18,24 +18,6 @@ from .tasks import fetch_youtube_video_infos
 from .models import Song
 
 
-def x_accel_redirect(path, filename=None,
-                     mime="application/force-download"):
-    if settings.DEBUG:
-        from django.core.servers.basehttp import FileWrapper
-        import re
-        import os.path
-        path = re.sub(r'^/internal', settings.MEDIA_ROOT, path)
-        wrapper = FileWrapper(file(path))
-        response = HttpResponse(wrapper, content_type=mime)
-        response['Content-Length'] = os.path.getsize(path)
-        response['Content-Type'] = mime
-        return response
-    response = HttpResponse(path)
-    response['Content-Type'] = mime
-    response['X-Accel-Redirect'] = path
-    return response
-
-
 class XAccelRedirectRenderer(BaseRenderer):
     media_type = 'application/force-download'
     format = 'bin'
@@ -43,17 +25,34 @@ class XAccelRedirectRenderer(BaseRenderer):
     charset = None
     render_style = 'binary'
 
+    def x_accel_redirect(self, path, filename=None,
+                         mime="application/force-download"):
+        if settings.DEBUG and True:
+            from django.core.servers.basehttp import FileWrapper
+            import re
+            import os.path
+            path = re.sub(r'^/internal', settings.MEDIA_ROOT, path)
+            wrapper = FileWrapper(file(path))
+            response = HttpResponse(wrapper, content_type=mime)
+            response['Content-Length'] = os.path.getsize(path)
+            response['Content-Type'] = mime
+            return response
+        response = HttpResponse(path)
+        response['Content-Type'] = mime
+        response['X-Accel-Redirect'] = path
+        return response
+
     def extract_path(self, data):
         if data is None:
             return ''
         if not isinstance(data, dict):
-            return 'nope'
+            return ''
         file_path = data.get(self.path_field)
         return "/internal%s" % file_path
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
         file_path = self.extract_path(data)
-        return x_accel_redirect(file_path, mime=self.media_type)
+        return self.x_accel_redirect(file_path, mime=self.media_type)
 
 
 class Mp3Renderer(XAccelRedirectRenderer):
