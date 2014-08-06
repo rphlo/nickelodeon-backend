@@ -1,4 +1,4 @@
 common_base
-rest_framework
+djangorestframework
 celery
 scandir

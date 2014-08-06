@@ -5,7 +5,7 @@ from setuptools import setup
 from distutils.command.install import INSTALL_SCHEMES
 import importlib
 
-package_name = 'common_base'
+package_name = 'nickelodeon'
 
 for scheme in INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
@@ -29,7 +29,7 @@ setup(
     name=package_name,
     version='.'.join(str(x) for x in mod.__version__),
     license="MIT License",
-    description='Common base for my projects',
+    description='Django project for music streaming',
     long_description='',
     url='',
     author='Raphael Stefanini',
@@ -46,15 +46,9 @@ setup(
       'Programming Language :: Python',
     ],
     install_requires=[
-        'requests',
-        'django',
-        'unidecode',
-        'anyjson',
-        'south',
-        # Next is accounts requirements
-        'django_userena',
-        'django_crispy_forms',
-        'django_guardian',
-        'easy_thumbnails',
+        'common_base',
+        'djangorestframework',
+        'celery',
+        'scandir',
     ],
 )
