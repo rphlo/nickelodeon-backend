@@ -40,6 +40,7 @@ setup(
     author_email='rphl@rphl.net',
     packages = packages,
     data_files = data_files,
+    include_package_data=True,
     classifiers=[
       'Development Status :: Beta',
       'Environment :: Web Environment',
