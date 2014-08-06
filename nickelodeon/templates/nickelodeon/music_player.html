@@ -1,0 +1,235 @@
+{% extends 'site_base.html' %}
+{% load i18n %}
+{% load url from future %}
+
+{% block body %}
+<div class="row">
+  <div class="col-md-12">
+      <button id="play_pause_button" class="btn btn-default">
+          <i class="fa fa-play"></i>
+      </button>
+      <button id="next_button" class="btn btn-default">
+          <i class="fa fa-forward"></i>
+      </button>
+      <button id="search_button" class="btn btn-default">
+          <i class="fa fa-search"></i>
+      </button>
+      <kbd id="current_song_display">Current song title</kbd>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block extra_script %}
+<script src="{{STATIC_URL}}jStorage/0.4.4/jstorage.min.js"></script>
+<script>
+(function($, SM2_URL){
+  var escapeHTML = function(unsafe) {
+    return unsafe.replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+  };
+  var loadSoundManager = function(sm2_url, onReadyCallback){
+    var sm2_swf_path = sm2_url + 'swf/',
+        sm2_js_path = sm2_url + 'script/soundmanager2-nodebug-jsmin.js';
+    var options = {
+      url: sm2_swf_path,
+      useHighPerformance: true,
+      useHTML5Audio: true,
+      preferFlash: true,
+      flashVersion: 9,
+      flashPollingInterval: 100,
+      debugMode: true,
+      onready: onReadyCallback,
+      ontimeout: function() {}
+    };
+    if(typeof soundManager !== "undefined"){
+      soundManager.reset();
+      soundManager.setup(options);
+    } else {
+      $.getScript(
+        sm2_js_path,
+        function(){
+          soundManager.setup(options);
+        }
+      );
+    }
+  };
+
+  $(window).load(function(){
+    loadSoundManager(SM2_URL, function(){
+      var PLAYING = 1;
+      var PAUSED = 0;
+      var HISTORY_MAX_LENGTH = 10;
+      var playing_status = PAUSED;      
+      var stopping_after_current = false;
+      var song_count = 0;
+      var current_index = 1;
+      var current_song_data = null;
+      var play_history = [];
+      var play_queue = [];
+
+      var save_state = function(){
+        $.jStorage.set('nickelodeon_playing_status',
+                       JSON.stringify(playing_status));
+        $.jStorage.set('nickelodeon_current_song_data',
+                       JSON.stringify(current_song_data));
+        $.jStorage.set('nickelodeon_song_count',
+                       JSON.stringify(song_count));
+        $.jStorage.set('nickelodeon_current_index',
+                       JSON.stringify(current_index));
+        $.jStorage.set('nickelodeon_stopping_after_current',
+                       JSON.stringify(stopping_after_current));
+        $.jStorage.set('nickelodeon_play_history',
+                       JSON.stringify(play_history));
+        $.jStorage.set('nickelodeon_play_queue',
+                       JSON.stringify(play_queue));               
+      };
+
+      var load_state = function(){
+        playing_status = $.jStorage.get('nickelodeon_playing_status', PAUSED);
+        current_index = $.jStorage.get('nickelodeon_current_index', 1);
+        current_index = parseInt(current_index);
+        if(current_index<1){
+          current_index = 1;
+        }
+        song_count = $.jStorage.get('nickelodeon_song_count', 0);
+        song_count = parseInt(song_count);
+        current_song_data = JSON.parse($.jStorage.get('nickelodeon_current_song_data', "null"));
+        stopping_after_current = $.jStorage.get('nickelodeon_stopping_after_current', false);
+        if (stopping_after_current == "false"){
+          stopping_after_current = false;
+        } else if(stopping_after_current == "true"){
+          stopping_after_current = true;
+        }
+        play_queue = JSON.parse($.jStorage.get('nickelodeon_play_queue', '[]'));
+        play_history = JSON.parse($.jStorage.get('nickelodeon_play_history', '[]'));
+      }      
+      
+      var push_to_queue = function(value){
+        play_queue.push(value);
+        save_state();
+      };
+
+      var shift_queue = function(){
+        var value = play_queue.shift();
+        save_state();
+        return value;
+      };
+
+      var push_to_history = function(value){
+        play_history.push(value);
+        while(play_history.length > HISTORY_MAX_LENGTH){
+          play_history.unshift()
+        }
+        save_state();
+      };
+
+      var pop_history = function(){
+        var value = play_history.pop();
+        save_state();
+        return value;
+      };
+      
+      var play_song = function(song_data){
+        var format, type, title;
+        stop_song();
+        if(song_data.availability['aac']){
+            format = 'aac'
+            type = 'audio/aac'
+        } else if(song_data.availability['mp3']){
+            format = 'mp3'
+            type = 'audio/mpeg'
+        }else{
+            play_next_song();
+            return;       
+        }
+        soundManager.createSound({
+            id: song_data.uuid,
+            url: song_data.url+'?format='+format,
+            volume: 100,
+            autoPlay: true,
+            type: type,
+            multiShot:false,
+            onfinish:function(){
+              play_next_song()
+            },
+        });
+        if(song_data.artist){
+            title = [song_data.artist, song_data.title].join(" - ")
+        } else {
+            title = song_data.title
+        }
+        $('#current_song_display').text(title)
+      }
+      
+      var stop_song = function(){
+        soundManager.stopAll();
+        while(soundManager.soundIDs.length>0){
+            soundManager.destroySound(soundManager.soundIDs[0]);
+        }
+        playing_status = PAUSED;
+        save_state();
+      }
+      
+      var play_next_song = function(){
+        stop_song();
+        if(stopping_after_current){
+          stop_after_current = false;
+          save_state();
+          return;
+        }
+        current_index = Math.floor(Math.random()*song_count)+1;        
+        get_current_info(function(){
+          play_song(current_song_data);
+        });
+      }
+      
+      var toogle_play = function(){
+        var sound_id = soundManager.soundIDs[0];
+        soundManager.togglePause(sound_id);
+        var sound = soundManager.getSoundById(sound_id)
+        if(sound){
+          var is_playing = !sound.paused && sound.playState!=0;
+          playing_status = is_playing?PLAYING:PAUSED;
+        }
+        save_state();
+      }
+      
+      var get_current_info = function(callback){
+        $.ajax({
+          type: "GET",
+          url: "{% url 'song_list' %}",
+          data: {'results_per_page': 1, 'page': Math.max(1, current_index)},
+          dataType: "JSON",
+          success: function(response){
+              song_count = response.count;
+              if(song_count > 0){
+                  current_song_data = response.results[0];
+                  save_state();
+                  callback();
+              }
+          },
+          error: function(){
+            console.log('AJAX failure...')          
+          }
+        });
+      }
+      $('#play_pause_button').on('click', toogle_play());
+      $('#next_button').on('click', play_next_song);
+      
+      load_state();
+      if(!current_song_data){
+        get_current_info(function(){
+          play_song(current_song_data);
+        });
+      }else{
+        play_song(current_song_data);
+      }
+    })
+  });
+})(jQuery, '{{STATIC_URL}}soundmanagerv297a-20131201/');
+</script>
+{% endblock %}

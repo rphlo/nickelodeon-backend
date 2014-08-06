@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{song.title}}</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"/>
+    <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro&subset=latin,latin-ext' rel='stylesheet' type='text/css'/>
+<style>
+html { height:100%; }
+
+body{
+    background:#000;
+    color:#fff;
+}
+
+pre{
+    font-family:'Source Code Pro', monospace;
+}
+pre.logo{
+    font-family:monospace;
+}
+pre.logo span{
+    font-family:'Source Code Pro', monospace;
+    font-size:.90em;
+}
+pre.logo a{
+    text-decoration:none;
+    color:#fff;
+}
+.logo a:hover{
+    color:#059;
+}
+
+#main{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+.btn{
+    cursor:pointer;
+    font-weight:bold;
+}
+.ctrlbtn{
+    font-size:2em;
+    cursor:pointer;
+    padding:10px 15px;
+    border:2px solid #000;
+    //border-radius:50%;
+    color:#000;
+    background:#fff;
+}
+.songLink{
+    color:#000;
+    background:#fff;
+    margin:3px 0px;
+    display:inline-block;
+}
+.nano {}
+.nano .nano-content {}
+.nano .nano-pane   {}
+.nano .nano-slider { background: #09f; }
+</style>
+</head>
+<body>
+<pre class='logo'>
+<a href="/">
+        &#9608;   &#9608;
+        &#9608;   &#9608;            &#9608;
+&#9608;&#9608;&#9608; &#9608;&#9608;&#9608; &#9608;&#9608;&#9608; &#9608;    &#9608;&#9608;   &#9608;&#9608; &#9608;&#9608;
+&#9608;     &#9608; &#9608; &#9608; &#9608;    &#9608; &#9608; &#9608; &#9608; &#9608;
+&#9608;     &#9608; &#9608; &#9608; &#9608;    &#9608; &#9608; &#9608;&#9608;  &#9608;
+&#9608;   &#9608;&#9608;&#9608; &#9608; &#9608;  &#9608; &#9608; &#9608; &#9608;  &#9608;&#9608;  &#9608;
+    &#9608;</a>                  <span>MUSIC</span>
+</pre>
+<div id="search_results">
+</div>
+<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+<script src="http://code.jquery.com/color/jquery.color-2.1.2.min.js"></script>
+<script src="http://underscorejs.org/underscore-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jStorage/0.4.4/jstorage.min.js"></script>
+<script>
+
+
+function loadSoundManager(onReadyCallback){
+    var options = {
+        url: '{{STATIC_URL}}nickelodeon/soundmanagerv297a-20131201/swf/',
+        useHighPerformance: true,
+        useHTML5Audio: true,
+        preferFlash: true,
+        flashVersion: 9,
+        flashPollingInterval: 100,
+        debugMode: true,
+        onready:onReadyCallback,
+        ontimeout: function() {}
+    };
+    if(typeof soundManager !== "undefined"){
+        soundManager.reset();
+        soundManager.setup(options);
+    } else {
+        $.getScript(
+            '{{STATIC_URL}}nickelodeon/soundmanagerv297a-20131201/script/soundmanager2-nodebug-jsmin.js',
+            function(){
+                soundManager.setup(options);
+            }
+        );
+    }
+}
+
+var JukeBox = function(song){
+    var PLAYING = 0,
+        STOPPED = 1,
+        songCounter = 0,
+        stopAfterCurrent = false,
+        playingStatus = PLAYING,
+        initSong = typeof(song)!=="undefined"?song:{title:"LOADING...", id:"+"},
+        currentSong = initSong,
+        prevSong = initSong,
+        queue = [];
+    function save_queue(){
+        $.jStorage.set('mp3_queue', JSON.stringify(queue));
+    };
+    function save_current(){
+        $.jStorage.set('mp3_current', JSON.stringify(currentSong));
+    };
+    function push_to_queue(value){
+        queue.push(value);
+        save_queue();
+    };
+    function shift_queue(){
+        var value = queue.shift();
+        save_queue();
+        return value;
+    };
+    (function load_state(){
+        var raw_queue = $.jStorage.get('mp3_queue', '[]');
+        var raw_current = $.jStorage.get('mp3_current', false);
+        queue = JSON.parse(raw_queue);
+        if(raw_current){
+            currentSong = JSON.parse(raw_current);
+        }
+    })();
+    (function(){
+        var controls = $('<div/>')
+        .attr({id:"main_buttons"});
+        $('<span/>')
+        .attr({id:"playPauseBtn"})
+        .html('<i class="fa fa-'+(playingStatus==PLAYING?'pause':'play')+'" />')
+//        .html(playingStatus==PLAYING?'&#10074;&#10074;':'&#9654;')
+        .addClass('ctrlbtn')
+        .on('mouseenter', function(){
+            $(this).css({background:"#059", color:"#fff"})
+        })
+        .on('mouseleave', function(){
+            $(this).css({background:"#fff", color:"#000"})
+        })
+        .on('click', function(e){
+            if(e.ctrlKey){
+                stopAfterCurrent = true;
+            }else{
+                onPressPlayPause();
+            }
+            $(this)
+            .css({background:"#09f"})
+            .animate({backgroundColor:"#fff", color:"#000"}, 
+                (function(el){
+                    return function(){
+                        $(el).html('<i class="fa fa-'+(playingStatus==PLAYING?'pause':'play')+'" />')
+//                        $(el).html(playingStatus==PLAYING?'&#10074;&#10074;':'&#9654;')
+                    }
+                })(this)
+            )
+        })
+        .appendTo(controls);
+        controls.append('&nbsp;');
+        $('<span/>')
+        .attr({id:"nextBtn"})
+        .html('<i class="fa fa-forward" />')
+//        .html('&#9193;')
+        .addClass('ctrlbtn')
+        .on('mouseenter', function(){
+            $(this).css({background:"#059", color:"#fff"})
+        })
+        .on('mouseleave', function(){
+            $(this).css({background:"#fff", color:"#000"})
+        })
+        .on('click', function(){
+            onPressNext();
+            $(this)
+            .css({background:"#09f"})
+            .animate({backgroundColor:"#fff", color:"#000"})
+        })
+        .appendTo(controls);
+
+        controls.append('&nbsp;');
+
+        $('<span/>')
+        .attr({id:"searchBtn"})
+        .html('<i class="fa fa-search" />')
+//        .html('&#128269;')
+        .addClass('ctrlbtn')
+        .on('mouseenter', function(){
+            $(this).css({background:"#059", color:"#fff"})
+        })
+        .on('mouseleave', function(){
+            $(this).css({background:"#fff", color:"#000"})
+        })
+        .on('click', function(){
+            onPressSearch()
+
+            $(this)
+            .css({background:"#09f"})
+            .animate({backgroundColor:"#fff", color:"#000"})
+        })
+        .appendTo(controls);
+
+        $('.logo').after(controls);
+        //controls.prependTo($('.logo'));
+    })();
+
+    var playSong = function(song){
+        soundManager.stopAll();
+        var currentSound = soundManager.createSound({
+            id:""+song.id+(+new Date()),
+            url:song.stream_url,
+            volume:100,
+            autoPlay:playingStatus==PLAYING,
+            whileloading:_.throttle(updateUI,50),
+            whileplaying:_.throttle(updateUI,50),
+            onfinish:function(){
+                onPressNext();
+                if(stopAfterCurrent){
+                    stopAfterCurrent = false;
+                    $('#playPauseBtn').trigger('click');
+                }
+            },
+            type:"audio/aac",
+            onid3:function(){
+                var id3 = this.id3, t;
+                if(id3.TPE1 && id3.TIT2){
+                    t = id3.TPE1+" - "+id3.TIT2;
+                }
+                else if(id3.TIT2){
+                    t = id3.TIT2
+                }
+                if(t){
+                    currentSong.title=t;
+                    updateUI();
+                }
+            },
+            multiShot:false
+        });
+        while(soundManager.soundIDs.length>1){
+            soundManager.destroySound(soundManager.soundIDs[0]);
+        }
+        currentSong=song;
+        save_current();
+    }
+
+    var updateUI = function(){
+        var title = (playingStatus==PLAYING?"\u25B6 ":"")+currentSong.title
+        if(document.title!=title){
+            document.title = title
+        }
+    }
+    
+    var onPressNext = function(){
+        prevSong = currentSong;
+        if(queue.length>0){
+            var song = shift_queue();
+            playSong(song);
+            updateUI();
+            return;
+        }
+        $.ajax({
+            type:"GET",
+            url:"{% url 'nickelodeon.views.random_song' %}?t="+(+new Date),
+            success:function(data){
+                playSong(data);
+                updateUI();
+            },
+            error:function(){
+            }
+        });
+        updateUI();
+    }
+    var onSearchResults=function(response){
+        var data = response.data;
+        var has_pagination = false,
+            el = $("<pre/>"),
+            pagination = $("<span/>").attr({class:'results_pagination'}),
+            nb_returned = data.end_pos-data.start_pos+1,
+            results_div = $('<div/>').attr({id:'results_div'});
+            if(data.start_pos>0){
+                $("<span/>")
+                .text("<")
+                .on('mouseenter', function(){$(this).css({color:"#059"})})
+                .on('mouseleave', function(){$(this).css({color:"#fff"})})
+                .on("click", function(){
+                    search(data.query, Math.max(data.start_pos-data.nb_per_page, 0))
+                    $(this)
+                    .css({color:"#09f"})
+                    .animate({color:"#fff"})
+                })
+                .addClass('btn')
+                .appendTo(pagination);
+            }
+            if (data.nb_matches>0){
+                $("<span/>")
+                .text((data.start_pos>0?" ":"")+data.start_pos +"-"+data.end_pos+"/"+data.nb_matches+" ")
+                .appendTo(pagination);
+            }else{
+                $("<span/>")
+                .text("No results for \""+data.query+"\"")
+                .appendTo(pagination);                
+            }
+            if(data.end_pos < data.nb_matches-1){
+                $("<span/>")
+                .text(">")
+                .on('mouseenter', function(){$(this).css({color:"#059"})})
+                .on('mouseleave', function(){$(this).css({color:"#fff"})})
+                .on("click", function(){
+                    search(data.query, data.end_pos+1)
+                    $(this)
+                    .css({color:"#09f"})
+                    .animate({color:"#fff"})
+                })
+                .addClass('btn')
+                .appendTo(pagination);
+            }
+            pagination.append("&nbsp;")
+            $("<span/>")
+            //.html("<i class='fa fa-times'></i>")
+            .html('&#10006;')
+            .on('mouseenter', function(){$(this).css({color:"#059"})})
+            .on('mouseleave', function(){$(this).css({color:"#fff"})})
+            .on("click", function(){
+                $("#search_results").html("");
+                $(window).off('resize');
+            })
+            .addClass('btn')
+            .appendTo(pagination);
+            pagination.append("\n")
+            el.append(pagination);
+            for(var i=0; i < data.matches.length; i++){
+                $("<div/>")
+                .attr({id:"search_result_"+i, class:"songLink"})
+                .text(data.matches[i].title+"\n")
+                .attr('title', data.matches[i].file_path)
+                .on('mouseenter', function(){$(this).css({background:"#059", color:"#fff"})})
+                .on('mouseleave', function(){$(this).css({background:"#fff", color:"#000"})})
+                .on("click", 
+                    (function(song){ 
+                        return function(e){
+                            if(e.ctrlKey){
+                                push_to_queue(song);
+                            }else{
+                                playSong(song);
+                            }
+                            $(this)
+                            .css({backgroundColor:"#09f"})
+                            .animate({backgroundColor:"#fff", color:"#000"})
+                        };
+                    })(data.matches[i])
+                )
+                .addClass('btn')
+                .appendTo(results_div)
+                $("<br/>").appendTo(results_div)
+
+        }
+        el.append(results_div);
+        if(data.nb_matches>0){
+            el.append(pagination.clone(true, true));
+        }
+        $("#search_results").html("").append(el);
+        function on_resize(){
+            var h = $(window).height()-($('#results_div').offset()['top']+$('.results_pagination').height()+$('body').offset()['top']*2+2);   
+            $("#results_div").css({'max-height':h+'px', overflow:'auto'});
+        }
+        $(window).on('resize', on_resize);
+        $(window).trigger('resize');
+    }
+    var onPressPlayPause = function(){
+        if(typeof(soundManager)!=="undefined"){
+            var id = soundManager.soundIDs[0];
+            soundManager.togglePause(id);
+            var sound = soundManager.getSoundById(id)
+            if(sound){
+                var isPlaying = !sound.paused && sound.playState!=0;
+                playingStatus = isPlaying?PLAYING:STOPPED;
+            }
+        }else{
+            if(playingStatus==PLAYING){
+                playingStatus=STOPPED
+            }else{
+                playingStatus=PLAYING
+            }
+        }
+        if(stopAfterCurrent){
+            stopAfterCurrent=false;
+        }
+        updateUI();
+    }
+    var onPressSearch = function(){
+        var query = prompt('Search song:');
+        search(query);
+    }
+    var search = function(query, start_pos){
+        start_pos=typeof(start_pos)==="undefined"?0:start_pos;
+        if(query){
+            $.ajax({
+                type:"GET",
+                url:"search",
+                data:{
+                    'q':query, 
+                    'offset':start_pos,
+                    'nb_results':20
+                },
+                dataType:"JSON",
+                success:onSearchResults,
+                error:function(){
+
+                }
+            });
+        }
+    }
+    this.play = function(){
+        playSong(currentSong);
+    }
+
+    $('body').on('keydown', function(e){
+        if(!e){
+            e = window.event;
+        }
+        var code = e.keyCode;
+        if(e.charCode && code == 0){
+            code == e.charCode;
+        }
+        if(e.key=='Spacebar' || code==32){
+            e.preventDefault();
+            $('#playPauseBtn').click();
+        } else if(e.key=='Left' || code==37){
+//            onPressPrev();
+        } else if(e.key=='n' || code==78){
+            $('#nextBtn').click();
+        } else if(e.keyCode=="S".charCodeAt(0)) {
+            $('#searchBtn').click();
+        }
+    })
+}
+
+var fade_cursor = function(){
+    var timer;
+    var fadeInBuffer = false;
+    $(document).mousemove(function () {
+        if (!fadeInBuffer) {
+            if (timer) {
+                clearTimeout(timer);
+                timer = 0;
+            }
+            $('.fade-object').fadeIn();
+            $('html').css({
+                cursor: ''
+            });
+        } else {
+            fadeInBuffer = false;
+        }
+
+
+        timer = setTimeout(function () {
+            $('.fade-object').fadeOut()
+            $('html').css({
+                cursor: 'none'
+            });
+            fadeInBuffer = true;
+        }, 5000)
+    });
+}
+
+$(window).load(function(){
+    fade_cursor()
+    var jk = new JukeBox({{song.as_json|safe}})
+    loadSoundManager(function(){
+        jk.play()
+    })
+});
+
+</script>
