@@ -27,7 +27,7 @@ class XAccelRedirectRenderer(BaseRenderer):
 
     def x_accel_redirect(self, path, filename=None,
                          mime="application/force-download"):
-        if settings.DEBUG and True:
+        if settings.DEBUG or True:
             from django.core.servers.basehttp import FileWrapper
             import re
             import os.path
