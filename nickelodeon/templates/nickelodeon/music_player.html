@@ -106,7 +106,7 @@
         }
         play_queue = JSON.parse($.jStorage.get('nickelodeon_play_queue', '[]'));
         play_history = JSON.parse($.jStorage.get('nickelodeon_play_history', '[]'));
-      }      
+      };
       
       var push_to_queue = function(value){
         play_queue.push(value);
@@ -163,7 +163,7 @@
             title = song_data.title
         }
         $('#current_song_display').text(title)
-      }
+      };
       
       var stop_song = function(){
         soundManager.stopAll();
@@ -172,7 +172,7 @@
         }
         playing_status = PAUSED;
         save_state();
-      }
+      };
       
       var play_next_song = function(){
         stop_song();
@@ -185,9 +185,9 @@
         get_current_info(function(){
           play_song(current_song_data);
         });
-      }
+      };
       
-      var toogle_play = function(){
+      var toggle_play = function(){
         var sound_id = soundManager.soundIDs[0];
         soundManager.togglePause(sound_id);
         var sound = soundManager.getSoundById(sound_id)
@@ -196,7 +196,7 @@
           playing_status = is_playing?PLAYING:PAUSED;
         }
         save_state();
-      }
+      };
       
       var get_current_info = function(callback){
         $.ajax({
@@ -216,10 +216,23 @@
             console.log('AJAX failure...')          
           }
         });
-      }
-      $('#play_pause_button').on('click', toogle_play());
+      };
+
+      $('#play_pause_button').on('click', function(){
+        toggle_play();
+        if(playing_status==PAUSED){
+          $('#play_pause_button > i').removeClass('fa-play')
+                                     .addClass('fa-pause');
+        } else {
+          $('#play_pause_button > i').removeClass('fa-pause')
+                                     .addClass('fa-play');
+        }
+      });
+
       $('#next_button').on('click', play_next_song);
-      
+      // can add it again when ready
+      $('#search_button').hide();
+
       load_state();
       if(!current_song_data){
         get_current_info(function(){
