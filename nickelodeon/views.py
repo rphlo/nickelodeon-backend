@@ -5,7 +5,7 @@ from urllib import unquote as url_unquote
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.conf import settings
 from django.db.models import Q
 
@@ -33,7 +33,7 @@ class XAccelRedirectRenderer(BaseRenderer):
             import os.path
             path = re.sub(r'^/internal', settings.MEDIA_ROOT, path)
             wrapper = FileWrapper(file(path))
-            response = HttpResponse(wrapper, content_type=mime)
+            response = StreamingHttpResponse(wrapper, content_type=mime)
             response['Content-Length'] = os.path.getsize(path)
             response['Content-Type'] = mime
             return response
