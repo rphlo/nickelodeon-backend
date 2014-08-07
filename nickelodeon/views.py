@@ -1,85 +1,59 @@
 import re
-import random
-import anyjson as json
-from urllib import unquote as url_unquote
-
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import RequestContext
+from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, StreamingHttpResponse
 from django.conf import settings
 from django.db.models import Q
 
-from rest_framework.generics import ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
-from rest_framework.renderers import (BaseRenderer, JSONRenderer)
 
 from .serializers import SongSerializer
 from .tasks import fetch_youtube_video_infos
 from .models import Song
 
 
-class XAccelRedirectRenderer(BaseRenderer):
-    media_type = 'application/force-download'
-    format = 'bin'
-    path_field = 'filename'
-    charset = None
-    render_style = 'binary'
-
-    def x_accel_redirect(self, path, filename=None,
-                         mime="application/force-download"):
-        if settings.DEBUG and True:
-            from django.core.servers.basehttp import FileWrapper
-            import re
-            import os.path
-            path = re.sub(r'^/internal', settings.MEDIA_ROOT, path)
-            wrapper = FileWrapper(file(path))
-            response = StreamingHttpResponse(wrapper, content_type=mime)
-            response['Content-Length'] = os.path.getsize(path)
-            response['Content-Type'] = mime
-            return response
-        response = HttpResponse(path)
+def x_accel_redirect(request, path, filename=None,
+                     mime="application/force-download"):
+    if settings.DEBUG:
+        from django.core.servers.basehttp import FileWrapper
+        import re
+        import os.path
+        path = re.sub(r'^/internal', settings.MEDIA_ROOT, path)
+        wrapper = FileWrapper(file(path))
+        response = StreamingHttpResponse(wrapper, content_type=mime)
+        response['Content-Length'] = os.path.getsize(path)
         response['Content-Type'] = mime
-        response['X-Accel-Redirect'] = path
         return response
-
-    def extract_path(self, data):
-        if data is None:
-            return ''
-        if not isinstance(data, dict):
-            return ''
-        file_path = data.get(self.path_field)
-        return "/internal%s" % file_path
-
-    def render(self, data, accepted_media_type=None, renderer_context=None):
-        file_path = self.extract_path(data)
-        return self.x_accel_redirect(file_path, mime=self.media_type)
+    response = HttpResponse(path)
+    response['X-Accel-Redirect'] = path
+    response['Content-Type'] = mime
+    return response
 
 
-class Mp3Renderer(XAccelRedirectRenderer):
-    media_type = 'audio/mpeg'
-    format = 'mp3'
-    path_field = 'filename'
+def download_song(request, pk, extension=None):
+    song = get_object_or_404(Song, pk=pk)
+    file_path = song.filename
+    if extension is None:
+        for ext in ('aac', 'mp3'):
+            if song.file_format_available(ext):
+                extension = ext
+    if extension is None or not song.file_format_available(extension):
+        return HttpResponse(status=404)
+    mime = 'audio/mpeg' if extension == 'mp3' else 'audio/aac'
+    file_path = re.sub(r'(mp3$)', extension, file_path)
+    file_path = "/internal%s" % file_path
+    return x_accel_redirect(request, file_path, mime=mime)
 
 
-class AacRenderer(Mp3Renderer):
-    media_type = 'audio/aac'
-    format = 'aac'
-    path_field = 'filename'
-
-    def extract_path(self, data):
-        mp3_filename = super(AacRenderer,self).extract_path(data)
-        return re.sub(r'(mp3$)', 'aac', mp3_filename)
+def import_from_youtube_url(request):
+    task = fetch_youtube_video_infos.s().delay()
+    task_id = str(task.task_id)
+    return HttpResponse(task_id)
 
 
 class SongView(RetrieveUpdateAPIView):
     model = Song
     serializer_class = SongSerializer
-
-    def __init__(self):
-        if Mp3Renderer not in self.renderer_classes:
-            self.renderer_classes.append(Mp3Renderer)
-            self.renderer_classes.append(AacRenderer)
-            super(SongView, self).__init__()
 
 
 class TextSearchApiView(ListAPIView):
@@ -122,9 +96,3 @@ class TextSearchApiView(ListAPIView):
         else:
             serializer = self.get_serializer(object_list, many=True)
         return Response(serializer.data)
-
-
-def import_from_youtube_url(request):
-    task = fetch_youtube_video_infos.s().delay()
-    task_id = str(task.task_id)
-    return HttpResponse(task_id)

@@ -39,5 +39,9 @@ class Song(UuidModel):
         return result
 
     @models.permalink
-    def get_absolute_url(self, force_mp3=False):
+    def get_absolute_url(self):
         return ("song_detail", (), {"pk":self.pk})
+
+    @models.permalink
+    def get_download_url(self):
+        return ("song_download", (), {"pk":self.pk})

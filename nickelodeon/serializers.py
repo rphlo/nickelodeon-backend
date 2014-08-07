@@ -17,9 +17,11 @@ class RelativeURLField(serializers.Field):
 
 class SongSerializer(serializers.ModelSerializer):
     url = RelativeURLField('get_absolute_url')
+    download_url = RelativeURLField('get_download_url')
     availability = serializers.Field('available_formats')
     filename = serializers.Field()
 
     class Meta:
         model = Song
-        fields = ('uuid', 'url', 'artist', 'title', 'filename', 'availability')
+        fields = ('uuid', 'url', 'download_url', 'artist',
+                  'title', 'filename', 'availability')
