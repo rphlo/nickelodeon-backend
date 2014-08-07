@@ -36,11 +36,10 @@ class Command(BaseCommand):
                 yield media_path
 
     def process_mp3(self, media_path):
-        if not MP3_FILE_EXT_RE.search(media_path) \
-           and not AAC_FILE_EXT_RE.search(media_path):
+        if not MP3_FILE_EXT_RE.search(media_path):
             return
-        if AAC_FILE_EXT_RE.search(media_path):
-            media_path = re.sub(r'aac$', 'mp3', media_path)
+        #if AAC_FILE_EXT_RE.search(media_path):
+        #    media_path = re.sub(r'aac$', 'mp3', media_path)
         if len(media_path) > 255:
             self.stderr(u'Media path too long, '
                         u'255 characters maximum. %s' % media_path)
