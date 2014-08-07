@@ -24,8 +24,8 @@ def x_accel_redirect(request, path, filename=None,
         response['Content-Length'] = os.path.getsize(path)
         response['Content-Type'] = mime
         return response
-    response = HttpResponse(path)
-    response['X-Accel-Redirect'] = path
+    response = HttpResponse('')
+    response['X-Accel-Redirect'] = path.encode('utf-8')
     response['Content-Type'] = mime
     return response
 
@@ -41,7 +41,7 @@ def download_song(request, pk, extension=None):
         return HttpResponse(status=404)
     mime = 'audio/mpeg' if extension == 'mp3' else 'audio/aac'
     file_path = re.sub(r'(mp3$)', extension, file_path)
-    file_path = "/internal%s" % file_path.encode('utf-8')
+    file_path = "/internal%s" % file_path
     return x_accel_redirect(request, file_path, mime=mime)
 
 
