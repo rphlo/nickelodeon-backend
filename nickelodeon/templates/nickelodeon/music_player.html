@@ -5,6 +5,9 @@
 {% block body %}
 <div class="row">
   <div class="col-md-12">
+      <button id="prev_button" class="btn btn-default">
+          <i class="fa fa-backward"></i>
+      </button>
       <button id="play_pause_button" class="btn btn-default">
           <i class="fa fa-play"></i>
       </button>
@@ -165,7 +168,15 @@
             type: type,
             multiShot:false,
             onfinish:function(){
-              play_next_song()
+              if(stopping_after_current){
+                stopping_after_current = false;
+                playing_status = PAUSED;
+                play_song(current_song_data);
+                save_state();
+                return
+              }
+              push_to_history(current_song_data);
+              play_next_song();
             },
         });
         if(song_data.artist){
@@ -187,13 +198,15 @@
       };
       
       var play_next_song = function(){
-        if(stopping_after_current){
-          stop_after_current = false;
-          stop_song();
-          save_state();
+        stop_after_current = false;
+        if(play_queue.length>0){
+          var next_song = shift_queue();
+          current_song_data = next_song;
+          play_song(next_song);
           return;
         }
-        current_index = Math.floor(Math.random()*song_count)+1;        
+        current_index = Math.floor(Math.random()*song_count)+1;
+        save_state();
         get_current_info(function(){
           play_song(current_song_data);
         });
@@ -314,29 +327,41 @@
             title = [item.artist, item.title].join(' - ');
           }
           var link = $('<a>').text(title)
-                             .attr('href', item.download_url)
+                             .attr({
+                               'title': item.filename,
+                               'href': item.download_url
+                             })
                              .on('click', (function(song){
-                                 return function(e){
-                                   e.preventDefault();
-                                   play_song(song)
+                               return function(e){
+                                 e.preventDefault();
+                                 if(e.ctrlKey){
+                                   push_to_queue(song);
+                                 } else {
+                                   current_song_data = song;
+                                   play_song(song);
                                  };
-                               })(item)
-                             );
+                               }
+                             })(item));
           var el = $('<tr>').append($('<td>').append(link));
           $('#search_results_table').append(el)
         })
       }
 
       // Button Triggers
-      $('#play_pause_button').on('click', function(){
-        toggle_play();
-        if(playing_status==PLAYING){
+      $('#play_pause_button').on('click', function(e){
+        e.preventDefault();
+        if(playing_status==PAUSED){
           $('#play_pause_button > i').removeClass('fa-play')
                                      .addClass('fa-pause');
         } else {
+          if(e.ctrlKey){
+            stopping_after_current = true;
+            return;
+          }
           $('#play_pause_button > i').removeClass('fa-pause')
                                      .addClass('fa-play');
         }
+        toggle_play();
       });
       $('#next_button').on('click', play_next_song);
       $('#search_button').on('click', function(){
@@ -356,7 +381,7 @@
         }
         if(e.key=='Spacebar' || code==32){
           e.preventDefault();
-          $('#play_pause_button').click();
+          $('#play_pause_button').click(e);
         } else if(e.key=='Left' || code==37){
           // onPressPrev();
         } else if(e.key=='n' || code==78){
