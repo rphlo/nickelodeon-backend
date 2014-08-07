@@ -1,8 +1,9 @@
+import os.path
 from django.db import models
 from django.utils.translation import ugettext as _
-from common_base.core.models import UuidModel
 from django.conf import settings
-import os.path
+from common_base.core.models import UuidModel
+
 
 class Song(UuidModel):
     artist = models.CharField(_('artist'),
@@ -40,8 +41,8 @@ class Song(UuidModel):
 
     @models.permalink
     def get_absolute_url(self):
-        return ("song_detail", (), {"pk":self.pk})
+        return ("song_detail", (), {"pk": self.pk})
 
     @models.permalink
     def get_download_url(self):
-        return ("song_download", (), {"pk":self.pk})
+        return ("song_download", (), {"pk": self.pk})

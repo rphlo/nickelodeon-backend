@@ -327,6 +327,7 @@
         })
       }
 
+      // Button Triggers
       $('#play_pause_button').on('click', function(){
         toggle_play();
         if(playing_status==PLAYING){
@@ -337,15 +338,33 @@
                                      .addClass('fa-play');
         }
       });
-
       $('#next_button').on('click', play_next_song);
-      // can add it again when ready
       $('#search_button').on('click', function(){
         result = prompt('Search songs:');
         if(result){
           search(result);
         }
       });
+      // Keyboard Support
+      $('body').on('keydown', function(e){
+        if(!e){
+          e = window.event;
+        }
+        var code = e.keyCode;
+        if(e.charCode && code == 0){
+          code == e.charCode;
+        }
+        if(e.key=='Spacebar' || code==32){
+          e.preventDefault();
+          $('#play_pause_button').click();
+        } else if(e.key=='Left' || code==37){
+          // onPressPrev();
+        } else if(e.key=='n' || code==78){
+          $('#next_button').click();
+        } else if(e.keyCode=="S".charCodeAt(0)) {
+          $('#search_button').click();
+        }
+    })
 
       load_state();
       if(!current_song_data){
