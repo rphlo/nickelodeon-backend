@@ -13,7 +13,7 @@ urlpatterns = patterns('',
     url(r'^api/v1/song/(?P<pk>[a-zA-Z0-9]{22})/?$',
         view=views.SongView.as_view(),
         name='song_detail'),
-    url(r'^api/v1/song/dl/(?P<pk>[a-zA-Z0-9]{22})(?P<extension>(?<=\.)(mp3|aac))?$',
+    url(r'^api/v1/song/dl/(?P<pk>[a-zA-Z0-9]{22})(\.(?P<extension>(mp3|aac)))?$',
         view=views.download_song,
         name='song_download'),
 )
