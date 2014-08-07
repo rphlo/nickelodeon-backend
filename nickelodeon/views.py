@@ -41,7 +41,7 @@ def download_song(request, pk, extension=None):
         return HttpResponse(status=404)
     mime = 'audio/mpeg' if extension == 'mp3' else 'audio/aac'
     file_path = re.sub(r'(mp3$)', extension, file_path)
-    file_path = "/internal%s" % file_path
+    file_path = "/internal%s" % file_path.encode('utf-8')
     return x_accel_redirect(request, file_path, mime=mime)
 
 
