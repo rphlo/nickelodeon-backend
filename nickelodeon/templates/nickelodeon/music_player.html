@@ -14,9 +14,6 @@
       <button id="next_button" class="btn btn-default">
           <i class="fa fa-forward"></i>
       </button>
-      <button id="search_button" class="btn btn-default">
-          <i class="fa fa-search"></i>
-      </button>
       <kbd id="current_format_display"></kbd>
       <kbd id="current_song_display"></kbd>
   </div>
@@ -50,6 +47,7 @@
   <div class="col-md-12">
       <div id="search_results_navigation_top"></div>
       <table class="table table-striped" id="play_queue_table">
+        <tr><td>Not yet implemented</td></tr>
       </table>
       <div id="search_results_navigation_bottom"></div>
   </div>
@@ -57,6 +55,7 @@
  <div class="tab-pane" id="history">
   <div class="col-md-12">
       <table class="table table-striped" id="play_history_table">
+        <tr><td>Not yet implemented</td></tr>
       </table>
   </div>
 </div>
@@ -397,10 +396,18 @@
         toggle_play();
       });
       $('#next_button').on('click', play_next_song);
-      $('#start_search_button').on('click', function(){
-        result = $('#search_input').val();
+
+      var start_search = function(){
+        var result = $('#search_input').val();
         if(result){
           search(result);
+        }
+      };
+
+      $('#start_search_button').on('click', start_search);
+      $('#search_input').on('keyup', function(e){
+        if(e.keyCode == 13){
+          start_search();
         }
       });
       // Keyboard Support
