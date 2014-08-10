@@ -20,11 +20,44 @@
       <kbd id="current_format_display"></kbd>
       <kbd id="current_song_display"></kbd>
   </div>
+</div>
+<div class="row">
   <div class="col-md-12">
+    <ul class="nav nav-pills" role="tablist">
+      <li class="active"><a href="#search" role="tab" data-toggle="tab">Search</a></li>
+      <li><a href="#queue" role="tab" data-toggle="tab">Queue</a></li>
+      <li><a href="#history" role="tab" data-toggle="tab">History</a></li>
+    </ul>
+  </div>
+</div>
+<div class="row">
+<div class="tab-content">
+ <div class="tab-pane active" id="search">
+  <div class="col-md-12">
+      <div class="input-group">
+        <input id="search_input" type="text" class="form-control">
+        <span class="input-group-btn">
+          <button id="start_search_button" class="btn btn-default" type="button">Search <i class="fa fa-search"></i></button>
+        </span>
+      </div>
       <div id="search_results_navigation_top"></div>
       <table class="table table-striped" id="search_results_table">
       </table>
       <div id="search_results_navigation_bottom"></div>
+  </div>
+ </div>
+ <div class="tab-pane" id="queue">
+  <div class="col-md-12">
+      <div id="search_results_navigation_top"></div>
+      <table class="table table-striped" id="play_queue_table">
+      </table>
+      <div id="search_results_navigation_bottom"></div>
+  </div>
+ </div>
+ <div class="tab-pane" id="history">
+  <div class="col-md-12">
+      <table class="table table-striped" id="play_history_table">
+      </table>
   </div>
 </div>
 {% endblock %}
@@ -73,7 +106,7 @@
       var PLAYING = 1;
       var PAUSED = 0;
       var HISTORY_MAX_LENGTH = 10;
-      var SEARCH_RESULTS_PER_PAGE = 100;
+      var SEARCH_RESULTS_PER_PAGE = 20;
       var playing_status = PAUSED;
       var stopping_after_current = false;
       var song_count = 0;
@@ -133,7 +166,7 @@
       var push_to_history = function(value){
         play_history.push(value);
         while(play_history.length > HISTORY_MAX_LENGTH){
-          play_history.unshift()
+          play_history.shift()
         }
         save_state();
       };
@@ -345,7 +378,7 @@
           var el = $('<tr>').append($('<td>').append(link));
           $('#search_results_table').append(el)
         })
-      }
+      };
 
       // Button Triggers
       $('#play_pause_button').on('click', function(e){
@@ -364,8 +397,8 @@
         toggle_play();
       });
       $('#next_button').on('click', play_next_song);
-      $('#search_button').on('click', function(){
-        result = prompt('Search songs:');
+      $('#start_search_button').on('click', function(){
+        result = $('#search_input').val();
         if(result){
           search(result);
         }
