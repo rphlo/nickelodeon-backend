@@ -21,7 +21,7 @@
 <div class="row">
   <div class="col-md-12">
     <ul class="nav nav-pills" role="tablist">
-      <li class="active"><a href="#search" role="tab" data-toggle="tab"><i class="fa fa-search"></i> Search</a></li>
+      <li class="active"><a id="search_tab" href="#search" role="tab" data-toggle="tab"><i class="fa fa-search"></i> Search</a></li>
       <li><a href="#queue" role="tab" data-toggle="tab"><i class="fa fa-align-left"></i> Queue</a></li>
       <li><a href="#history" role="tab" data-toggle="tab"><i class="fa fa-book"></i> History</a></li>
     </ul>
@@ -453,12 +453,8 @@
                              .on('click', (function(song){
                                return function(e){
                                  e.preventDefault();
-                                 if(e.ctrlKey){
-                                   // TODO Remove from Queue;
-                                 } else {
-                                   current_song_data = song;
-                                   play_song(song);
-                                 };
+                                 current_song_data = song;
+                                 play_song(song);
                                }
                              })(item));
           var el = $('<tr>').append($('<td>').append(link));
@@ -489,7 +485,11 @@
         } else if(e.key=='n' || code==78){
           $('#next_button').click();
         } else if(e.keyCode=="S".charCodeAt(0)) {
-          $('#search_button').click();
+          $('#search_tab').tab('show');
+          if(!$('#search_input').is(":focus")){
+            e.preventDefault();
+            $('#search_input').focus()
+          }
         }
     })
 
