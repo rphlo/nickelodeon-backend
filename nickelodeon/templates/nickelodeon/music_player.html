@@ -478,8 +478,10 @@
           code == e.charCode;
         }
         if(e.key=='Spacebar' || code==32){
-          $('#play_pause_button').click();
-          e.preventDefault();
+          if(!$('#search_input').is(":focus")){
+            $('#play_pause_button').click();
+            e.preventDefault();
+          }
         } else if(e.key=='Left' || code==37){
           // onPressPrev();
         } else if(e.key=='n' || code==78){
