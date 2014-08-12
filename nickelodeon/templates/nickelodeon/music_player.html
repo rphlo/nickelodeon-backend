@@ -223,7 +223,7 @@
         $('#current_format_display').text(format);
       };
 
-      var jump_to_song(song){
+      var jump_to_song = function(song){
         stopping_after_current = false;
         push_to_history(current_song_data);
         current_song_data = song;
