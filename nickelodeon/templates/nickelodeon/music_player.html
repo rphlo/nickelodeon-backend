@@ -211,7 +211,6 @@
                 save_state();
                 return
               }
-              push_to_history(current_song_data);
               play_next_song();
             },
         });
@@ -223,7 +222,14 @@
         $('#current_song_display').text(title);
         $('#current_format_display').text(format);
       };
-      
+
+      var jump_to_song(song){
+        stopping_after_current = false;
+        push_to_history(current_song_data);
+        current_song_data = song;
+        play_song(song)
+      }
+
       var stop_song = function(){
         soundManager.stopAll();
         while(soundManager.soundIDs.length>0){
@@ -374,8 +380,7 @@
                                  if(e.ctrlKey){
                                    push_to_queue(song);
                                  } else {
-                                   current_song_data = song;
-                                   play_song(song);
+                                   jump_to_song(song);
                                  };
                                }
                              })(item));
@@ -426,8 +431,7 @@
                                  if(e.ctrlKey){
                                    // TODO Remove from Queue;
                                  } else {
-                                   current_song_data = song;
-                                   play_song(song);
+                                   jump_to_song(song);
                                  };
                                }
                              })(item));
@@ -453,8 +457,7 @@
                              .on('click', (function(song){
                                return function(e){
                                  e.preventDefault();
-                                 current_song_data = song;
-                                 play_song(song);
+                                 jump_to_song(song);
                                }
                              })(item));
           var el = $('<tr>').append($('<td>').append(link));
