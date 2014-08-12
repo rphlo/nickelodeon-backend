@@ -245,7 +245,7 @@
         save_state();
         display_queue()
         if(play_history.length > 0){
-          var next_song = play_history.shift();
+          var next_song = play_history.pop();
           current_song_data = next_song;
           play_song(next_song);
           save_state();
@@ -475,7 +475,8 @@
 
       var display_history = function(){
         $('#play_history_table').html('');
-        $.each(play_history.reverse(), function(ii, item){
+        var play_history_ = play_history.slice(0);
+        $.each(play_history_.reverse(), function(ii, item){
           var title = item.title;
           if(item.artist){
             title = [item.artist, item.title].join(' - ');
