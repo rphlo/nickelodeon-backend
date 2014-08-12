@@ -239,6 +239,30 @@
         save_state();
       };
       
+      var play_prev_song = function(){
+        stopping_after_current = false;
+        play_queue.unshift(current_song_data);
+        save_state();
+        display_queue()
+        if(play_history.length > 0){
+          var next_song = play_history.shift();
+          current_song_data = next_song;
+          play_song(next_song);
+          save_state();
+          display_history()
+          return;
+        }
+        current_index = Math.floor(Math.random()*song_count)+1;
+        save_state();
+        soundManager.stopAll();
+        while(soundManager.soundIDs.length>0){
+            soundManager.destroySound(soundManager.soundIDs[0]);
+        }
+        get_current_info(function(){
+          play_song(current_song_data);
+        });
+      };
+
       var play_next_song = function(){
         stopping_after_current = false;
         push_to_history(current_song_data);
@@ -250,6 +274,10 @@
         }
         current_index = Math.floor(Math.random()*song_count)+1;
         save_state();
+        soundManager.stopAll();
+        while(soundManager.soundIDs.length>0){
+            soundManager.destroySound(soundManager.soundIDs[0]);
+        }
         get_current_info(function(){
           play_song(current_song_data);
         });
@@ -405,7 +433,10 @@
         }
         toggle_play();
       });
+
+
       $('#next_button').on('click', play_next_song);
+      $('#prev_button').on('click', play_prev_song);
 
       var start_search = function(){
         var result = $('#search_input').val();
