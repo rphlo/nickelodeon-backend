@@ -69,10 +69,6 @@ class TextSearchApiView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         search_text = request.QUERY_PARAMS.get('q', '').strip()
-        try:
-            offset = int(request.QUERY_PARAMS.get('offset', 0))
-        except (TypeError, ValueError):
-            offset = 0
         if search_text:
             search_terms = search_text.split(' ')
             query = Q()
@@ -83,13 +79,10 @@ class TextSearchApiView(ListAPIView):
                     kwargs['%s__icontains' % field_name] = search_term
                     sub_query |= Q(**kwargs)
                 query &= sub_query
-            print query
             object_list = self.model.objects.filter(query)
         else:
             object_list = self.model.objects.all()
         object_list = object_list.order_by('title', 'artist')
-        if offset > 0:
-            object_list = object_list[offset:]
         page = self.paginate_queryset(object_list)
         if page is not None:
             serializer = self.get_pagination_serializer(page)
