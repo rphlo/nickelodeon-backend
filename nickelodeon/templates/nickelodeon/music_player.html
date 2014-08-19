@@ -549,6 +549,9 @@
 
       // Keyboard Support
       $('body').on('keydown', function(e){
+        if($('#search_input').is(":focus")){
+          return;
+        }
         if(!e){
           e = window.event;
         }
@@ -557,12 +560,10 @@
           code == e.charCode;
         }
         if(e.key=='Spacebar' || code==32){
-          if(!$('#search_input').is(":focus")){
-            $('#play_pause_button').click();
-            e.preventDefault();
-          }
-        } else if(e.key=='Left' || code==37){
-          // onPressPrev();
+          $('#play_pause_button').click();
+          e.preventDefault();
+        } else if(e.key=='b' || code==66){
+          $('#prev_button').click();
         } else if(e.key=='n' || code==78){
           $('#next_button').click();
         } else if(e.keyCode=="S".charCodeAt(0)) {
