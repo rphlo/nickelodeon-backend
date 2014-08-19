@@ -5,16 +5,21 @@
 {% block body %}
 <div class="row">
   <div class="col-md-12">
-      <button id="prev_button" class="btn btn-default">
-          <i class="fa fa-backward"></i>
-      </button>
-      <button id="play_pause_button" class="btn btn-default">
-          <i class="fa fa-play"></i>
-      </button>
-      <button id="next_button" class="btn btn-default">
-          <i class="fa fa-forward"></i>
-      </button>
-      <kbd id="current_format_display"></kbd>
+      <div class="btn-group">
+          <button id="prev_button" class="btn btn-default">
+              <i class="fa fa-backward"></i>
+          </button>
+          <button id="play_pause_button" class="btn btn-default">
+              <i class="fa fa-play"></i>
+          </button>
+          <button id="next_button" class="btn btn-default">
+              <i class="fa fa-forward"></i>
+          </button>
+      </div>
+      <div class="btn-group">
+          <button type="button" class="btn btn-default active" id="use_aac_button">AAC</button>
+          <button type="button" class="btn btn-default" id="use_mp3_button">MP3</button>
+      </div>
       <kbd id="current_song_display"></kbd>
   </div>
 </div>
@@ -111,6 +116,7 @@
       var current_song_data = null;
       var play_history = [];
       var play_queue = [];
+      var prefer_aac = true;
 
       var save_state = function(){
         $.jStorage.set('nickelodeon_playing_status',
@@ -127,6 +133,8 @@
                        JSON.stringify(play_history));
         $.jStorage.set('nickelodeon_play_queue',
                        JSON.stringify(play_queue));
+        $.jStorage.set('nickelodeon_prefer_aac',
+                       JSON.stringify(prefer_aac));
       };
 
       var load_state = function(){
@@ -142,8 +150,14 @@
         stopping_after_current = $.jStorage.get('nickelodeon_stopping_after_current', false);
         if (stopping_after_current == "false"){
           stopping_after_current = false;
-        } else if(stopping_after_current == "true"){
+        } else {
           stopping_after_current = true;
+        }
+        prefer_aac = $.jStorage.get('nickelodeon_prefer_aac', true);
+        if (prefer_aac == "false"){
+          prefer_aac = false;
+        } else {
+          prefer_aac = true;
         }
         play_queue = JSON.parse($.jStorage.get('nickelodeon_play_queue', '[]'));
         play_history = JSON.parse($.jStorage.get('nickelodeon_play_history', '[]'));
@@ -186,13 +200,13 @@
         stop_song();
         playing_status = auto_play?PLAYING:PAUSED;
         save_state()
-        if(song_data.availability['aac']){
+        if(song_data.availability['aac'] && (prefer_aac || !song_data.availability['mp3'])){
             format = 'aac'
             type = 'audio/aac'
         } else if(song_data.availability['mp3']){
             format = 'mp3'
             type = 'audio/mpeg'
-        }else{
+        } else {
             play_next_song();
             return;
         }
@@ -217,10 +231,26 @@
         if(song_data.artist){
             title = [song_data.artist, song_data.title].join(" - ")
         } else {
-            title = song_data.title
+            title = song_data.title;
         }
         $('#current_song_display').text(title);
-        $('#current_format_display').text(format);
+        if(format == 'aac'){
+            $('#use_aac_button').addClass('active');
+            $('#use_mp3_button').removeClass('active');
+        }else{
+            $('#use_aac_button').removeClass('active');
+            $('#use_mp3_button').addClass('active');
+        }
+        if(!song_data.availability['aac']){
+            $('#use_aac_button').attr('disabled', 'disabled');
+        } else {
+            $('#use_aac_button').removeAttr('disabled');
+        }
+        if(!song_data.availability['mp3']){
+            $('#use_mp3_button').attr('disabled', 'disabled');
+        } else {
+            $('#use_mp3_button').removeAttr('disabled');
+        }
       };
 
       var jump_to_song = function(song){
@@ -503,6 +533,20 @@
           start_search();
         }
       });
+
+      $('#use_aac_button').on('click', function(){
+        if(!prefer_aac){
+          prefer_aac = true;
+          play_song(current_song_data);
+        }
+      });
+      $('#use_mp3_button').on('click', function(){
+        if(prefer_aac){
+          prefer_aac = false;
+          play_song(current_song_data);
+        }
+      });
+
       // Keyboard Support
       $('body').on('keydown', function(e){
         if(!e){
@@ -528,7 +572,7 @@
             $('#search_input').focus()
           }
         }
-    })
+      });
 
       load_state();
       if(!current_song_data){
