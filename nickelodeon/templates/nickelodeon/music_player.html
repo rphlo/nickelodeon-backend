@@ -2,6 +2,8 @@
 {% load i18n %}
 {% load url from future %}
 
+{% block head_title %}Music{% endblock %}
+
 {% block body %}
 <div class="row">
   <div class="col-md-12">
@@ -195,7 +197,7 @@
       };
       
       var play_song = function(song_data){
-        var format, type, title;
+        var format, type, title, page_title;
         auto_play = (playing_status==PLAYING)?true:false;
         stop_song();
         playing_status = auto_play?PLAYING:PAUSED;
@@ -233,6 +235,10 @@
         } else {
             title = song_data.title;
         }
+
+        page_title = (playing_status==PLAYING?"\u25B6 ":"")+title
+        document.title = page_title
+
         $('#current_song_display').text(title);
         if(format == 'aac'){
             $('#use_aac_button').addClass('active');
@@ -505,8 +511,11 @@
 
       var display_history = function(){
         $('#play_history_table').html('');
-        var play_history_ = play_history.slice(0);
-        $.each(play_history_.reverse(), function(ii, item){
+        var play_history_copy = play_history.slice(0);
+        if(play_history_copy.length>0){
+            play_history_copy = play_history_copy.reverse()
+        }
+        $.each(play_history_copy, function(ii, item){
           var title = item.title;
           if(item.artist){
             title = [item.artist, item.title].join(' - ');
