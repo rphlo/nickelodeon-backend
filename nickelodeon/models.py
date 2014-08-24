@@ -46,3 +46,6 @@ class Song(UuidModel):
     @models.permalink
     def get_download_url(self):
         return ("song_download", (), {"pk": self.pk})
+
+    class Meta:
+        permissions = (("can_listen_songs", _("Can listen songs")),)

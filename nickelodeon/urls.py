@@ -1,11 +1,13 @@
 from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
 from . import views
-
+from django.contrib.auth.decorators import permission_required
 
 urlpatterns = patterns('',
     url(r'^jukebox$',
-        view=TemplateView.as_view(template_name="nickelodeon/music_player.html"),
+        view=permission_required('nickelodeon.can_listen_song')(
+            TemplateView.as_view(template_name="nickelodeon/music_player.html")
+        ),
         name='music_player'),
     url(r'^api/v1/songs$',
         view=views.TextSearchApiView.as_view(),
@@ -14,6 +16,8 @@ urlpatterns = patterns('',
         view=views.SongView.as_view(),
         name='song_detail'),
     url(r'^api/v1/song/dl/(?P<pk>[a-zA-Z0-9]{22})(\.(?P<extension>(mp3|aac)))?$',
-        view=views.download_song,
+        view=permission_required('nickelodeon.can_listen_song')(
+            views.download_song
+        ),
         name='song_download'),
 )
