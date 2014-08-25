@@ -177,6 +177,15 @@
         display_queue();
       };
 
+      var remove_from_queue = function(value){
+        var index= play_queue.indexOf(value);
+        if(index > -1) {
+          play_queue.splice(index, 1);
+        }
+        save_state();
+        display_queue();
+      };
+
       var shift_queue = function(){
         var value = play_queue.shift();
         save_state();
@@ -498,9 +507,12 @@
                              })
                              .on('click', (function(song){
                                return function(e){
+                                 if(!e){
+                                   e = window.event;
+                                 }
                                  e.preventDefault();
                                  if(e.ctrlKey){
-                                   // TODO Remove from Queue;
+                                   remove_from_queue(song);
                                  } else {
                                    jump_to_song(song);
                                  };
