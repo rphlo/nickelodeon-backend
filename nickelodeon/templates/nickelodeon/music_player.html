@@ -381,6 +381,7 @@
             });
         }
       };
+
       var extract_search_query_from_link = function(link){
         var query_re = /(\?|&)q=([^&]+)/;
         var matches = link.match(query_re)
@@ -422,7 +423,7 @@
                         .append($('<i>').addClass('fa fa-angle-double-left'))
                         .appendTo($('#search_results_navigation_top'))
           var bottom_btn = top_btn.clone(true, true)
-                           .appendTo($('#search_results_navigation_bottom'));
+                                  .appendTo($('#search_results_navigation_bottom'));
         }
         if(response.next){
           search_query = extract_search_query_from_link(response.next);
@@ -441,29 +442,35 @@
           var bottom_btn = top_btn.clone(true, true)
                            .appendTo($('#search_results_navigation_bottom'));
         }
-        $.each(results, function(ii, item){
-          var title = item.title;
-          if(item.artist){
-            title = [item.artist, item.title].join(' - ');
-          }
-          var link = $('<a>').text(title)
-                             .attr({
-                               'title': item.filename,
-                               'href': item.download_url
-                             })
-                             .on('click', (function(song){
-                               return function(e){
-                                 e.preventDefault();
-                                 if(e.ctrlKey){
-                                   push_to_queue(song);
-                                 } else {
-                                   jump_to_song(song);
-                                 };
-                               }
-                             })(item));
+        if(results.length==0){
+          var link = $('<p>').text("No results")
           var el = $('<tr>').append($('<td>').append(link));
           $('#search_results_table').append(el)
-        })
+        } else {
+          $.each(results, function(ii, item){
+            var title = item.title;
+            if(item.artist){
+              title = [item.artist, item.title].join(' - ');
+            }
+            var link = $('<a>').text(title)
+                               .attr({
+                                 'title': item.filename,
+                                 'href': item.download_url
+                               })
+                               .on('click', (function(song){
+                                 return function(e){
+                                   e.preventDefault();
+                                   if(e.ctrlKey){
+                                     push_to_queue(song);
+                                   } else {
+                                     jump_to_song(song);
+                                   };
+                                 }
+                               })(item));
+            var el = $('<tr>').append($('<td>').append(link));
+            $('#search_results_table').append(el)
+          });
+        }
       };
 
       // Button Triggers
@@ -527,10 +534,7 @@
 
       var display_history = function(){
         $('#play_history_table').html('');
-        var play_history_copy = play_history.slice(0);
-        if(play_history_copy.length>0){
-            play_history_copy = play_history_copy.reverse()
-        }
+        var play_history_copy = play_history.slice(0).reverse();
         $.each(play_history_copy, function(ii, item){
           var title = item.title;
           if(item.artist){
