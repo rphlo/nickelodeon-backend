@@ -443,7 +443,7 @@
                            .appendTo($('#search_results_navigation_bottom'));
         }
         if(results.length==0){
-          var link = $('<p>').text("No results")
+          var link = $('<span>').text("No results...")
           var el = $('<tr>').append($('<td>').append(link));
           $('#search_results_table').append(el)
         } else {
@@ -500,6 +500,7 @@
           search(result);
         }
       };
+
       var display_queue = function(){
         $('#play_queue_table').html('');
         $.each(play_queue, function(ii, item){
