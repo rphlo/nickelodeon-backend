@@ -366,6 +366,10 @@
       var search = function(search_query, page){
         page = page || 1
         if(search_query){
+            $('#search_results_table').html('')
+            var link = $('<i>').addClass("fa fa-cog fa-spin")
+            var el = $('<tr>').append($('<td>').append(link));
+            $('#search_results_table').append(el);
             $.ajax({
                 type:"GET",
                 url:SONGS_API_URL,
