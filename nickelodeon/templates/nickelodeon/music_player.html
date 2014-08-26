@@ -367,7 +367,7 @@
         page = page || 1
         if(search_query){
             $('#search_results_table').html('')
-            var link = $('<i>').addClass("fa fa-cog fa-spin")
+            var link = $('<i>').addClass("fa fa-circle-o-notch fa-spin")
             var el = $('<tr>').append($('<td>').append(link));
             $('#search_results_table').append(el);
             $.ajax({
