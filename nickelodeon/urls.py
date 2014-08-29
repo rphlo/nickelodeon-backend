@@ -4,7 +4,7 @@ from . import views
 from django.contrib.auth.decorators import permission_required
 
 urlpatterns = patterns('',
-    url(r'^jukebox$',
+    url(r'^jukebox/?$',
         view=permission_required('nickelodeon.can_listen_song')(
             TemplateView.as_view(template_name="nickelodeon/music_player.html")
         ),
