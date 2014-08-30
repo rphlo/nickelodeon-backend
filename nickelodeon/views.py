@@ -24,7 +24,7 @@ def x_accel_redirect(request, path, filename='',
         response['Content-Length'] = os.path.getsize(path)
         response['Content-Type'] = mime
     else:
-        response = HttpResponse('')
+        response = HttpResponse('', status=206)
         response['X-Accel-Redirect'] = path.encode('utf-8')
         response['Content-Type'] = mime
     response['Content-Disposition'] = "attachment; filename=%s" % filename
