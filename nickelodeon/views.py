@@ -12,7 +12,7 @@ from .tasks import fetch_youtube_video_infos
 from .models import Song
 
 
-def x_accel_redirect(request, path, filename=None,
+def x_accel_redirect(request, path, filename='',
                      mime="application/force-download"):
     if settings.DEBUG:
         from django.core.servers.basehttp import FileWrapper
@@ -23,10 +23,13 @@ def x_accel_redirect(request, path, filename=None,
         response = StreamingHttpResponse(wrapper, content_type=mime)
         response['Content-Length'] = os.path.getsize(path)
         response['Content-Type'] = mime
-        return response
-    response = HttpResponse('')
-    response['X-Accel-Redirect'] = path.encode('utf-8')
-    response['Content-Type'] = mime
+    else:
+        response = HttpResponse('')
+        response['X-Accel-Redirect'] = path.encode('utf-8')
+        response['Content-Type'] = mime
+    response['Content-Disposition'] = "attachment; filename=%s" % filename
+    response['Accept-Ranges'] = 'bytes'
+    response['X-Accel-Buffering'] = 'no'
     return response
 
 
