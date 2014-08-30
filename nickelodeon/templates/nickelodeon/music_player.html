@@ -123,6 +123,7 @@
       var play_history = [];
       var play_queue = [];
       var prefer_aac = true;
+      var search_request = null;
 
       var save_state = function(){
         $.jStorage.set('nickelodeon_playing_status',
@@ -370,7 +371,10 @@
             var link = $('<i>').addClass("fa fa-circle-o-notch fa-spin")
             var el = $('<tr>').append($('<td>').append(link));
             $('#search_results_table').append(el);
-            $.ajax({
+            if(search_request){
+              search_request.abort();
+            }
+            search_request = $.ajax({
                 type:"GET",
                 url:SONGS_API_URL,
                 data:{
