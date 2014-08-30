@@ -82,9 +82,7 @@
                  .replace(/"/g, "&quot;")
                  .replace(/'/g, "&#039;");
   };
-  soundManager.defaultOptions = {
-  stream: false
-}
+
   var loadSoundManager = function(sm2_url, onReadyCallback){
     var sm2_swf_path = sm2_url + 'swf/',
         sm2_js_path = sm2_url + 'script/soundmanager2-nodebug-jsmin.js';
@@ -101,6 +99,9 @@
     };
     if(typeof soundManager !== "undefined"){
       soundManager.reset();
+      soundManager.defaultOptions = {
+        stream: false
+      }
       soundManager.setup(options);
     } else {
       $.getScript(
