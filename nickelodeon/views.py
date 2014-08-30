@@ -42,7 +42,7 @@ def download_song(request, pk, extension=None):
                 extension = ext
     if extension is None or not song.file_format_available(extension):
         return HttpResponse(status=404)
-    mime = 'audio/mpeg' if extension == 'mp3' else 'audio/aac'
+    mime = 'audio/mpeg' if extension == 'mp3' else 'audio/x-m4a'
     file_path = re.sub(r'(mp3$)', extension, file_path)
     file_path = "/internal%s" % file_path
     return x_accel_redirect(request, file_path, mime=mime)
