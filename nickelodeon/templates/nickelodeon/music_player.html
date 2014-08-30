@@ -94,7 +94,8 @@
       flashPollingInterval: 100,
       debugMode: true,
       onready: onReadyCallback,
-      ontimeout: function() {}
+      ontimeout: function() {},
+      stream: false
     };
     if(typeof soundManager !== "undefined"){
       soundManager.reset();
