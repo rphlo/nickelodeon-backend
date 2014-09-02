@@ -1,3 +1,4 @@
+import sys
 import os.path
 from django.db import models
 from django.utils.translation import ugettext as _
@@ -22,13 +23,14 @@ class Song(UuidModel):
         return u"%s" % self.title
 
     def get_file_format_path(self, extension, full=True):
-        file_path = "%s.%s" % (self.filename[:-4], extension)
+        file_path = u"%s.%s" % (self.filename[:-4], extension)
         if full:
             file_path = os.path.join(settings.MEDIA_ROOT, file_path[1:])
         return file_path
 
     def file_format_available(self, extension):
-        if os.path.exists(self.get_file_format_path(extension)):
+        file_path = self.get_file_format_path(extension)
+        if os.path.exists(file_path.encode(sys.getfilesystemencoding())):
             return True
         return False
 
