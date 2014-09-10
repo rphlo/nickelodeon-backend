@@ -222,13 +222,7 @@
 
       var while_loading_song = function(song_data){
         return function(){
-          $('#loading_bar').html('');
-          var sound = soundManager.getSoundById(song_data.uuid),
-              loading_icon = $('<i>').addClass("fa fa-circle-o-notch fa-spin");
-          if(!sound.bytesLoaded || !sound.bytesTotal || sound.bytesLoaded != sound.bytesTotal){
-            $('#loading_bar').append(loading_icon);
-
-          }
+          
         }
       }
       var printTime = function(t){
