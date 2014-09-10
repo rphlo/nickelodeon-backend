@@ -12,6 +12,14 @@
       </p>
   </div>
   <div class="col-md-12">
+      <div id="loading_bar"></div>
+      <div class="progress">
+        <div id="progress_bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <span id="progress_bar_text" ></span>
+        </div>
+      </div>
+  </div>
+  <div class="col-md-12">
       <div class="btn-group">
           <button id="prev_button" class="btn btn-default">
               <i class="fa fa-backward"></i>
@@ -73,6 +81,7 @@
 
 {% block extra_script %}
 <script src="{{STATIC_URL}}jStorage/0.4.4/jstorage.min.js"></script>
+<script src="{{STATIC_URL}}underscore-1.7.0/underscore-min.js"></script>
 <script>
 (function($, SM2_URL, SONGS_API_URL){
   var escapeHTML = function(unsafe) {
@@ -210,6 +219,35 @@
         display_history();
         return value;
       };
+
+      var while_loading_song = function(song_data){
+        return function(){
+          $('#loading_bar').html('');
+          var sound = soundManager.getSoundById(song_data.uuid),
+              loading_icon = $('<i>').addClass("fa fa-circle-o-notch fa-spin");
+          if(sound.isBuffering && (!sound.bytesLoaded || !sound.bytesTotal) && sound.bytesLoaded != sound.bytesTotal){
+            $('#loading_bar').append(loading_icon)
+          }
+        }
+      }
+      var printTime = function(t){
+        var mr = Math.round,
+            to2digits = function(x){return ('0'+mr(x)).slice(-2);},
+            txt = t>3600?Math.round(t/3600)+':':'';
+        txt += to2digits((t/60)%60)+':'+to2digits(t%60);
+        return txt
+      }
+      var while_playing_song = function(song_data){
+        return function(){
+          var sound = soundManager.getSoundById(song_data.uuid),
+              position = sound.position/1e3,
+              total = sound.durationEstimate/1e3,
+              txt=printTime(position)+"/"+printTime(sound.durationEstimate/1e3),
+              perc = position/total*100;
+          $('#progress_bar_text').html(txt);
+          $('#progress_bar').css('width', perc+'%').attr('aria-valuenow', perc);
+        }
+      }
       
       var play_song = function(song_data){
         var format, type, title, page_title;
@@ -234,6 +272,8 @@
             autoPlay: auto_play,
             type: type,
             multiShot:false,
+            whileloading:_.throttle(while_loading_song(song_data), 100),
+            whileplaying:_.throttle(while_playing_song(song_data), 100),
             onfinish:function(){
               if(stopping_after_current){
                 stopping_after_current = false;
@@ -359,8 +399,14 @@
                   callback();
               }
           },
-          error: function(){
-            console.log('AJAX failure...')          
+          error: function(xhr, tStatus, err){
+            if(xhr.status === 404 && current_index !== 1){
+              current_index = 1;
+              get_current_info(callback);
+            } else if(xhr.status === 403) {
+              window.reload();
+            }
+            console.log('AJAX failure...')
           }
         });
       };
