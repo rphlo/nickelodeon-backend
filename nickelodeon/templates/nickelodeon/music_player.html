@@ -225,8 +225,9 @@
           $('#loading_bar').html('');
           var sound = soundManager.getSoundById(song_data.uuid),
               loading_icon = $('<i>').addClass("fa fa-circle-o-notch fa-spin");
-          if(sound.isBuffering && (!sound.bytesLoaded || !sound.bytesTotal) && sound.bytesLoaded != sound.bytesTotal){
-            $('#loading_bar').append(loading_icon)
+          if(!sound.bytesLoaded || !sound.bytesTotal || sound.bytesLoaded != sound.bytesTotal){
+            $('#loading_bar').append(loading_icon);
+
           }
         }
       }
@@ -406,7 +407,6 @@
             } else if(xhr.status === 403) {
               window.reload();
             }
-            console.log('AJAX failure...')
           }
         });
       };
