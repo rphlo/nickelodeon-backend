@@ -102,7 +102,7 @@
       preferFlash: true,
       flashVersion: 9,
       flashPollingInterval: 100,
-      debugMode: true,
+      debugMode: false,
       onready: onReadyCallback,
       ontimeout: function() {}
     };
@@ -220,18 +220,14 @@
         return value;
       };
 
-      var while_loading_song = function(song_data){
-        return function(){
-          
-        }
-      }
       var printTime = function(t){
         var mr = Math.round,
             to2digits = function(x){return ('0'+mr(x)).slice(-2);},
-            txt = t>3600?Math.round(t/3600)+':':'';
+            txt = t>3600?mr(t/3600)+':':'';
         txt += to2digits((t/60)%60)+':'+to2digits(t%60);
-        return txt
+        return txt;
       }
+
       var while_playing_song = function(song_data){
         return function(){
           var sound = soundManager.getSoundById(song_data.uuid),
@@ -267,7 +263,6 @@
             autoPlay: auto_play,
             type: type,
             multiShot:false,
-            whileloading:_.throttle(while_loading_song(song_data), 100),
             whileplaying:_.throttle(while_playing_song(song_data), 100),
             onfinish:function(){
               if(stopping_after_current){
