@@ -12,8 +12,7 @@
       </p>
   </div>
   <div class="col-md-12">
-      <div id="loading_bar"></div>
-      <div class="progress">
+      <div id="full_progress_bar" class="progress">
         <div id="progress_bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
           <span id="progress_bar_text" ></span>
         </div>
@@ -47,34 +46,36 @@
   </div>
 </div>
 <div class="row">
-<div class="tab-content">
- <div class="tab-pane active" id="search">
-  <div class="col-md-12">
-      <div class="input-group">
-        <input id="search_input" type="text" class="form-control">
-        <span class="input-group-btn">
-          <button id="start_search_button" class="btn btn-default" type="button">Search <i class="fa fa-search"></i></button>
-        </span>
-      </div>
-      <div id="search_results_navigation_top"></div>
-      <table class="table table-striped" id="search_results_table">
-      </table>
-      <div id="search_results_navigation_bottom"></div>
+ <div class="tab-content">
+  <div class="tab-pane active" id="search">
+   <div class="col-md-12">
+    <div class="input-group">
+     <input id="search_input" type="text" class="form-control" />
+     <span class="input-group-btn">
+      <button id="start_search_button" class="btn btn-default" type="button">Search <i class="fa fa-search"></i></button>
+      </span>
+    </div>
+    <div id="search_results_navigation_top"></div>
+     <table class="table table-striped" id="search_results_table">
+     </table>
+    <div id="search_results_navigation_bottom"></div>
+   </div>
+  </div>
+  <div class="tab-pane" id="queue">
+   <div class="col-md-12">
+    <table class="table table-striped" id="play_queue_table">
+     <tr><td><i class="fa fa-random"> Random</i></td></tr>
+    </table>
+   </div>
+  </div>
+  <div class="tab-pane" id="history">
+   <div class="col-md-12">
+    <table class="table table-striped" id="play_history_table">
+     <tr><td></td></tr>
+    </table>
+   </div>
   </div>
  </div>
- <div class="tab-pane" id="queue">
-  <div class="col-md-12">
-      <table class="table table-striped" id="play_queue_table">
-        <tr><td><i class="fa fa-random"> Random</i></td></tr>
-      </table>
-  </div>
- </div>
- <div class="tab-pane" id="history">
-  <div class="col-md-12">
-      <table class="table table-striped" id="play_history_table">
-        <tr><td></td></tr>
-      </table>
-  </div>
 </div>
 {% endblock %}
 
@@ -663,6 +664,11 @@
           prefer_aac = false;
           play_song(current_song_data);
         }
+      });
+      $('#full_progress_bar').on('click', function(e){
+        var sound = soundManager.getSoundById(current_song_data.uuid),
+            perc = (e.pageX - $(this).offset().left)/$(this).width();
+        sound.setPosition(perc*sound.durationEstimate);
       });
 
       // Keyboard Support
