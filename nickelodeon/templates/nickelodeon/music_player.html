@@ -443,6 +443,21 @@
         }
         return 1
       };
+      var swapArrayElements = function(array_object, index_a, index_b) {
+        var temp = array_object[index_a];
+        array_object[index_a] = array_object[index_b];
+        array_object[index_b] = temp;
+      }
+
+      var move_queue_item_up = function(index){
+        if(index===0){return;}
+        swapArrayElements(play_queue, index-1, index);
+      }
+
+      var move_queue_item_down = function(index){
+        if(index+1>=play_queue.length){return;}
+        swapArrayElements(play_queue, index, index+1);
+      }
 
       var on_search_results = function(response){
         var results = response.results;
@@ -511,7 +526,9 @@
                                    };
                                  }
                                })(item));
-            var el = $('<tr>').append($('<td>').append(link));
+            var el = $('<tr>').append(
+                       $('<td>').append(link)
+                     );
             $('#search_results_table').append(el)
           });
         }
@@ -552,6 +569,28 @@
           if(item.artist){
             title = [item.artist, item.title].join(' - ');
           }
+          var mv_up_btn = $('<a>').attr({'href':'#moveup', 'title': 'move up'})
+                                  .append(
+            $('<i>').addClass('fa fa-chevron-up')
+                    .on('click', (function(index){
+                      return function(e){
+                        e.preventDefault();
+                        move_queue_item_up(index);
+                        display_queue();
+                      }
+                    })(ii))
+          );
+          var mv_down_btn = $('<a>').attr({'href':'#movedown', 'title': 'move down'})
+                                    .append(
+            $('<i>').addClass('fa fa-chevron-down')
+                    .on('click', (function(index){
+                      return function(e){
+                        e.preventDefault();
+                        move_queue_item_down(index);
+                        display_queue();
+                      }
+                    })(ii))
+          );
           var link = $('<a>').text(title)
                              .attr({
                                'title': item.filename,
@@ -570,7 +609,12 @@
                                  };
                                }
                              })(item));
-          var el = $('<tr>').append($('<td>').append(link));
+          var el = $('<tr>').append(
+                     $('<td>').append(mv_up_btn)
+                              .append(mv_down_btn)
+                              .append(' ')
+                              .append(link)
+                   );
           $('#play_queue_table').append(el)
         });
         var el = $('<tr>').append($('<td>').html('Random <i class="fa fa-random"></i>'));
