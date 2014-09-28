@@ -222,9 +222,9 @@
       };
 
       var printTime = function(t){
-        var mr = Math.round,
-            to2digits = function(x){return ('0'+mr(x)).slice(-2);},
-            txt = t>3600?mr(t/3600)+':':'';
+        var mf = Math.floor,
+            to2digits = function(x){return ('0'+mf(x)).slice(-2);},
+            txt = t>3600?mf(t/3600)+':':'';
         txt += to2digits((t/60)%60)+':'+to2digits(t%60);
         return txt;
       }
