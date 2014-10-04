@@ -16,8 +16,6 @@ urlpatterns = patterns('',
         view=views.SongView.as_view(),
         name='song_detail'),
     url(r'^api/v1/song/dl/(?P<pk>[a-zA-Z0-9]{22})(\.(?P<extension>(mp3|aac)))?$',
-        view=permission_required('nickelodeon.can_listen_song')(
-            views.download_song
-        ),
+        view=views.download_song,
         name='song_download'),
 )

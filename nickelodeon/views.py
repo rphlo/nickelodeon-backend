@@ -6,6 +6,9 @@ from django.db.models import Q
 
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
+
+from common_base.social.authentication import ApiKeyAuthentication
 
 from .serializers import SongSerializer
 from .tasks import fetch_youtube_video_infos
@@ -34,6 +37,19 @@ def x_accel_redirect(request, path, filename='',
 
 
 def download_song(request, pk, extension=None):
+    # TODO: move authentication part to decorator
+    if not request.user.is_authenticated():
+        auth_handler = ApiKeyAuthentication()
+        try:
+            credential = auth_handler.authenticate(request)
+        except AuthenticationFailed:
+            credential = None
+        if credential is None:
+            return HttpResponse('Forbidden', status=403)
+        request.user, key = credential
+    if not request.user.has_perm('nickelodeon.can_listen_song'):
+        return HttpResponse('Forbidden', status=403)
+    # deliver song
     song = get_object_or_404(Song, pk=pk)
     file_path = song.filename
     if extension is None:
