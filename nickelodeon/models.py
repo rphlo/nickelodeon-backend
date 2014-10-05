@@ -3,8 +3,11 @@ import os.path
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.conf import settings
+from django.core.files.move import file_move_safe
 from common_base.core.models import UuidModel
 
+
+AVAILABLE_FORMATS = ('mp3', 'aac')
 
 class Song(UuidModel):
     artist = models.CharField(_('artist'),
@@ -12,8 +15,8 @@ class Song(UuidModel):
     title = models.CharField(_('title'),
                              max_length=255, blank=True)
     filename = models.FilePathField(path=settings.MEDIA_ROOT,
-                                    match='.*\.mp3$', recursive=True,
-                                    allow_files=True, allow_folders=False,
+                                    recursive=True, allow_files=True,
+                                    allow_folders=False,
                                     verbose_name=_('file name'),
                                     max_length=255, unique=True)
 
@@ -23,7 +26,7 @@ class Song(UuidModel):
         return u"%s" % self.title
 
     def get_file_format_path(self, extension, full=True):
-        file_path = u"%s.%s" % (self.filename[:-4], extension)
+        file_path = u"%s.%s" % (self.filename, extension)
         if full:
             file_path = os.path.join(settings.MEDIA_ROOT, file_path[1:])
         return file_path
@@ -37,7 +40,7 @@ class Song(UuidModel):
     @property
     def available_formats(self):
         result = {}
-        for ext in ('mp3', 'aac'):
+        for ext in AVAILABLE_FORMATS:
             result[ext] = self.file_format_available(ext)
         return result
 
@@ -48,6 +51,20 @@ class Song(UuidModel):
     @models.permalink
     def get_download_url(self):
         return ("song_download", (), {"pk": self.pk})
+
+    def move_file_from(self, orig):
+        for ext, available in orig.available_formats.iteritems():
+            if available:
+                src = orig.get_file_format_path(extension=ext, full=True)
+                dst = self.get_file_format_path(extension=ext, full=True)
+                dst_folder = os.path.dirname(dst)
+                if not os.path.isdir(dst_folder):
+                    os.makedirs(dst_folder)
+                file_move_safe(src, dst)
+                src_folder = os.path.dirname(src)
+                while not os.listdir(src_folder):
+                    os.rmdir(src_folder)
+                    src_folder = os.path.dirname(src_folder)
 
     class Meta:
         permissions = (("can_listen_songs", _("Can listen songs")),)

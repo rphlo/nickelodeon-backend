@@ -19,60 +19,23 @@ except ImportError:
 
 MP3_FILE_EXT_RE = re.compile(r'(.+)\.mp3$', re.IGNORECASE)
 AAC_FILE_EXT_RE = re.compile(r'(.+)\.aac$', re.IGNORECASE)
+ROOT_DIRECTORY = os.path.join(settings.MEDIA_ROOT, 'exthd', 'music')
 
 
 class Command(BaseCommand):
     args = ''
     help = 'Scan the media folder and update the database of mp3 files'
-    
-    def scan_directory(self):
-        for root, dirs, files in walk(os.path.join(settings.MEDIA_ROOT, 
-                                                   'exthd', 'music')):
-            for file in files:
-                media_path = os.path.join(
-                    root[len(settings.MEDIA_ROOT):], 
-                    file.decode(sys.getfilesystemencoding())
-                )
-                yield media_path
 
-    def process_mp3(self, media_path):
-        if not MP3_FILE_EXT_RE.search(media_path):
-            return
-        #if AAC_FILE_EXT_RE.search(media_path):
-        #    media_path = re.sub(r'aac$', 'mp3', media_path)
-        if len(media_path) > 255:
-            self.stderr(u'Media path too long, '
-                        u'255 characters maximum. %s' % media_path)
-            return
-        if media_path in self.songs_to_find:
-            self.songs_to_find.remove(media_path)
-        else:
-            media_dir, title = os.path.split(media_path[:-4])
-            self.songs_added.append(
-                Song(
-                    filename=media_path, 
-                    title=title
-                )
-            )
-        self.songs_count += 1
-        self.print_scan_status()
- 
-    def print_scan_status(self, force=False):
-        if time.time() - self.last_flush > 1 or force:
-            self.last_flush = time.time()
-            self.stdout.write(
-                u'\rScanned %d MP3s in %s' % (
-                    self.songs_count, 
-                    readable_duration(time.time()-self.t1)
-                ), 
-                ending=""
-            )
-            self.stdout.flush()
-    
+    songs_to_find = set()
+    songs_to_remove = set()
+    songs_to_add = set()
+    t0 = t1 = last_flush = songs_count = 0
+    encoding = 'UTF-8'
+
     def handle(self, *args, **options):
         self.t0 = self.last_flush = time.time()
         self.songs_count = 0
-        self.songs_added = []
+        self.songs_to_add = set()
         self.encoding = sys.getfilesystemencoding()
         if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'exthd')):
             self.stderr.write(u"Drive not mounted.")
@@ -80,20 +43,74 @@ class Command(BaseCommand):
         self.stdout.write(u'Loading cached files...')
         self.songs_to_find = set(Song.objects.all().values_list('filename', 
                                                                 flat=True))
+        self.songs_to_remove = self.songs_to_find.copy()
         self.stdout.write(u'Scanning music directory')
         self.t1 = self.last_flush = time.time()
-        for file in self.scan_directory():
-            self.process_mp3(file)
+        for filename in self.scan_directory():
+            self.process_music_file(filename)
         self.print_scan_status(True)
         self.stdout.write(
             u'\nDiscovered %d new song(s), '
-            u'Removing %d' % (len(self.songs_added), 
-                              len(self.songs_to_find))
+            u'Removing %d' % (len(self.songs_to_add),
+                              len(self.songs_to_remove))
         )
         if len(self.songs_to_find) > 0:
-            Song.objects.filter(filename__in=self.songs_to_find).delete()
-        if len(self.songs_added) > 0:
-            safe_bulk_create(self.songs_added)
+            Song.objects.filter(filename__in=self.songs_to_remove).delete()
+        if len(self.songs_to_add) > 0:
+            self.bulk_create()
         self.stdout.write(
             u"Task completed in %s" % readable_duration(time.time()-self.t0)
         )
+
+    @staticmethod
+    def scan_directory():
+        for root, dirs, files in walk(ROOT_DIRECTORY):
+            for filename in files:
+                media_path = os.path.join(
+                    root[len(settings.MEDIA_ROOT):],
+                    filename.decode(sys.getfilesystemencoding())
+                )
+                yield media_path
+
+    def process_music_file(self, media_path):
+        if not MP3_FILE_EXT_RE.search(media_path) \
+                and not AAC_FILE_EXT_RE.search(media_path):
+            return
+        if len(media_path) > 255:
+            self.stderr(u'Media path too long, '
+                        u'255 characters maximum. %s' % media_path)
+            return
+        new_song = media_path[:-4]
+        if new_song in self.songs_to_find:
+            if new_song in self.songs_to_remove:
+                self.songs_to_remove.remove(new_song)
+            else:
+                return
+        else:
+            if new_song in self.songs_to_add:
+                return
+            self.songs_to_add.add(new_song)
+        self.songs_count += 1
+        self.print_scan_status()
+
+    def print_scan_status(self, force=False):
+        if time.time() - self.last_flush > 1 or force:
+            self.last_flush = time.time()
+            self.stdout.write(
+                u'\rScanned %d music files in %s' % (
+                    self.songs_count,
+                    readable_duration(time.time()-self.t1)
+                ),
+                ending=""
+            )
+            self.stdout.flush()
+
+    def bulk_create(self):
+        bulk = []
+        for song_file in self.songs_to_add:
+            media_dir, title = os.path.split(song_file)
+            bulk.append(Song(
+                title=title,
+                filename=song_file
+            ))
+        safe_bulk_create(bulk)
