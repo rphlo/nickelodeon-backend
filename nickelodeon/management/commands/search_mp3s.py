@@ -23,7 +23,7 @@ ROOT_DIRECTORY = os.path.join(settings.MEDIA_ROOT, 'exthd', 'music')
 
 
 class Command(BaseCommand):
-    args = ''
+    args = '[folder]'
     help = 'Scan the media folder and update the database of mp3 files'
 
     songs_to_find = set()
@@ -31,20 +31,42 @@ class Command(BaseCommand):
     songs_to_add = set()
     t0 = t1 = last_flush = songs_count = 0
     encoding = 'UTF-8'
+    folder_root = ROOT_DIRECTORY
 
     def handle(self, *args, **options):
+        self.encoding = sys.getfilesystemencoding()
+        if len(args) > 1:
+            raise CommandError('Too many arguments. See usage.')
+        elif len(args) == 1:
+            folder = args[0]
+            if folder[0] == '/':
+                if folder.startswith(ROOT_DIRECTORY):
+                    self.folder_root = folder[0]
+                else:
+                    raise CommandError('Absolute path should be '
+                                       'within Media root.')
+            else:
+                self.folder_root = os.path.join(settings.MEDIA_ROOT, folder)
+        if not os.path.exists(self.folder_root):
+            raise CommandError(
+                u"Specified folder '{}' does not exist".format(
+                    self.folder_root.decode(self.encoding)
+                )
+            )
         self.t0 = self.last_flush = time.time()
         self.songs_count = 0
         self.songs_to_add = set()
-        self.encoding = sys.getfilesystemencoding()
-        if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'exthd')):
-            self.stderr.write(u"Drive not mounted.")
-            return
         self.stdout.write(u'Loading cached files...')
-        self.songs_to_find = set(Song.objects.all().values_list('filename', 
-                                                                flat=True))
+        existing_songs = Song.objects.filter(
+            filename__startswith=self.folder_root[len(settings.MEDIA_ROOT):]
+        )
+        self.songs_to_find = set(existing_songs.values_list('filename', flat=True))
         self.songs_to_remove = self.songs_to_find.copy()
-        self.stdout.write(u'Scanning music directory')
+        self.stdout.write(
+            u'Scanning directory {} for music'.format(
+                self.folder_root.decode(self.encoding)
+            )
+        )
         self.t1 = self.last_flush = time.time()
         for filename in self.scan_directory():
             self.process_music_file(filename)
@@ -62,13 +84,12 @@ class Command(BaseCommand):
             u"Task completed in %s" % readable_duration(time.time()-self.t0)
         )
 
-    @staticmethod
-    def scan_directory():
-        for root, dirs, files in walk(ROOT_DIRECTORY):
+    def scan_directory(self):
+        for root, dirs, files in walk(self.folder_root):
             for filename in files:
                 media_path = os.path.join(
-                    root[len(settings.MEDIA_ROOT):],
-                    filename.decode(sys.getfilesystemencoding())
+                    root[len(settings.MEDIA_ROOT):].decode(self.encoding),
+                    filename.decode(self.encoding)
                 )
                 yield media_path
 
