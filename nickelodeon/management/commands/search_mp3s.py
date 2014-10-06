@@ -8,6 +8,7 @@ from django.conf import settings
 
 from common_base.core.models import safe_bulk_create
 from common_base.utils.format import readable_duration
+from common_base.utils.strings import pluralize
 
 from nickelodeon.models import Song
 
@@ -72,10 +73,18 @@ class Command(BaseCommand):
             self.process_music_file(filename)
         self.print_scan_status(True)
         self.stdout.write(
-            u'\nDiscovered %d new song(s), '
-            u'Removing %d' % (len(self.songs_to_add),
-                              len(self.songs_to_remove))
+            u'\nDiscovered %d %s' % (
+                len(self.songs_to_add),
+                pluralize('file', self.songs_to_add)
+            )
         )
+        if len(self.songs_to_remove) > 0:
+            self.stdout.write(
+                u'Could not find %d %s' % (
+                    len(self.songs_to_add),
+                    pluralize('file', self.songs_to_add)
+                )
+            )
         if len(self.songs_to_find) > 0:
             Song.objects.filter(filename__in=self.songs_to_remove).delete()
         if len(self.songs_to_add) > 0:
@@ -87,8 +96,10 @@ class Command(BaseCommand):
     def scan_directory(self):
         for root, dirs, files in walk(self.folder_root):
             for filename in files:
+                if not isinstance(root, unicode):
+                    root = root.decode(self.encoding)
                 media_path = os.path.join(
-                    root[len(settings.MEDIA_ROOT):].decode(self.encoding),
+                    root[len(settings.MEDIA_ROOT):],
                     filename.decode(self.encoding)
                 )
                 yield media_path
