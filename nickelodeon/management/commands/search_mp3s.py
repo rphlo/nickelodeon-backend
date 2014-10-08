@@ -42,7 +42,7 @@ class Command(BaseCommand):
             folder = args[0]
             if folder[0] == '/':
                 if folder.startswith(ROOT_DIRECTORY):
-                    self.folder_root = folder[0]
+                    self.folder_root = folder
                 else:
                     raise CommandError('Absolute path should be '
                                        'within Media root.')
