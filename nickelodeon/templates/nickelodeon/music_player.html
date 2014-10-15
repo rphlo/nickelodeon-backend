@@ -665,7 +665,9 @@
           play_song(current_song_data);
         }
       });
-      $('#full_progress_bar').on('click', function(e){
+      $('#full_progress_bar')
+      .css({'cursor': 'pointer'})
+      .on('click', function(e){
         var sound = soundManager.getSoundById(current_song_data.uuid),
             perc = (e.pageX - $(this).offset().left)/$(this).width();
         sound.setPosition(perc*sound.durationEstimate);
