@@ -1,8 +1,43 @@
 {% extends 'site_base.html' %}
 {% load i18n %}
 {% load url from future %}
+{% load staticfiles %}
 
 {% block head_title %}Music{% endblock %}
+
+{% block extra_head %}
+<style>
+.enscroll_track {
+    width: 10px;
+    background: rgba(0, 0, 0, 0);
+    margin-right: 2px;
+    border-radius: 10px;
+    -webkit-transition: background 250ms linear;
+    transition: background 250ms linear;
+}
+
+.enscroll_track:hover,
+.enscroll_track.dragging {
+    background: #d9d9d9; /* Browsers without rgba support */
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.enscroll_handle {
+    width: 7px;
+    right: 0;
+    background: #999;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 7px;
+    -webkit-transition: width 250ms;
+    transition: width 250ms;
+}
+
+.enscroll_track:hover .enscroll_handle,
+.enscroll_track.dragging .enscroll_handle {
+    width: 10px;
+}
+</style>
+{% endblock %}
 
 {% block body %}
 <div class="row">
@@ -38,7 +73,7 @@
 </div>
 <div class="row">
   <div class="col-md-12">
-    <ul class="nav nav-pills" role="tablist">
+    <ul class="nav nav-pills" role="tablist" id="tab_selector">
       <li class="active"><a id="search_tab" href="#search" role="tab" data-toggle="tab"><i class="fa fa-search"></i> Search</a></li>
       <li><a href="#queue" role="tab" data-toggle="tab"><i class="fa fa-align-left"></i> Queue</a></li>
       <li><a href="#history" role="tab" data-toggle="tab"><i class="fa fa-book"></i> History</a></li>
@@ -81,8 +116,9 @@
 
 
 {% block extra_script %}
-<script src="{{STATIC_URL}}jStorage/0.4.4/jstorage.min.js"></script>
-<script src="{{STATIC_URL}}underscore-1.7.0/underscore-min.js"></script>
+<script src="{% static 'jStorage/0.4.4/jstorage.min.js' %}"></script>
+<script src="{% static 'underscore-1.7.0/underscore-min.js' %}"></script>
+<script src="{% static 'enscroll-0.6.0/enscroll.min.js' %}"></script>
 <script>
 (function($, SM2_URL, SONGS_API_URL){
   var escapeHTML = function(unsafe) {
@@ -121,6 +157,24 @@
   };
 
   $(window).load(function(){
+    /*
+    $('#tab_selector a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      e.target // activated tab
+      e.relatedTarget // previous tab
+      var targetDiv = $($(e.target).attr('href'));
+      if($(targetDiv).next().children().hasClass('enscroll_track')){
+        return
+      }
+      targetDiv.css({'max-height': '480px'})
+      targetDiv.enscroll({
+        // a configuration property
+        showOnHover: false,
+        verticalScrolling: true,
+        verticalTrackClass: 'enscroll_track',
+        verticalHandleClass: 'enscroll_handle'
+      });
+    });
+    */
     loadSoundManager(SM2_URL, function(){
       var PLAYING = 1;
       var PAUSED = 0;
