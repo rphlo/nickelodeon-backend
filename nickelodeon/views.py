@@ -66,6 +66,12 @@ class SongView(RetrieveUpdateAPIView):
 
 
 class TextSearchApiView(ListAPIView):
+    """
+    Search Songs API
+    q -- Search terms (Default: '')
+    page -- Page number (Default: 1)
+    results_per_page -- Number of result per page (Default:20 Max: 1000)
+    """
     model = Song
     serializer_class = SongSerializer
     lookup_fields = ('filename', 'artist', 'title')
