@@ -411,7 +411,7 @@
       };
       
       var play_prev_song = function(e){
-        e.preventDefault();
+        if(e){e.preventDefault();}
         stopping_after_current = false;
         play_queue.unshift(current_song_data);
         save_state();
@@ -436,7 +436,7 @@
       };
 
       var play_next_song = function(e){
-        e.preventDefault();
+        if(e){e.preventDefault();}
         stopping_after_current = false;
         push_to_history(current_song_data);
         if(play_queue.length>0){
