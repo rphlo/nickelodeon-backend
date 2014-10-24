@@ -19,7 +19,7 @@ class SongSerializer(serializers.ModelSerializer):
     url = RelativeURLField('get_absolute_url')
     download_url = RelativeURLField('get_download_url')
     availability = serializers.Field('available_formats')
-    filename = serializers.WritableField()
+    filename = serializers.WritableField(required=False)
 
     def save_object(self, obj, **kwargs):
         if obj.pk is not None:

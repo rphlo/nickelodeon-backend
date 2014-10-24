@@ -112,6 +112,40 @@
   </div>
  </div>
 </div>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Song details</h4>
+      </div>
+      <div class="modal-body">
+        <form role="form">
+          <div class="form-group">
+            <label for="id_song_artist">Artist</label>
+            <input type="text" class="form-control" id="id_song_artist" placeholder="Artist">
+          </div>
+          <div class="form-group">
+            <label for="id_song_title">Title</label>
+            <input type="text" class="form-control" id="id_song_title" placeholder="Title">
+          </div>
+          <div class="form-group">
+            <label for="id_song_filename">File path</label>
+            <input type="text" class="form-control" id="id_song_filename" placeholder="File path">
+          </div>
+          <label>
+            <input type="hidden" id='id_song_uuid'>
+          </label>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="save_song_change_btn"><span id="saving_change_i"><i class="fa fa-circle-o-notch fa-spin"></i> </span>Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 
@@ -157,6 +191,7 @@
   };
 
   $(window).load(function(){
+
     /*
     $('#tab_selector a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
       e.target // activated tab
@@ -566,6 +601,18 @@
             if(item.artist){
               title = [item.artist, item.title].join(' - ');
             }
+            var edit_btn = $('<a>')
+                           .attr({'href':'#edit', 'title': 'edit'})
+                           .append($('<i>').addClass('fa fa-cog'))
+                           .on('click',
+                               (function(song){
+                                 return function(e){
+                                   e.preventDefault();
+                                   edit_song(song);
+                                   display_queue();
+                                 }
+                               })(item)
+                           );
             var link = $('<a>').text(title)
                                .attr({
                                  'title': item.filename,
@@ -582,7 +629,9 @@
                                  }
                                })(item));
             var el = $('<tr>').append(
-                       $('<td>').append(link)
+                       $('<td>').append(edit_btn)
+                                .append(' ')
+                                .append(link)
                      );
             $('#search_results_table').append(el)
           });
@@ -617,6 +666,56 @@
         }
       };
 
+      var edit_song = function(song){
+        $('#id_song_artist').val(song.artist);
+        $('#id_song_title').val(song.title);
+        $('#id_song_filename').val(song.filename);
+        $('#saving_change_i').hide();
+        $("#myModal").modal();
+        $("#save_song_change_btn")
+        .off("click") // deactivate previous action
+        .on('click',
+          (function(current_data){
+            return function(){
+              var artist = $('#id_song_artist').val(),
+                  title = $('#id_song_title').val(),
+                  filename = $('#id_song_filename').val(),
+                  uuid = current_data.uuid,
+                  update_data = {},
+                  data_changed = false;
+
+              if(artist != current_data.artist){
+                update_data['artist'] = artist;
+                data_changed = true;
+              }
+              if(title != current_data.title){
+                update_data['title'] = title;
+                data_changed = true;
+              }
+              if(filename != current_data.filename){
+                update_data['filename'] = filename;
+                data_changed = true;
+              }
+              if(data_changed){
+                $('#saving_change_i').show()
+                $.ajax({
+                  url: '/api/v1/song/'+uuid,
+                  type: 'PUT',
+                  dataType: 'JSON',
+                  data: update_data
+                }).success(
+                  function(response){
+                    $('#myModal').modal('hide');
+                  }
+                );
+              }else{
+                $('#myModal').modal('hide');
+              }
+            }
+          })(song)
+        );
+      }
+
       var display_queue = function(){
         $('#play_queue_table').html('');
         $.each(play_queue, function(ii, item){
@@ -624,28 +723,30 @@
           if(item.artist){
             title = [item.artist, item.title].join(' - ');
           }
-          var mv_up_btn = $('<a>').attr({'href':'#moveup', 'title': 'move up'})
-                                  .append(
-            $('<i>').addClass('fa fa-chevron-up')
-                    .on('click', (function(index){
-                      return function(e){
-                        e.preventDefault();
-                        move_queue_item_up(index);
-                        display_queue();
-                      }
-                    })(ii))
-          );
-          var mv_down_btn = $('<a>').attr({'href':'#movedown', 'title': 'move down'})
-                                    .append(
-            $('<i>').addClass('fa fa-chevron-down')
-                    .on('click', (function(index){
-                      return function(e){
-                        e.preventDefault();
-                        move_queue_item_down(index);
-                        display_queue();
-                      }
-                    })(ii))
-          );
+          var mv_up_btn = $('<a>')
+                          .attr({'href':'#moveup', 'title': 'move up'})
+                          .append($('<i>').addClass('fa fa-chevron-up'))
+                          .on('click',
+                              (function(index){
+                                return function(e){
+                                  e.preventDefault();
+                                  move_queue_item_up(index);
+                                  display_queue();
+                                }
+                              })(ii)
+                          );
+          var mv_down_btn = $('<a>')
+                            .attr({'href':'#movedown', 'title': 'move down'})
+                            .append($('<i>').addClass('fa fa-chevron-down'))
+                            .on('click',
+                                (function(index){
+                                  return function(e){
+                                    e.preventDefault();
+                                    move_queue_item_down(index);
+                                    display_queue();
+                                  }
+                                })(ii)
+                            );
           var link = $('<a>').text(title)
                              .attr({
                                'title': item.filename,
