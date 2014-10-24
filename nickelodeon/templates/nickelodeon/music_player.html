@@ -321,9 +321,9 @@
       var while_playing_song = function(song_data){
         return function(){
           var sound = soundManager.getSoundById(song_data.uuid),
-              position = sound.position/1e3,
-              total = sound.durationEstimate/1e3,
-              txt=printTime(position)+"/"+printTime(sound.durationEstimate/1e3),
+              position = sound?sound.position/1e3:0,
+              total = sound?sound.durationEstimate/1e3:0,
+              txt=printTime(position)+"/"+printTime(total),
               perc = position/total*100;
           $('#progress_bar_text').html(txt);
           $('#progress_bar').css('width', perc+'%').attr('aria-valuenow', perc);
