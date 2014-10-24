@@ -830,7 +830,7 @@
 
       // Keyboard Support
       $('body').on('keydown', function(e){
-        if($('#search_input').is(":focus")){
+        if(document.activeElement.tagName=='INPUT'){
           return;
         }
         if(!e){
