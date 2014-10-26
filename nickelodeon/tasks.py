@@ -9,7 +9,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.files import locks
 from celery import shared_task, current_task
-from nickelodeon.models import Song
+from nickelodeon.models import Song, YouTubeDownloadTask
 
 
 def _samefile(src, dst):
@@ -205,4 +205,8 @@ def fetch_youtube_video(video_id=''):
     song = Song(filename=aac_path[len(settings.MEDIA_ROOT):-4],
                 title=safe_title)
     song.save()
+    try:
+        YouTubeDownloadTask.objects.get(task_id=current_task.task_id).delete()
+    except YouTubeDownloadTask.DoesNotExist:
+        pass 
     return song.pk
