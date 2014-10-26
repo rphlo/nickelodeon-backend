@@ -13,7 +13,7 @@ from nickelodeon.models import Song
 
 
 def file_move_safe(old_file_name, new_file_name, chunk_size=1024 * 64,
-                   allow_overwrite=False):
+                   allow_overwrite=True):
     """
     Moves a file from one location to another in the safest way possible.
 
@@ -181,10 +181,8 @@ def fetch_youtube_video(video_id=''):
     mp3_path = os.path.join(dst_folder, safe_title+".mp3")
     audio_stream.download(download_path, callback=update_dl_progress,
                           quiet=True)
-    update_conversion_progress(0)
     convert_audio(download_path, aac_tmp_path, mp3_tmp_path,
                   callback=update_conversion_progress)
-    update_conversion_progress(100)
     if not os.path.isdir(dst_folder):
         os.makedirs(dst_folder)
     file_move_safe(aac_tmp_path, aac_path)
