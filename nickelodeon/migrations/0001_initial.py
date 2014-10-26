@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+from django.conf import settings
 from django.db import models, migrations
 import common_base.core.fields
 import django.core.validators
@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('uuid', common_base.core.fields.ShortUuidField(primary_key=True, serialize=False, editable=False, verbose_name='id')),
                 ('artist', models.CharField(max_length=255, verbose_name='artist', blank=True)),
                 ('title', models.CharField(max_length=255, verbose_name='title', blank=True)),
-                ('filename', models.FilePathField(path=b'/home/rphl/projects/routechoices.com/media', unique=True, max_length=255, verbose_name='file name', recursive=True)),
+                ('filename', models.FilePathField(path=settings.MEDIA_ROOT, unique=True, max_length=255, verbose_name='file name', recursive=True)),
             ],
             options={
                 'permissions': (('can_listen_songs', 'Can listen songs'),),
