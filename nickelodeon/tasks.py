@@ -12,6 +12,19 @@ from celery import shared_task, current_task
 from nickelodeon.models import Song
 
 
+def _samefile(src, dst):
+    # Macintosh, Unix.
+    if hasattr(os.path, 'samefile'):
+        try:
+            return os.path.samefile(src, dst)
+        except OSError:
+            return False
+
+    # All other platforms: check for same pathname.
+    return (os.path.normcase(os.path.abspath(src)) ==
+            os.path.normcase(os.path.abspath(dst)))
+
+
 def file_move_safe(old_file_name, new_file_name, chunk_size=1024 * 64,
                    allow_overwrite=True):
     """
@@ -25,7 +38,8 @@ def file_move_safe(old_file_name, new_file_name, chunk_size=1024 * 64,
     function will throw an ``IOError``.
     """
     # There's no reason to move if we don't have to.
-    if os.path.samefile(old_file_name, new_file_name):
+
+    if _samefile(old_file_name, new_file_name):
         return
 
     try:
