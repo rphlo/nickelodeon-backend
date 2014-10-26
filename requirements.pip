@@ -2,3 +2,4 @@ django-common_base>=0.1.1
 djangorestframework
 celery
 scandir
+pafy

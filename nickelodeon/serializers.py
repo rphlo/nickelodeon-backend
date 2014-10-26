@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from .models import Song
-from rest_framework.templatetags.rest_framework import replace_query_param
-from rest_framework.compat import get_concrete_model
+from nickelodeon.models import Song, YouTubeDownloadTask
+
 
 class RelativeURLField(serializers.Field):
     """
@@ -32,3 +31,11 @@ class SongSerializer(serializers.ModelSerializer):
         model = Song
         fields = ('uuid', 'url', 'download_url', 'artist',
                   'title', 'filename', 'availability')
+
+
+class YouTubeDownloadTaskSerializer(serializers.ModelSerializer):
+    task_progress_url = RelativeURLField('get_task_url')
+
+    class Meta:
+        model = YouTubeDownloadTask
+        fields = ('video_id', 'task_progress_url', )

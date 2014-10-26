@@ -4,16 +4,15 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.decorators import permission_required
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import (ListAPIView, RetrieveUpdateAPIView,
+                                     ListCreateAPIView)
 from rest_framework.response import Response
-from rest_framework.exceptions import AuthenticationFailed
-
-from common_base.social.authentication import ApiKeyAuthentication
 from common_base.social.decorators import api_key_authentication
 
-from .serializers import SongSerializer
-from .tasks import fetch_youtube_video_infos
-from .models import Song
+from nickelodeon.serializers import (SongSerializer,
+                                     YouTubeDownloadTaskSerializer)
+from nickelodeon.tasks import fetch_youtube_video
+from nickelodeon.models import Song, YouTubeDownloadTask
 
 
 def x_accel_redirect(request, path, filename='',
@@ -54,10 +53,34 @@ def download_song(request, pk, extension=None):
     return x_accel_redirect(request, file_path, mime=mime)
 
 
-def import_from_youtube_url(request):
-    task = fetch_youtube_video_infos.s().delay()
-    task_id = str(task.task_id)
-    return HttpResponse(task_id)
+class YouTubeDownloadApiView(ListCreateAPIView):
+    """
+    Download YouTube Video API
+    q -- Search terms (Default: '')
+    page -- Page number (Default: 1)
+    results_per_page -- Number of result per page (Default:20 Max: 1000)
+    """
+    model = YouTubeDownloadTask
+    serializer_class = YouTubeDownloadTaskSerializer
+
+    def __init__(self):
+        self.paginate_by = 20
+        self.paginate_by_param = 'results_per_page'
+        self.max_paginate_by = 1000
+        super(YouTubeDownloadApiView, self).__init__()
+
+    def list(self, request, *args, **kwargs):
+        video_id = request.QUERY_PARAMS.get('v', '').strip()
+        if video_id:
+            object_list = self.model.objects.filter(video_id=video_id)
+        else:
+            object_list = self.model.objects.all()
+        page = self.paginate_queryset(object_list)
+        if page is not None:
+            serializer = self.get_pagination_serializer(page)
+        else:
+            serializer = self.get_serializer(object_list, many=True)
+        return Response(serializer.data)
 
 
 class SongView(RetrieveUpdateAPIView):
