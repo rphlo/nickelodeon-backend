@@ -202,11 +202,8 @@ def fetch_youtube_video(video_id=''):
     file_move_safe(aac_tmp_path, aac_path)
     file_move_safe(mp3_tmp_path, mp3_path)
     os.remove(download_path)
-    song = Song(filename=aac_path[len(settings.MEDIA_ROOT):-4],
-                title=safe_title)
-    song.save()
-    try:
-        YouTubeDownloadTask.objects.get(task_id=current_task.task_id).delete()
-    except YouTubeDownloadTask.DoesNotExist:
-        pass 
-    return song.pk
+    song_fn = aac_path[len(settings.MEDIA_ROOT):-4]
+    song, created = Song.objects.get_or_create(filename=song_fn,
+                                               defaults={'title': safe_title})
+    YouTubeDownloadTask.objects.filter(video_id=video_id).delete()
+    return {'pk': song.pk}

@@ -11,7 +11,6 @@ from common_base.social.decorators import api_key_authentication
 
 from nickelodeon.serializers import (SongSerializer,
                                      YouTubeDownloadTaskSerializer)
-from nickelodeon.tasks import fetch_youtube_video
 from nickelodeon.models import Song, YouTubeDownloadTask
 
 
