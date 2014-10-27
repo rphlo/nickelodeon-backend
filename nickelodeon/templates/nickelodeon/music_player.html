@@ -43,38 +43,41 @@
 <div class="row">
   <div class="col-sm-12">
       <p>
-          <kbd id="current_song_display"></kbd>
+          <kbd id="current_song_display" class="span-12"
+               style="display:block; width:auto; white-space:nowrap;overflow: hidden; text-overflow:ellipsis"></kbd>
       </p>
   </div>
   <div class="col-sm-12">
       <div style="float:left;margin-right:5px;">
         <div class="btn-group">
-          <a href="#" role="button" id="prev_button" class="btn btn-default">
+          <a href="#" role="button" class="btn btn-sm btn-default" id="prev_button">
               <i class="fa fa-backward"></i>
           </a>
-          <a href="#" role="button" id="play_pause_button" class="btn btn-default">
+          <a href="#" role="button" class="btn btn-sm btn-default" id="play_pause_button">
               <i class="fa fa-play"></i>
           </a>
-          <a href="#" role="button" id="next_button" class="btn btn-default">
+          <a href="#" role="button" class="btn btn-sm btn-default" id="next_button">
               <i class="fa fa-forward"></i>
           </a>
         </div>
         <div class="btn-group">
-          <button type="button" class="btn btn-default active" id="use_aac_button">AAC</button>
-          <button type="button" class="btn btn-default" id="use_mp3_button">MP3</button>
+          <button type="button" class="btn btn-sm btn-default active" id="use_aac_button">AAC</button>
+          <button type="button" class="btn btn-sm btn-default" id="use_mp3_button">MP3</button>
         </div>
         <div class="btn-group">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">
             <i class="fa fa-plus"></i>
           </button>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="#" id="youtube_import_btn">Import from YouTube</a></li>
+            <li><a href="#" id="youtube_import_btn"><i class="fa fa-lg fa-youtube"></i> Import from YouTube</a></li>
           </ul>
         </div>
       </div>
-      <div id="full_progress_bar" class="progress" style="margin-top:7px;">
-        <div id="progress_bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-          <span id="progress_bar_text"></span>
+      <div style="padding-top:6px;">
+        <div id="full_progress_bar" class="progress">
+          <div id="progress_bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <span id="progress_bar_text" style="color:#666"></span>
+          </div>
         </div>
       </div>
   </div>
@@ -164,12 +167,10 @@
         <h4 class="modal-title" id="youtubeModalLabel">Import from YouTube</h4>
       </div>
       <div class="modal-body">
-        <form role="form">
           <div class="form-group">
             <label for="id_song_artist">YouTube URL</label>
             <input type="text" class="form-control" id="id_youtube_url" placeholder="YouTube URL">
           </div>
-        </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -636,8 +637,12 @@
               title = [item.artist, item.title].join(' - ');
             }
             var edit_btn = $('<a>')
-                           .attr({'href':'#edit', 'title': 'edit'})
-                           .append($('<i>').addClass('fa fa-cog'))
+                           .attr({
+                             'href':'#edit', 'title': 'edit',
+                             'role': 'button', 'style':'float:right;margin-left:3px'
+                           })
+                           .addClass('btn btn-default btn-xs')
+                           .append($('<i>').addClass('fa fa-cog fa-lg'))
                            .on('click',
                                (function(song){
                                  return function(e){
