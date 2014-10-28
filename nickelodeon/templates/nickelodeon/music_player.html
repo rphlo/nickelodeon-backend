@@ -732,7 +732,7 @@
             return;
           }
           if(yt_vid_id){
-            $('#saving_change_i').show()
+            $('#downloading_yt_i').show();
             $.ajax({
               url: '/api/v1/youtube_dl/',
               type: 'POST',
@@ -861,6 +861,7 @@
         $('#play_history_table').html('');
         var play_history_copy = play_history.slice(0).reverse();
         $.each(play_history_copy, function(ii, item){
+          if(!item)return;
           var title = item.title;
           if(item.artist){
             title = [item.artist, item.title].join(' - ');
