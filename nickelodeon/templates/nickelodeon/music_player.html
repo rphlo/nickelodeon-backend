@@ -547,6 +547,7 @@
                 error:function(){
                 }
             });
+            $('#search_tab').tab('show');
         }
       };
 
@@ -584,7 +585,6 @@
       }
 
       var on_search_results = function(response){
-        $('#search_tab').click()
         var results = response.results;
         var search_query = '';
         var page = 1;
@@ -636,14 +636,39 @@
             if(item.artist){
               title = [item.artist, item.title].join(' - ');
             }
-            var edit_btn = $('<a>')
-                           .attr({
-                             'href':'#edit', 'title': 'edit',
-                             'role': 'button', 'style':'float:right;margin-left:3px'
-                           })
-                           .addClass('btn btn-default btn-xs')
-                           .append($('<i>').addClass('fa fa-cog fa-lg'))
-                           .on('click',
+            var option_btn = $('<div>')
+                            .addClass('dropdown')
+                            .append(
+                              $('<a>')
+                              .addClass('btn btn-default btn-xs')
+                              .attr({
+                                'href': '#',
+                                'title': 'option',
+                                'data-toggle': 'dropdown',
+                                'role': 'button',
+                                'style':'float:right; margin-left:3px;'
+                              })
+                              .append(
+                                $('<i>').addClass('fa fa-cog fa-lg')
+                              )
+                            );
+            var option_list = $('<ul>')
+                              .addClass('dropdown-menu text-left')
+                              .attr({
+                                'role': 'menu'
+                              })
+                              .appendTo(option_btn);
+            var edit_btn = $('<li>')
+                           .append(
+                             $('<a>')
+                             .attr({
+                               'href':'#edit',
+                               'title': 'edit'
+                             })
+                             .append($('<i>').addClass('fa fa-edit fa-lg'))
+                             .append(' Edit')
+                             .on(
+                               'click',
                                (function(song){
                                  return function(e){
                                    e.preventDefault();
@@ -651,7 +676,27 @@
                                    display_queue();
                                  }
                                })(item)
-                           );
+                             )
+                           ).appendTo(option_list);
+            var queue_btn = $('<li>')
+                            .append(
+                              $('<a>')
+                              .attr({
+                                'href':'#edit',
+                                'title': 'queue'
+                              })
+                              .append($('<i>').addClass('fa fa-plus-square fa-lg'))
+                              .append(' Add to queue')
+                              .on(
+                                'click',
+                                (function(song){
+                                  return function(e){
+                                    e.preventDefault();
+                                    push_to_queue(song);
+                                  }
+                                })(item)
+                              )
+                            ).appendTo(option_list);
             var link = $('<a>').text(title)
                                .attr({
                                  'title': item.filename,
@@ -667,13 +712,17 @@
                                    };
                                  }
                                })(item));
-            var el = $('<tr>').append(
-                       $('<td>').append(edit_btn)
-                                .append(' ')
-                                .append(link)
+            var el = $('<tr>')
+                     .append(
+                       $('<td>')
+                       .append(link)
+                     )
+                     .append(
+                       $('<td>')
+                       .addClass('text-right')
+                       .append(option_btn)
                      );
             $('#search_results_table').append(el);
-            $('#search_tab').tab('show');
           });
         }
       };
