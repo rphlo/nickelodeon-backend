@@ -34,6 +34,7 @@ var JukeBox = function(swf_path){
       'play_queue': null,
       'prefered_format': 'aac',
       'position': 0,
+      'loaded': 0,
       'current_song': new Song()
     },
     fetch: function(){
@@ -98,7 +99,7 @@ var JukeBox = function(swf_path){
           return;
       }
       console.log('autoplay '+auto_play)
-      soundManager.createSound({
+      var smsound = soundManager.createSound({
           id: song.id,
           url: song.get('download_url')+'.'+format,
           volume: 100,
@@ -107,7 +108,17 @@ var JukeBox = function(swf_path){
           multiShot: false,
           whileplaying: (function(_this){
             return function(){
-              _this.while_playing();
+              _this.while_playing(this);
+            }
+          })(this),
+          whileloading: (function(_this){
+            return function(){
+              _this.while_loading(this);
+            }
+          })(this),
+          onload: (function(_this){
+            return function(){
+              _this.while_loading(this);
             }
           })(this),
           onfinish: (function(_this){
@@ -116,20 +127,27 @@ var JukeBox = function(swf_path){
             }
           })(this)
       });
+      smsound.load()
     },
 
     jump_to_time: function(t){
       var  song = this.get('current_song'),
            sound = soundManager.getSoundById(song.id);
+      this.set('position', t);
       sound.setPosition(t*1000);
       console.log('jump to time '+t)
     },
 
-    while_playing: function(){
-      var song = this.get('current_song'),
-          sound = soundManager.getSoundById(song.id);
+    while_playing: function(sound){
+      var song = this.get('current_song');
       this.set('position', sound?sound.position/1e3:0);
       song.set('duration', sound?sound.durationEstimate/1e3:0);
+    },
+
+    while_loading: function(sound){
+      var song = this.get('current_song');
+      song.set('duration', sound.durationEstimate/1e3);
+      this.set('loaded', +new Date());
     },
 
     on_song_finish: function(){
@@ -159,6 +177,7 @@ var JukeBox = function(swf_path){
       while(soundManager.soundIDs.length>0){
         soundManager.destroySound(soundManager.soundIDs[0]);
       }
+      this.set('position', 0);
     },
 
     play_next: function(){
