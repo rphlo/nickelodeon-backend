@@ -47,23 +47,17 @@
     </div>
     <!-- Begin page content -->
     <div id="main_div">
-      <div class="container" >
+      <div class="container" id="jukebox_div">
         <div class="row" id="main_container" style="padding-top:15px">
-          <div class="col-md-4 col-sm-12" id="jukebox_div">
+          <div class="col-md-4 col-sm-12">
             <p>
               <kbd id="current_song_display" class="span-12" style="display:block; width:auto; white-space:nowrap;overflow: hidden; text-overflow:ellipsis">Unknow</kbd>
             </p>
             <div>
               <div class="btn-group">
-                <a role="button" class="btn btn-sm btn-default" id="prev_button">
-                  <i class="fa fa-backward"></i>
-                </a>
-                <a role="button" class="btn btn-sm btn-default" id="play_pause_button">
-                  <i class="fa fa-play"></i>
-                </a>
-                <a role="button" class="btn btn-sm btn-default" id="next_button">
-                  <i class="fa fa-forward"></i>
-                </a>
+                <a href="#" role="button" class="btn btn-sm btn-default" id="prev_button"><i class="fa fa-backward"></i></a>
+                <a href="#" role="button" class="btn btn-sm btn-default" id="play_pause_button"><i class="fa fa-play"></i></a>
+                <a href="#" role="button" class="btn btn-sm btn-default" id="next_button"><i class="fa fa-forward"></i></a>
               </div>
               <div class="btn-group">
                 <button type="button" class="btn btn-sm btn-default active" id="use_aac_button">AAC</button>
@@ -91,7 +85,7 @@
             <div class="input-group" style="margin-top:-15px;margin-bottom:15px;">
               <input id="search_input" type="text" class="form-control" placeholder="Search"/>
               <span class="input-group-btn">
-                <button id="start_search_button" class="btn btn-default" type="button">Search <i class="fa fa-search"></i></button>
+                <button id="search_button" class="btn btn-default" type="button">Search <i class="fa fa-search"></i></button>
               </span>
             </div>
           </div>
@@ -99,13 +93,15 @@
             <ul class="nav nav-tabs small" role="tablist" id="tab_selector">
               <li class="active"><a href="#queueTab" role="tab" data-toggle="tab"><i class="fa fa-database"></i> Queue</a></li>
               <li><a href="#historyTab" role="tab" data-toggle="tab"><i class="fa fa-book"></i> History</a></li>
-              <li><a href="#searchTab" role="tab" data-toggle="tab"><i class="fa fa-search"></i> Search results</a></li>
+              <li><a id="search_tab" href="#searchTab" role="tab" data-toggle="tab"><i class="fa fa-search"></i> Search results</a></li>
             </ul>
             <div class="tab-content">
               <div class="tab-pane scrollable" id="searchTab">
                 <div>
-                  <table class="table table-striped" id="search_results_table">
-                    <tr><td>No search so far.</td></tr>
+                  <table class="table table-striped">
+                    <tbody id="search_results_table">
+                      <tr><td>No search so far.</td></tr>
+                    </tbody>
                   </table>
                 </div>
               </div>
@@ -133,6 +129,43 @@
         </div>
       </div>
     </div>
+
+    <script type="text/template" id="search_loading_template">
+     <tr><td><i class="fa fa-circle-o-notch fa-spin"></i> Searching &quot;<%= query %>&quot;</td></tr>
+    </script>
+
+    <script type="text/template" id="search_no_results_template">
+     <tr><td><i class="fa fa-exclamation"></i> No result for &quot;<%= query %>&quot;</td></tr>
+    </script>
+
+    <script type="text/template" id="search_result_template">
+      <td>
+        <a href="/jukebox/<%= song.id %>"
+           title="<%= song.getDisplayText() %>" class="link_song">
+          <i class="fa fa-play"></i> <%- song.getDisplayText() %>
+        </a>
+      </td>
+      <td>
+        <div class="dropdown">
+          <a href="#"
+             class="btn btn-default btn-xs"
+             data-toggle="dropdown"
+             role="button"
+             title="Options"
+             style="float:right; margin-left: 3px;">
+            <i class="fa fa-cog fa-lg"></i>
+          </a>
+          <ul class="dropdown-menu text-left pull-right">
+            <li class="edit_song">
+              <a href="#"><i class="fa fa-edit"></i> Edit</a>
+            </li>
+            <li class="queue_song">
+              <a href="#"><i class="fa fa-level-down fa-rotate-90"></i> Queue</a>
+            </li>
+          </ul>
+        </div>
+      </td>
+    </script>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
