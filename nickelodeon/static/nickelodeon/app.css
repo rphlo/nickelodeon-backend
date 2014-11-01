@@ -9,7 +9,7 @@ body {
   margin-bottom: 50px;
 }
 .footer {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   width: 100%;
   /* Set the fixed height of the footer here */
@@ -42,4 +42,10 @@ body {
 
 code {
   font-size: 80%;
+}
+
+
+/* bootstrap fix */
+.modal-dialog {
+  z-index: 1050 !important;
 }

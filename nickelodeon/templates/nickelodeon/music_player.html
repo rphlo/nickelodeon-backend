@@ -60,8 +60,8 @@
                 <a href="#" role="button" class="btn btn-sm btn-default" id="next_button"><i class="fa fa-forward"></i></a>
               </div>
               <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-default active" id="use_aac_button">AAC</button>
-                <button type="button" class="btn btn-sm btn-default" id="use_mp3_button">MP3</button>
+                <a href="#" role="button" class="btn btn-sm btn-default active" id="use_aac_button">AAC</a>
+                <a href="#" role="button" class="btn btn-sm btn-default" id="use_mp3_button">MP3</a>
               </div>
               <div class="btn-group">
                 <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">
@@ -71,12 +71,12 @@
                   <li><a href="#" id="stop_next_button"><i class="fa fa-lg fa-stop"></i> Stop after current</a></li>
                   <li><a href="#" id="stop_end_queue_button"><i class="fa fa-lg fa-stop"></i> Stop at the end of the queue</a></li>
                   <li><a href="#" id="edit_current_button"><i class="fa fa-lg fa-edit"></i> Edit details</a></li>
-                  <li><a href="#" id="youtube_import_button"><i class="fa fa-lg fa-youtube"></i> Import from YouTube</a></li>
+                  <li><a href="#" id="open_yt_modal_button"><i class="fa fa-lg fa-youtube"></i> Import from YouTube</a></li>
                 </ul>
               </div>
             </div>
             <div style="padding-top:5px;">
-              <div id="full_progress_bar" class="progress">
+              <div id="full_progress_bar" class="progress" style="cursor: pointer">
                 <div id="progress_bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
                   <span id="progress_bar_text" style="color:#666;padding:5px">00:00/00:00</span>
                 </div>
@@ -93,7 +93,7 @@
             <ul class="nav nav-tabs small" role="tablist" id="tab_selector">
               <li class="active"><a href="#queueTab" role="tab" data-toggle="tab"><i class="fa fa-database"></i> Queue</a></li>
               <li><a href="#historyTab" role="tab" data-toggle="tab"><i class="fa fa-book"></i> History</a></li>
-              <li><a id="search_tab" href="#searchTab" role="tab" data-toggle="tab"><i class="fa fa-search"></i> Search results</a></li>
+              <li><a id="search_tab" href="#searchTab" role="tab" data-toggle="tab" class="hidden"><i class="fa fa-search"></i> Search results</a></li>
             </ul>
             <div class="tab-content">
               <div class="tab-pane scrollable" id="searchTab">
@@ -122,6 +122,26 @@
             </div>
           </div>
         </div>
+        <div class="modal fade" id="yt_modal" tabindex="-1" role="dialog" aria-labelledby="yt_modal_label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="yt_modal_label">Import from YouTube</h4>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="yt_url_input">YouTube URL</label>
+                  <input type="text" class="form-control" id="yt_url_input" placeholder="YouTube URL">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="download_yt_button"><span id="download_yt_submitting_i"><i class="fa fa-circle-o-notch fa-spin"></i> </span>Download</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="footer" id="main_footer">
         <div class="container">
@@ -131,17 +151,62 @@
     </div>
 
     <script type="text/template" id="search_loading_template">
-     <tr><td><i class="fa fa-circle-o-notch fa-spin"></i> Searching &quot;<%= query %>&quot;</td></tr>
+      <tr><td><i class="fa fa-circle-o-notch fa-spin"></i> Searching &quot;<%= query %>&quot;</td></tr>
+    </script>
+
+    <script type="text/template" id="search_more_template">
+      <tr><td><a href="#" class='search_more_button'><i class="fa fa-plus"></i> Search more</a></td></tr>
     </script>
 
     <script type="text/template" id="search_no_results_template">
-     <tr><td><i class="fa fa-exclamation"></i> No result for &quot;<%= query %>&quot;</td></tr>
+      <tr><td><i class="fa fa-exclamation"></i> No result for &quot;<%= query %>&quot;</td></tr>
+    </script>
+
+    <script type="text/template" id="empty_queue_template">
+      <tr><td><i class="fa fa-exclamation"></i> Nothing queued</td></tr>
+    </script>
+
+    <script type="text/template" id="queued_song_template">
+      <td>
+        <div class="btn-group">
+          <a href="#" class="move_up_button btn btn-default btn-xs <% if(is_first){ %>disabled<% }%>" role="button">
+            <i class="fa fa-chevron-up"></i>
+          </a>
+          <a href="#" class="move_down_button btn btn-default btn-xs <% if(is_last){ %>disabled<% }%>" role="button"s>
+            <i class="fa fa-chevron-down"></i>
+          </a>
+        </div>
+        <a href="/jukebox/<%= song.id %>"
+           title="<%= song.getDisplayText() %>" class="song_link">
+          <%- song.getDisplayText() %>
+        </a>
+      </td>
+      <td>
+        <div class="dropdown">
+          <a href="#"
+             class="btn btn-default btn-xs"
+             data-toggle="dropdown"
+             role="button"
+             title="Options"
+             style="float:right; margin-left: 3px;">
+            <i class="fa fa-cog fa-lg"></i>
+          </a>
+          <ul class="dropdown-menu text-left pull-right">
+            <li class="edit_song_button">
+              <a href="#"><i class="fa fa-edit"></i> Edit</a>
+            </li>
+            <li class="drop_queued_song_button">
+              <a href="#"><i class="fa fa-times"></i> Drop from queue</a>
+            </li>
+          </ul>
+        </div>
+      </td>
     </script>
 
     <script type="text/template" id="search_result_template">
       <td>
         <a href="/jukebox/<%= song.id %>"
-           title="<%= song.getDisplayText() %>" class="link_song">
+           title="<%= song.getDisplayText() %>" class="song_link">
           <i class="fa fa-play"></i> <%- song.getDisplayText() %>
         </a>
       </td>
@@ -156,10 +221,10 @@
             <i class="fa fa-cog fa-lg"></i>
           </a>
           <ul class="dropdown-menu text-left pull-right">
-            <li class="edit_song">
+            <li class="edit_song_button">
               <a href="#"><i class="fa fa-edit"></i> Edit</a>
             </li>
-            <li class="queue_song">
+            <li class="queue_song_button">
               <a href="#"><i class="fa fa-level-down fa-rotate-90"></i> Queue</a>
             </li>
           </ul>
@@ -183,7 +248,7 @@
         $(window).load(function(){
           // Console Decoration
           console.log('\n                          ___        ____\n                         /   \\      /   /\n      ________ _______  /    /___  /   /                     ___\n     /        /       \\/         \\/   /       ______  ____  /  /_\n    /     ___/__      /    _     /   /       /  __  \\/ _  \\/  __/\n   /    /   ___/     /    / /   /    \\__ __ /  / /  / ____/  /\n   \\___/   /     ___/\\___/  \\__/\\______//_//__/ /__/\\_____\\___\\\n          /    /\n          \\___/                            https://www.rphl.net/\n\n');
-          
+
           // apply enscroll
           $('#tab_selector a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             $(window).trigger('resize');
@@ -196,7 +261,7 @@
               });
             }
           );
-          
+
           // Vertical height adjustement
           var on_resize = function(){
             var height = $(window).height() - ($('#main_navbar').height() + $('#main_footer').height());
@@ -208,10 +273,10 @@
             $('.tab-pane.active').css('width', '100%')
           };
           $(window).on('resize', on_resize).trigger('resize');
-          
+
           // Background
           $.backstretch("{% static 'nickelodeon/wallpaper.jpg' %}");
-          
+
           // App
           var app = JukeBox("{% static 'vendor/soundmanager2/v297a-20140901/swf/' %}");
         });
