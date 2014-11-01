@@ -439,6 +439,46 @@ var JukeBox = function(swf_path){
       this.model.fetch();
       this.listenTo(this.model, "change", this.render);
       this.render({force:true});
+      $('#current_song_display').hover(function(){
+        var width = $('#current_song_display').css('width', '100%').width();
+        var target_width = $('#current_song_display').css('overflow', 'auto')[0].scrollWidth;
+        if(width>target_width){
+          return
+        }
+        $('#current_song_display').css('overflow', 'hidden');
+        $('#current_song_display').css('text-overflow', 'ellipsis');
+        $('#current_song_display').stop().animate(
+          {
+            'width': (target_width+5)+'px',
+            'margin-left': (width-target_width)+'px'
+          },
+          {
+            duration: (target_width-width)/50*1000,
+            complete: (function(){
+              return function(_w){
+                setTimeout(
+                  function(){
+                    $('#current_song_display').stop().animate({
+                      'width': _w,
+                      'margin-left': '0px',
+                      overflow: 'hidden',
+                      'text-overflow': 'ellipsis'
+                    },
+                    {
+                      complete: function(){
+                        $('#current_song_display').attr('style', 'white-space:nowrap; display: block; overflow: hidden; text-overflow:ellipsis');
+                      }
+                    });
+                  },
+                  1000
+                );
+              }
+            })(width)
+          }
+        )
+      },
+      function(){
+      });
     },
     render: function(options) {
       //console.log('rendering')
@@ -447,7 +487,8 @@ var JukeBox = function(swf_path){
       console.log(JB.changed)
       // title
       if(force || JB.changed.current_song || JB.get('current_song').getDisplayText() != $('#current_song_display').html()){
-        $('#current_song_display').html(JB.get('current_song').getDisplayText());
+        var title = JB.get('current_song').getDisplayText();
+        $('#current_song_display').attr('title', title).html(title);
       }
       // play pause button
       if(JB.soundManagerPlaying()){
