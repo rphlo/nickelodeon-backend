@@ -81,8 +81,8 @@ class Command(BaseCommand):
         if len(self.songs_to_remove) > 0:
             self.stdout.write(
                 u'Could not find %d %s' % (
-                    len(self.songs_to_add),
-                    pluralize('file', self.songs_to_add)
+                    len(self.songs_to_remove),
+                    pluralize('file', self.songs_to_remove)
                 )
             )
         if len(self.songs_to_find) > 0:
