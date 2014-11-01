@@ -278,7 +278,6 @@ var JukeBox = function(swf_path){
       });
     },
     search_more: function(callback){
-      this.set('searching', true);
       var url = this.get('search_more_link');
       if(!url){
         return
@@ -333,6 +332,14 @@ var JukeBox = function(swf_path){
     },
     move_queued_down: function(index){
       this.swap_queued(index+1, index);
+    },
+    switch_format: function(fmt){
+      this.set('prefered_format', fmt);
+      if(this.get_current_format != fmt){
+          var pos = this.get('position');
+          this.load_song();
+          this.jump_to_time(pos);
+      }
     }
   });
   var SearchResultView = Backbone.View.extend({
@@ -560,10 +567,10 @@ var JukeBox = function(swf_path){
           target_div.append($(template()));
         }
       }
-      if(force || JB.changed.search_results || JB.changed.search_query){
+      if(force || JB.changed.search_results || JB.changed.search_query || JB.changed.searching){
         var results = JB.get('search_results'),
             target_div = this.$el.find('#search_results_table');
-        target_div.html('');
+        target_div.html('')
         if(results.length > 0){
           _.each(results, function(song_data){
             var line = new SearchResultView({
@@ -670,11 +677,11 @@ var JukeBox = function(swf_path){
     },
     on_press_use_aac: function(e){
       e.preventDefault();
-      console.log("switch format aac")
+      this.model.switch_format('aac');
     },
     on_press_use_mp3: function(e){
       e.preventDefault();
-      console.log("switch format mp3")
+      this.model.switch_format('mp3');
     }
   });
   var player = null;
