@@ -72,7 +72,8 @@
                 <ul class="dropdown-menu" role="menu">
                   <li><a href="#" id="stop_next_button"><i class="fa fa-lg fa-stop"></i> Stop after current</a></li>
                   <li><a href="#" id="stop_end_queue_button"><i class="fa fa-lg fa-stop"></i> Stop at the end of the queue</a></li>
-                  <li><a href="#" id="edit_current_button"><i class="fa fa-lg fa-edit"></i> Edit details</a></li>
+                  <li><a href="#" id="edit_current_button"><i class="fa fa-lg fa-edit"></i> Edit</a></li>
+                  <li><a href="#" id="download_current_button"><i class="fa fa-lg fa-download"></i> Download</a></li>
                   <li><a href="#" id="open_yt_modal_button"><i class="fa fa-lg fa-youtube"></i> Import from YouTube</a></li>
                 </ul>
               </div>
@@ -165,7 +166,31 @@
     </script>
 
     <script type="text/template" id="played_song_template">
-      <td><%- song.getDisplayText() %></td>
+      <td>
+        <a href="/jukebox/<%= song.id %>"
+           title="<%= song.get('filename') %>" class="song_link">
+          <%= song.getDisplayText() %>
+        </a>
+      <td>
+        <div class="dropdown">
+          <a href="#"
+             class="btn btn-default btn-xs"
+             data-toggle="dropdown"
+             role="button"
+             title="Options"
+             style="float:right; margin-left: 3px;">
+            <i class="fa fa-cog fa-lg"></i>
+          </a>
+          <ul class="dropdown-menu text-left pull-right">
+            <li class="edit_song_button">
+              <a href="#"><i class="fa fa-edit"></i> Edit</a>
+            </li>
+            <li class="download_song_button">
+              <a href="#"><i class="fa fa-download"></i> Download</a>
+            </li>
+          </ul>
+        </div>
+      </td>
     </script>
 
     <script type="text/template" id="history_queue_template">
@@ -187,8 +212,8 @@
           </a>
         </div>
         <a href="/jukebox/<%= song.id %>"
-           title="<%= song.getDisplayText() %>" class="song_link">
-          <%- song.getDisplayText() %>
+           title="<%= song.get('filename') %>" class="song_link">
+          <%= song.getDisplayText() %>
         </a>
       </td>
       <td>
@@ -204,6 +229,9 @@
           <ul class="dropdown-menu text-left pull-right">
             <li class="edit_song_button">
               <a href="#"><i class="fa fa-edit"></i> Edit</a>
+            </li>
+            <li class="download_song_button">
+              <a href="#"><i class="fa fa-download"></i> Download</a>
             </li>
             <li class="drop_queued_song_button">
               <a href="#"><i class="fa fa-times"></i> Drop from queue</a>
@@ -216,8 +244,8 @@
     <script type="text/template" id="search_result_template">
       <td>
         <a href="/jukebox/<%= song.id %>"
-           title="<%= song.getDisplayText() %>" class="song_link">
-          <i class="fa fa-play"></i> <%- song.getDisplayText() %>
+           title="<%= song.get('filename') %>" class="song_link">
+          <i class="fa fa-play"></i> <%= song.getDisplayText() %>
         </a>
       </td>
       <td>
@@ -233,6 +261,9 @@
           <ul class="dropdown-menu text-left pull-right">
             <li class="edit_song_button">
               <a href="#"><i class="fa fa-edit"></i> Edit</a>
+            </li>
+            <li class="download_song_button">
+              <a href="#"><i class="fa fa-download"></i> Download</a>
             </li>
             <li class="queue_song_button">
               <a href="#"><i class="fa fa-level-down fa-rotate-90"></i> Queue</a>

@@ -225,7 +225,7 @@ var JukeBox = function(swf_path){
     play_prev: function(){
       var prev_song = this.pull_played();
       if(prev_song){
-        this.queue_next(this.get('current_song'));    
+        this.queue_next(this.get('current_song'));
         this.switch_song(prev_song, false);
       }
     },
@@ -372,7 +372,8 @@ var JukeBox = function(swf_path){
     events: {
       'click .song_link': 'press_song_link',
       'click .edit_song_button': 'press_edit_song',
-      'click .queue_song_button': 'press_queue_song'
+      'click .queue_song_button': 'press_queue_song',
+      'click .download_song_button': 'press_download_song'
     },
     initialize: function(options){
       this.player = options.player
@@ -394,6 +395,10 @@ var JukeBox = function(swf_path){
     press_edit_song: function(e){
       e.preventDefault();
     },
+    press_download_song: function(e){
+      e.preventDefault();
+      window.open(this.model.get('download_url'));
+    },
     press_queue_song: function(e){
       e.preventDefault();
       this.player.queue_song(this.model);
@@ -402,6 +407,11 @@ var JukeBox = function(swf_path){
   var PlayedSongView = Backbone.View.extend({
     tagName: '<tr>',
     template: _.template($('#played_song_template').html()),
+    events: {
+      'click .song_link': 'press_song_link',
+      'click .edit_song_button': 'press_edit_song',
+      'click .download_song_button': 'press_download_song'
+    },
     initialize: function(options){
       this.player = options.player
       this.listenTo(this.model, 'change', this.render);
@@ -412,6 +422,22 @@ var JukeBox = function(swf_path){
         song: this.model
       }));
       return this
+    },
+    press_song_link: function(e){
+      e.preventDefault()
+      if(e.ctrlKey){
+        this.player.drop_queued(this.order_index);
+      } else {
+        this.player.switch_song(this.model)
+      }
+    },
+    press_edit_song: function(e){
+      e.preventDefault();
+      console.log('edit song '+this.model.id);
+    },
+    press_download_song: function(e){
+      e.preventDefault();
+      window.open(this.model.get('download_url'));
     }
   });
   var QueuedSongView = Backbone.View.extend({
@@ -420,6 +446,7 @@ var JukeBox = function(swf_path){
     events: {
       'click .song_link': 'press_song_link',
       'click .edit_song_button': 'press_edit_song',
+      'click .download_song_button': 'press_download_song',
       'click .move_up_button': 'press_move_up',
       'click .move_down_button': 'press_move_down',
       'click .drop_queued_song_button': 'press_drop_queued_song'
@@ -451,6 +478,10 @@ var JukeBox = function(swf_path){
       e.preventDefault();
       console.log('edit song '+this.model.id);
     },
+    press_download_song: function(e){
+      e.preventDefault();
+      window.open(this.model.get('download_url'));
+    },
     press_move_up: function(e){
       e.preventDefault();
       this.player.move_queued_up(this.order_index);
@@ -479,7 +510,9 @@ var JukeBox = function(swf_path){
       "keyup #yt_url_input": "on_type_yt_url",
       "click #use_aac_button": "on_press_use_aac",
       "click #use_mp3_button": "on_press_use_mp3",
-      "click .search_more_button": "on_press_search_more"
+      "click .search_more_button": "on_press_search_more",
+      "click #edit_current_button": "on_press_edit_song",
+      "click #download_current_button": "on_press_download_song",
     },
     initialize: function() {
       this.model.fetch();
@@ -695,6 +728,14 @@ var JukeBox = function(swf_path){
     on_press_download_yt: function(e){
       e.preventDefault();
       this.submit_yt_download();
+    },
+    on_press_edit_song: function(e){
+      e.preventDefault();
+      console.log('edit current song')
+    },
+    on_press_download_song: function(e){
+      e.preventDefault();
+      window.open(this.model.get('current_song').get('download_url'));
     },
     on_type_yt_url: function(e){
       if(e.keyCode == 13){
