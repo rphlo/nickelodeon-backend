@@ -164,6 +164,14 @@
       <tr><td><i class="fa fa-exclamation"></i> No result for &quot;<%= query %>&quot;</td></tr>
     </script>
 
+    <script type="text/template" id="played_song_template">
+      <td><%- song.getDisplayText() %></td>
+    </script>
+
+    <script type="text/template" id="history_queue_template">
+      <tr><td><i class="fa fa-exclamation"></i> Nothing played</td></tr>
+    </script>
+
     <script type="text/template" id="empty_queue_template">
       <tr><td><i class="fa fa-exclamation"></i> Nothing queued</td></tr>
     </script>
