@@ -745,7 +745,7 @@ var JukeBox = function(swf_path){
     submit_yt_download: function(){
       var yt_video_id_re = [
             {pos: 1, re: /^([a-zA-Z0-9_-]{11})$/},
-            {pos: 3, re: /^(https?:\/\/)?www\.youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_-]{11})(&.*)?$/},
+            {pos: 4, re: /^(https?:\/\/)?(www\.|m\.)?youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_-]{11})(&.*)?$/},
             {pos: 2, re: /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})(\?.*)?$/},
           ],
           video_id = null,
