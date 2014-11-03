@@ -2,9 +2,7 @@ var JukeBox = function(swf_path){
   var PLAYING = 1,
       PAUSED = 0,
       HISTORY_MAX_LENGTH = 50,
-      SEARCH_RESULTS_PER_PAGE = 50,
-      ongoing_search_request = null
-      state = null;
+      SEARCH_RESULTS_PER_PAGE = 50;
 
   var Song = Backbone.Model.extend({
     idAttribute: "uuid",
@@ -14,11 +12,11 @@ var JukeBox = function(swf_path){
     },
     getDisplayText: function(){
       if(this.get('artist')){
-        return [this.get('artist'), this.get('title')].join(' - ')
+        return [this.get('artist'), this.get('title')].join(' - ');
       }else if(this.get('title')){
-        return this.get('title')
+        return this.get('title');
       }else{
-        return "Unknown"
+        return "-";
       }
     }
   });
@@ -39,36 +37,14 @@ var JukeBox = function(swf_path){
     },
     fetch: function(){
       var data = $.jStorage.get("nickelodeon_options_v2", this.defaults);
-      console.log(data)
+      console.log(data);
     },
     save: function(){
       var data = _.clone(this.attributes);
-      delete data['current_song']
+      delete data.current_song;
       $.jStorage.set("nickelodeon_options_v2", data);
     },
-    fetchCurrentSong: function(on_success, on_error){
-      console.log('fetch current song')
-      var song = new Song({
-        'uuid':this.get('current_song_uuid')
-      });
-      song.fetch({
-        success:(function(_this){
-          return function(model, response, options){
-            _this.set('current_song', model);
-            if(on_success){
-              on_success();
-            }
-          }
-        })(this),
-        error: function(){
-          if(on_error){
-            on_error();
-          }
-        }
-      });
-    },
     toogle_play_pause: function(){
-      console.log('toogle play pause')
       var sound_id = soundManager.soundIDs[0];
       if(this.get('play_state') == PLAYING){
         soundManager.pause(sound_id);
@@ -79,8 +55,7 @@ var JukeBox = function(swf_path){
       }
     },
     switch_song: function(song, add_to_history){
-      add_to_history = add_to_history===false?false:true;
-        console.log("----------", song, add_to_history, this.get('current_song'))
+      add_to_history = (add_to_history===false)? false: true;
       if(add_to_history && this.get('current_song')){
         this.set_played(this.get('current_song'));
       }
@@ -97,9 +72,9 @@ var JukeBox = function(swf_path){
       if(!avail){
         return;
       }
-      if(avail['aac'] && (this.get('prefered_format') == 'aac' || !avail['mp3'])){
+      if(avail.aac && (this.get('prefered_format') == 'aac' || !avail.mp3)){
           return 'aac';
-      } else if(avail['mp3']){
+      } else if(avail.mp3){
           return 'mp3';
       } else {
           return;
@@ -107,11 +82,10 @@ var JukeBox = function(swf_path){
     },
     load_song:function(replace_url){
       this.stop();
-      console.log('loading song '+this.get('current_song').id)
-      replace_url = replace_url===null?true:replace_url;
-      router.navigate('/'+this.get('current_song').id, {trigger: false, replace:replace_url})
+      replace_url = (replace_url===false)? false: true;
+      router.navigate('/'+this.get('current_song').id, {trigger: false, replace: replace_url});
       var song, auto_play, format, mime;
-      auto_play = (this.get('play_state')==PLAYING)?true:false;
+      auto_play = (this.get('play_state')==PLAYING)? true: false;
       song = this.get('current_song');
       if(!song){
         this.play_next();
@@ -123,9 +97,9 @@ var JukeBox = function(swf_path){
             return function(model, response, options){
               _this.set('current_song', model);
               _this.load_song(false);
-            }
+            };
           })(this)
-        })
+        });
         return;
       }
       format = this.get_current_format();
@@ -144,53 +118,48 @@ var JukeBox = function(swf_path){
           whileplaying: (function(_this){
             return function(){
               _this.while_playing(this);
-            }
+            };
           })(this),
           whileloading: (function(_this){
             return function(){
               _this.while_loading(this);
-            }
+            };
           })(this),
           onload: (function(_this){
             return function(){
               _this.while_loading(this);
-            }
+            };
           })(this),
           onfinish: (function(_this){
             return function(){
               _this.on_song_finish();
-            }
+            };
           })(this)
       });
       smsound.load();
     },
-
     jump_to_time: function(t){
       var  song = this.get('current_song'),
            sound = soundManager.getSoundById(song.id);
       this.set('position', t);
       sound.setPosition(t*1e3);
-      console.log('jump to time '+t)
     },
-
     while_playing: function(sound){
       var song = this.get('current_song');
       this.set('position', sound?sound.position/1e3:0);
       song.set('duration', sound?sound.durationEstimate/1e3:0);
     },
-
     while_loading: function(sound){
       var song = this.get('current_song');
       song.set('duration', sound.durationEstimate/1e3);
       this.set('loaded', +new Date());
     },
-
     on_song_finish: function(){
       console.log('song finished');
       if(this.get('stop_after_current')){
         this.stop();
         this.set('play_state', PAUSED);
-        this.set('stop_after_current', false)
+        this.set('stop_after_current', false);
         this.load_song();
         return;
       }
@@ -198,11 +167,11 @@ var JukeBox = function(swf_path){
     },
     soundManagerPlaying:function(){
         var sound_id = soundManager.soundIDs[0];
-        var sound = soundManager.getSoundById(sound_id)
+        var sound = soundManager.getSoundById(sound_id);
         if(sound){
-          return !sound.paused && sound.playState!=0;
+          return !sound.paused && sound.playState!==0;
         }
-        return false
+        return false;
     },
     stop:function(){
       console.log('stop');
@@ -213,12 +182,13 @@ var JukeBox = function(swf_path){
       this.set('position', 0);
     },
     play_next: function(){
-      console.log('play_next')
       var next_song = this.pull_queued();
       if(next_song){
         this.switch_song(next_song);
       }else{
-        this.fetch_random_song(function(jb, song){jb.switch_song(song)});
+        this.fetch_random_song(function(jb, song){
+          jb.switch_song(song);
+        });
         this.stop();
       }
     },
@@ -230,7 +200,6 @@ var JukeBox = function(swf_path){
       }
     },
     fetch_random_song: function(callback, page){
-      console.log('fetching random')
       var index = page || Math.floor(Math.random()*this.get('songs_count'))+1;
       $.ajax({
         type: "GET",
@@ -242,17 +211,15 @@ var JukeBox = function(swf_path){
         dataType: "JSON",
         success: (function(model){
           return function(response){
-            console.log('fetched random song')
             model.set('songs_count', response.count);
             if(response.count > 0){
-                var song = new Song(response.results[0])
+                var song = new Song(response.results[0]);
                 callback(model, song);
             }
-          }
+          };
         })(this),
         error: function(xhr, tStatus, err){
-          console.log('error fetching random song: '+err)
-          if(xhr.status === 404 && current_index !== 1){
+          if(xhr.status === 404 && page !== 1){
             this.fetch_random_song(callback, 1);
           } else if(xhr.status === 403) {
             window.reload();
@@ -274,21 +241,29 @@ var JukeBox = function(swf_path){
           'page': 1
         },
         dataType: "JSON",
-        success: (function(_this, _cb){return _this.on_search_response(_this, _cb)})(this, callback),
-        error: (function(_this){return _this.on_search_response;})(this)
+        success: (function(_this, _cb){
+          return _this.on_search_response(_this, _cb);
+        })(this, callback),
+        error: (function(_this){
+          return _this.on_search_error;
+        })(this)
       });
     },
     search_more: function(callback){
       var url = this.get('search_more_link');
       if(!url){
-        return
+        return;
       }
       $.ajax({
         type: "GET",
         url: url,
         dataType: "JSON",
-        success: (function(_this, _cb){return _this.on_search_response(_this, _cb)})(this, callback),
-        error: (function(_this){return _this.on_search_response;})(this)
+        success: (function(_this, _cb){
+          return _this.on_search_response(_this, _cb);
+        })(this, callback),
+        error: (function(_this){
+          return _this.on_search_error;
+        })(this)
       });
     },
     on_search_response: function(_this, callback){
@@ -298,15 +273,15 @@ var JukeBox = function(swf_path){
         if(response.results.length>0){
           var results = _this.get('search_results');
           _this.set('search_results', results.concat(response.results));
-          console.log(_this.get('search_results'))
         }
         if(callback){
-          callback()
+          callback();
         }
-      }
+      };
     },
     on_search_error:function(xhr, tStatus, err){
-      console.log('error searching songs for given keyword: '+err)
+      // TODO: Do something smart
+      console.log('error searching songs for given keyword: '+err);
     },
     queue_next: function(song){
       var queue = _.clone(this.get('play_queue'));
@@ -319,8 +294,8 @@ var JukeBox = function(swf_path){
       this.set('play_queue', queue);
     },
     pull_queued: function(){
-      var queue = _.clone(this.get('play_queue'));
-      song = queue.pop();
+      var queue = _.clone(this.get('play_queue')),
+          song = queue.pop();
       this.set('play_queue', queue);
       return song;
     },
@@ -360,12 +335,13 @@ var JukeBox = function(swf_path){
       this.set('play_history', played);
     },
     pull_played: function(){
-      var played = _.clone(this.get('play_history'));
-      var song = played.shift();
+      var played = _.clone(this.get('play_history')),
+      		song = played.shift();
       this.set('play_history', played);
-      return song
+      return song;
     }
   });
+
   var SearchResultView = Backbone.View.extend({
     tagName: '<tr>',
     template: _.template($('#search_result_template').html()),
@@ -376,19 +352,19 @@ var JukeBox = function(swf_path){
       'click .download_song_button': 'press_download_song'
     },
     initialize: function(options){
-      this.player = options.player
+      this.player = options.player;
       this.listenTo(this.model, 'change', this.render);
-      this.render()
+      this.render();
     },
     render: function(){
       this.$el.html(this.template({song: this.model}));
-      return this
+      return this;
     },
     press_song_link: function(e){
       e.preventDefault();
       if(e.ctrlKey){
         this.player.queue_song(this.model);
-      } else {
+      } else {
         this.player.switch_song(this.model);
       }
     },
@@ -404,6 +380,7 @@ var JukeBox = function(swf_path){
       this.player.queue_song(this.model);
     }
   });
+
   var PlayedSongView = Backbone.View.extend({
     tagName: '<tr>',
     template: _.template($('#played_song_template').html()),
@@ -413,22 +390,22 @@ var JukeBox = function(swf_path){
       'click .download_song_button': 'press_download_song'
     },
     initialize: function(options){
-      this.player = options.player
+      this.player = options.player;
       this.listenTo(this.model, 'change', this.render);
-      this.render()
+      this.render();
     },
     render: function(){
       this.$el.html(this.template({
         song: this.model
       }));
-      return this
+      return this;
     },
     press_song_link: function(e){
-      e.preventDefault()
+      e.preventDefault();
       if(e.ctrlKey){
         this.player.drop_queued(this.order_index);
-      } else {
-        this.player.switch_song(this.model)
+      } else {
+        this.player.switch_song(this.model);
       }
     },
     press_edit_song: function(e){
@@ -440,6 +417,7 @@ var JukeBox = function(swf_path){
       window.open(this.model.get('download_url'));
     }
   });
+
   var QueuedSongView = Backbone.View.extend({
     tagName: '<tr>',
     template: _.template($('#queued_song_template').html()),
@@ -452,11 +430,11 @@ var JukeBox = function(swf_path){
       'click .drop_queued_song_button': 'press_drop_queued_song'
     },
     initialize: function(options){
-      this.player = options.player
+      this.player = options.player;
       this.order_index = options.order_index;
       this.is_last = options.is_last;
       this.listenTo(this.model, 'change', this.render);
-      this.render()
+      this.render();
     },
     render: function(){
       this.$el.html(this.template({
@@ -464,14 +442,14 @@ var JukeBox = function(swf_path){
         is_first: this.order_index===0,
         is_last:this.is_last
       }));
-      return this
+      return this;
     },
     press_song_link: function(e){
-      e.preventDefault()
+      e.preventDefault();
       if(e.ctrlKey){
         this.player.drop_queued(this.order_index);
-      } else {
-        this.player.switch_song(this.model)
+      } else {
+        this.player.switch_song(this.model);
       }
     },
     press_edit_song: function(e){
@@ -494,7 +472,8 @@ var JukeBox = function(swf_path){
       e.preventDefault();
       this.player.drop_queued(this.order_index);
     }
-  })
+  });
+
   var JukeBoxView = Backbone.View.extend({
     el: $('#jukebox_div'),
     model: new JukeBoxState(),
@@ -512,17 +491,17 @@ var JukeBox = function(swf_path){
       "click #use_mp3_button": "on_press_use_mp3",
       "click .search_more_button": "on_press_search_more",
       "click #edit_current_button": "on_press_edit_song",
-      "click #download_current_button": "on_press_download_song",
+      "click #download_current_button": "on_press_download_song"
     },
     initialize: function() {
       this.model.fetch();
       this.listenTo(this.model, "change", this.render);
       this.render({force:true});
-      $('#current_song_display').hover(function(){
+      $('#current_song_display').hover(function(){ //onmouseenter
         var width = $('#current_song_display').css('width', '100%').width();
         var target_width = $('#current_song_display').css('overflow', 'auto')[0].scrollWidth;
         if(width>target_width){
-          return
+          return;
         }
         $('#current_song_display').css('overflow', 'hidden');
         $('#current_song_display').css('text-overflow', 'ellipsis');
@@ -551,19 +530,21 @@ var JukeBox = function(swf_path){
                   },
                   1000
                 );
-              }
+              };
             })(width)
           }
-        )
+        );
       },
-      function(){
+      function(){ //onmouseleave
       });
     },
     render: function(options) {
-      //console.log('rendering')
-      var JB = this.model;
-          force = options.force||false;
-      console.log(JB.changed)
+      var JB = this.model,
+          force,
+          results,
+          div_template,
+          target_div;
+      force = (options.force||false);
       // title
       if(force || JB.changed.current_song || JB.get('current_song').getDisplayText() != $('#current_song_display').html()){
         var title = JB.get('current_song').getDisplayText();
@@ -571,9 +552,13 @@ var JukeBox = function(swf_path){
       }
       // play pause button
       if(JB.soundManagerPlaying()){
-        $('#play_pause_button > i').addClass('fa-pause').removeClass('fa-play')
+        $('#play_pause_button > i')
+        .addClass('fa-pause')
+        .removeClass('fa-play');
       }else{
-        $('#play_pause_button > i').addClass('fa-play').removeClass('fa-pause')
+        $('#play_pause_button > i')
+        .addClass('fa-play')
+        .removeClass('fa-pause');
       }
       // format selector
       if(JB.get_current_format()){
@@ -600,13 +585,15 @@ var JukeBox = function(swf_path){
       // progress bar
       if(force || JB.changed.position !== undefined || JB.get('current_song') && JB.get('current_song').changed.duration !== undefined){
         var printTime = function(t){
-          if(t==-1){ return '?'}
+          if(t==-1){
+            return '?';
+          }
           var mf = Math.floor,
               to2digits = function(x){return ('0'+mf(x)).slice(-2);},
               txt = t>3600?mf(t/3600)+':':'';
           txt += to2digits((t/60)%60)+':'+to2digits(t%60);
           return txt;
-        }
+        };
         var progress_txt = [
           printTime(JB.get('position')),
           printTime(JB.get('current_song').get('duration'))
@@ -616,16 +603,16 @@ var JukeBox = function(swf_path){
           var perc = JB.get('position')/JB.get('current_song').get('duration')*100;
           $('#progress_bar').css('width', perc+'%').attr('aria-valuenow', perc);
         }else{
-          $('#progress_bar').css('width', '100%').attr('aria-valuenow', perc);
+          $('#progress_bar').css('width', '100%').attr('aria-valuenow', '100');
         }
       }
+      // history
       if(force || JB.changed.play_history){
-        var results = JB.get('play_history'),
-            target_div = this.$el.find('#play_history_table');
-        console.log(results)
+        target_div = this.$el.find('#play_history_table');
+        results = JB.get('play_history');
         target_div.html('');
         if(results.length > 0){
-          _.each(results, function(song, order_index){
+          _.each(results, function(song){
             var line = new PlayedSongView({
               model:song,
               player:JB
@@ -633,13 +620,13 @@ var JukeBox = function(swf_path){
             target_div.append(line.render().el);
           });
         } else {
-          var template = _.template($('#empty_queue_template').html());
-          target_div.append($(template()));
+          div_template = _.template($('#empty_queue_template').html());
+          target_div.append($(div_template()));
         }
       }
       if(force || JB.changed.play_queue){
-        var results = JB.get('play_queue'),
-            target_div = this.$el.find('#play_queue_table');
+        results = JB.get('play_queue');
+        target_div = this.$el.find('#play_queue_table');
         target_div.html('');
         if(results.length > 0){
           _.each(results, function(song, order_index){
@@ -652,14 +639,14 @@ var JukeBox = function(swf_path){
             target_div.append(line.render().el);
           });
         } else {
-          var template = _.template($('#empty_queue_template').html());
-          target_div.append($(template()));
+          div_template = _.template($('#empty_queue_template').html());
+          target_div.append($(div_template()));
         }
       }
       if(force || JB.changed.search_results || JB.changed.search_query || JB.changed.searching){
-        var results = JB.get('search_results'),
-            target_div = this.$el.find('#search_results_table');
-        target_div.html('')
+        results = JB.get('search_results');
+        target_div = this.$el.find('#search_results_table');
+        target_div.html('');
         if(results.length > 0){
           _.each(results, function(song_data){
             var line = new SearchResultView({
@@ -669,30 +656,30 @@ var JukeBox = function(swf_path){
             target_div.append(line.render().el);
           });
           if(JB.get('search_more_link')){
-            var template = _.template($('#search_more_template').html());
-            target_div.append($(template({link: JB.get('search_more_link')})));
+            div_template = _.template($('#search_more_template').html());
+            target_div.append($(div_template({link: JB.get('search_more_link')})));
           }
         } else {
           if(JB.get('searching')===true){
-            var template = _.template($('#search_loading_template').html());
-            target_div.append($(template({query: JB.get('search_query')})));
+            div_template = _.template($('#search_loading_template').html());
+            target_div.append($(div_template({query: JB.get('search_query')})));
           }else{
-            var template = _.template($('#search_no_results_template').html());
-            target_div.append($(template({query: JB.get('search_query')})));
+            div_template = _.template($('#search_no_results_template').html());
+            target_div.append($(div_template({query: JB.get('search_query')})));
           }
         }
       }
     },
     on_press_next: function(e){
-      e.preventDefault()
+      e.preventDefault();
       this.model.play_next();
-    } ,
+    },
     on_press_prev: function(e){
-      e.preventDefault()
+      e.preventDefault();
       this.model.play_prev();
     },
     on_press_play_pause: function(e){
-      e.preventDefault()
+      e.preventDefault();
       this.model.toogle_play_pause();
     },
     on_press_progress_bar: function(e){
@@ -702,11 +689,11 @@ var JukeBox = function(swf_path){
     },
     on_type_search: function(e){
       if(e.keyCode == 13){
-        this.submit_search()
+        this.submit_search();
       }
     },
     on_press_search: function(e){
-      this.submit_search()
+      this.submit_search();
     },
     submit_search: function(){
       var keyword = this.$el.find('#search_input').val();
@@ -731,7 +718,7 @@ var JukeBox = function(swf_path){
     },
     on_press_edit_song: function(e){
       e.preventDefault();
-      console.log('edit current song')
+      console.log('edit current song');
     },
     on_press_download_song: function(e){
       e.preventDefault();
@@ -746,7 +733,7 @@ var JukeBox = function(swf_path){
       var yt_video_id_re = [
             {pos: 1, re: /^([a-zA-Z0-9_-]{11})$/},
             {pos: 4, re: /^(https?:\/\/)?(www\.|m\.)?youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_-]{11})(&.*)?$/},
-            {pos: 2, re: /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})(\?.*)?$/},
+            {pos: 2, re: /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})(\?.*)?$/}
           ],
           video_id = null,
           user_val = $('#yt_url_input').val();
@@ -758,14 +745,19 @@ var JukeBox = function(swf_path){
       if(video_id){
         // TODO: Move away from view
         $('#download_yt_submitting_i').show();
-        $.ajax({
-          url: '/api/v1/youtube_dl/',
-          type: 'POST',
-          dataType: 'JSON',
-          data: {video_id: video_id}
-        }).success(
+        $.ajax(
+          {
+            url: '/api/v1/youtube_dl/',
+            type: 'POST',
+            dataType: 'JSON',
+            data: {
+              video_id: video_id
+            }
+          }
+        ).success(
           function(response){
             $('#yt_modal').modal('hide');
+            // TODO: track import process
           }
         );
       } else {
@@ -781,6 +773,7 @@ var JukeBox = function(swf_path){
       this.model.switch_format('mp3');
     }
   });
+
   var player = null;
 
   var init = function(){
@@ -794,7 +787,6 @@ var JukeBox = function(swf_path){
       // preferFlash: false,
       onready: function() {
         // Ready to use; soundManager.createSound() etc. can now be called.
-        console.log('SM2 ready')
         player = new JukeBoxView();
         if(!Backbone.history.start({
           hasChange: true,
@@ -802,12 +794,12 @@ var JukeBox = function(swf_path){
           root: "/jukebox/"
         })){
           // No Song playing...
-          console.log('Player initialized pick random')
           player.model.play_next();
-        };
+        }
       }
     });
-  }
+  };
+
   var router = new (Backbone.Router.extend({
     initialize: function(options){
       // Matches /<uuid>/,
@@ -819,4 +811,4 @@ var JukeBox = function(swf_path){
     }
   }))();
   init();
-}
+};
