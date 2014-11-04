@@ -555,7 +555,7 @@
         var query_re = /(\?|&)q=([^&]+)/;
         var matches = link.match(query_re)
         if(matches){
-          return decodeURIComponent(matches[2]);
+          return decodeURIComponent(matches[2].replace(/\+/g, '%20'));
         }
         return ''
       };
