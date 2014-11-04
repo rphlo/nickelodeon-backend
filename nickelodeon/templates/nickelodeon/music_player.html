@@ -757,7 +757,7 @@
       $('#youtube_import_btn').on('click', function(e){
         e.preventDefault();
         var yt_vid_re = /^[a-zA-Z0-9_-]{11}$/,
-            yt_full_url_re = /^(https?:\/\/)?www\.youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_-]{11})(&.*)?$/,
+            yt_full_url_re = /^(https?:\/\/)?(www\.|m\.)?youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_-]{11})(&.*)?$/,
             yt_short_url_re = /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})(\?.*)?$/,
             yt_vid_id = null;
         $('#downloading_yt_i').hide();
@@ -773,9 +773,9 @@
           if(yt_vid_re.test(yt_link)){
             yt_vid_id = yt_link;
           } else if(yt_full_url_re.test(yt_link)){
-            yt_vid_id = yt_link.match(yt_full_url_re)[3];
+            yt_vid_id = yt_link.match(yt_full_url_re)[4];
           }else if(yt_short_url_re.test(yt_link)){
-            yt_vid_id = yt_link.match(yt_short_url_re)[1];
+            yt_vid_id = yt_link.match(yt_short_url_re)[2];
           }else{
             alert("Could not recognize YouTube URL")
             return;
