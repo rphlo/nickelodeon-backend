@@ -394,6 +394,7 @@ $(document).ajaxSend(function(event, xhr, settings) {
 
           // App
           var app = JukeBox("{% static 'vendor/soundmanager2/v297a-20140901/swf/' %}");
+          $(window).bind('beforeunload', function(){return "Are you sure?";});
         });
       })(jQuery);
     </script>

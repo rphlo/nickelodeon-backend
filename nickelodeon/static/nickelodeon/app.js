@@ -37,11 +37,20 @@ var JukeBox = function(swf_path){
     },
     fetch: function(){
       var data = $.jStorage.get("nickelodeon_options_v2", this.defaults);
-      console.log(data);
+      data.play_history = _.map(data.play_history_ids, function(s){return new Song(s);});
+      data.play_queue = _.map(data.play_queue_ids, function(s){return new Song(s);});
+      delete data.play_history_ids;
+      delete data.play_queue_ids;
+      this.set(data);
     },
     save: function(){
       var data = _.clone(this.attributes);
+      data.play_history_ids = _.map(data.play_history, function(s){return {uuid: s.id, title: s.getDisplayText()};});
+      data.play_queue_ids = _.map(data.play_queue, function(s){return {uuid: s.id, title: s.getDisplayText()};});
       delete data.current_song;
+      delete data.play_history;
+      delete data.play_queue;
+      delete data.search_results;
       $.jStorage.set("nickelodeon_options_v2", data);
     },
     toogle_play_pause: function(){
@@ -272,7 +281,7 @@ var JukeBox = function(swf_path){
         _this.set('search_more_link', response.next);
         if(response.results.length>0){
           var results = _this.get('search_results');
-          _this.set('search_results', results.concat(response.results));
+          _this.set('search_results', results.concat(_.map(response.results, function(s){return new Song(s);})));
         }
         if(callback){
           callback();
@@ -591,6 +600,7 @@ var JukeBox = function(swf_path){
           results,
           div_template,
           target_div;
+      JB.save();
       force = (options.force||false);
       // title
       if(force || JB.changed.current_song || JB.get('current_song').getDisplayText() != $('#current_song_display').html()){
@@ -695,9 +705,9 @@ var JukeBox = function(swf_path){
         target_div = this.$el.find('#search_results_table');
         target_div.html('');
         if(results.length > 0){
-          _.each(results, function(song_data){
+          _.each(results, function(song){
             var line = new SearchResultView({
-              model:new Song(song_data),
+              model:song,
               player:JB
             });
             target_div.append(line.render().el);
