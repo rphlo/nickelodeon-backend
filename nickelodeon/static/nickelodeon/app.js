@@ -164,7 +164,6 @@ var JukeBox = function(swf_path){
       this.set('loaded', +new Date());
     },
     on_song_finish: function(){
-      console.log('song finished');
       if(this.get('stop_after_current')){
         this.stop();
         this.set('play_state', PAUSED);
@@ -183,7 +182,6 @@ var JukeBox = function(swf_path){
         return false;
     },
     stop:function(){
-      console.log('stop');
       soundManager.stopAll();
       while(soundManager.soundIDs.length>0){
         soundManager.destroySound(soundManager.soundIDs[0]);
@@ -553,6 +551,35 @@ var JukeBox = function(swf_path){
       this.model.fetch();
       this.listenTo(this.model, "change", this.render);
       this.render({force:true});
+
+      $('body').on(
+        'keydown',
+        (function(_this){
+          return function(e){
+            if(document.activeElement.tagName=='INPUT'){
+              return;
+            }
+            if(!e){
+              e = window.event;
+            }
+            var code = e.keyCode;
+            if(e.charCode && code == 0){
+              code == e.charCode;
+            }
+            if(e.key=='Spacebar' || code==32){
+              _this.on_press_play_pause(e);
+            } else if(e.key=='b' || code==66){
+              _this.on_press_prev(e);
+            } else if(e.key=='n' || code==78){
+              _this.on_press_next(e);
+            } else if(e.keyCode=="S".charCodeAt(0)) {
+              e.preventDefault();
+              $('#search_input').focus()
+            }
+          }
+        })(this)
+      );
+
       $('#current_song_display').hover(function(){ //onmouseenter
         var width = $('#current_song_display').css('width', '100%').width();
         var target_width = $('#current_song_display').css('overflow', 'auto')[0].scrollWidth;
