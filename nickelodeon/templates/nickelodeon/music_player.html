@@ -145,6 +145,42 @@
             </div>
           </div>
         </div>
+        <div class="modal fade" id="edit_song_modal" tabindex="-1" role="dialog" aria-labelledby="edit_song_modal_label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="edit_song_modal_label">Song details</h4>
+              </div>
+              <div class="modal-body">
+                <form role="form">
+                  <div class="form-group">
+                    <label for="id_song_artist">Artist</label>
+                    <input type="text" class="form-control" id="edit_song_artist_input" placeholder="Artist">
+                  </div>
+                  <div class="form-group">
+                    <label for="id_song_title">Title</label>
+                    <input type="text" class="form-control" id="edit_song_title_input" placeholder="Title">
+                  </div>
+                  <div class="form-group">
+                    <label for="id_song_filename">File path</label>
+                    <input type="text" class="form-control" id="edit_song_filename_input" placeholder="File path">
+                  </div>
+                  <label>
+                    <input type="hidden" id='edit_song_uuid_input'>
+                    <input type="hidden" id='edit_song_org_artist'>
+                    <input type="hidden" id='edit_song_org_title'>
+                    <input type="hidden" id='edit_song_org_filename'>
+                  </label>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save_song_change_button"><span id="saving_song_change_i"><i class="fa fa-circle-o-notch fa-spin"></i> </span>Save changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="footer" id="main_footer">
         <div class="container">
@@ -284,6 +320,44 @@
     <script src="{% static 'vendor/backbone/1.1.2/backbone-min.js' %}"></script>
     <script src="{% static 'vendor/soundmanager2/v297a-20140901/script/soundmanager2-nodebug-jsmin.js' %}"></script>
     <script src="{% static 'nickelodeon/app.js' %}"></script>
+    <script>
+// JQUERY DJANGO CRSF
+$(document).ajaxSend(function(event, xhr, settings) {
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = jQuery.trim(cookies[i]);
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  function sameOrigin(url) {
+    // url could be relative or scheme relative or absolute
+    var host = document.location.host, // host + port
+        protocol = document.location.protocol,
+        sr_origin = '//' + host,
+        origin = protocol + sr_origin;
+    // Allow absolute or scheme relative URLs to same origin
+    return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+           (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+           // or any other URL that isn't scheme relative or absolute i.e relative.
+           !(/^(\/\/|http:|https:).*/.test(url));
+  }
+  function safeMethod(method) {
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
+    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+  }
+});
+    </script>
     <script>
       (function($){
         $(window).load(function(){

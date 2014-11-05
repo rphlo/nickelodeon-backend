@@ -370,6 +370,22 @@ var JukeBox = function(swf_path){
     },
     press_edit_song: function(e){
       e.preventDefault();
+      var song = this.model;
+      $('#edit_song_modal').on('shown.bs.modal', function (e) {
+        $('#edit_song_artist_input').focus();
+      });
+      // edit fields
+      $('#edit_song_artist_input').val(song.get('artist'));
+      $('#edit_song_title_input').val(song.get('title'));
+      $('#edit_song_filename_input').val(song.get('filename'));
+      $('#edit_song_uuid_input').val(song.id);
+      // original values
+      $('#edit_song_org_artist').val(song.get('artist'));
+      $('#edit_song_org_title').val(song.get('title'));
+      $('#edit_song_org_filename').val(song.get('filename'));
+
+      $('#saving_song_change_i').hide();
+      $("#edit_song_modal").modal('show');
     },
     press_download_song: function(e){
       e.preventDefault();
@@ -410,7 +426,22 @@ var JukeBox = function(swf_path){
     },
     press_edit_song: function(e){
       e.preventDefault();
-      console.log('edit song '+this.model.id);
+      var song = this.model;
+      $('#edit_song_modal').on('shown.bs.modal', function (e) {
+        $('#edit_song_artist_input').focus();
+      });
+      // edit fields
+      $('#edit_song_artist_input').val(song.get('artist'));
+      $('#edit_song_title_input').val(song.get('title'));
+      $('#edit_song_filename_input').val(song.get('filename'));
+      $('#edit_song_uuid_input').val(song.id);
+      // original values
+      $('#edit_song_org_artist').val(song.get('artist'));
+      $('#edit_song_org_title').val(song.get('title'));
+      $('#edit_song_org_filename').val(song.get('filename'));
+
+      $('#saving_song_change_i').hide();
+      $("#edit_song_modal").modal('show');
     },
     press_download_song: function(e){
       e.preventDefault();
@@ -454,7 +485,22 @@ var JukeBox = function(swf_path){
     },
     press_edit_song: function(e){
       e.preventDefault();
-      console.log('edit song '+this.model.id);
+      var song = this.model;
+      $('#edit_song_modal').on('shown.bs.modal', function (e) {
+        $('#edit_song_artist_input').focus();
+      });
+      // edit fields
+      $('#edit_song_artist_input').val(song.get('artist'));
+      $('#edit_song_title_input').val(song.get('title'));
+      $('#edit_song_filename_input').val(song.get('filename'));
+      $('#edit_song_uuid_input').val(song.id);
+      // original values
+      $('#edit_song_org_artist').val(song.get('artist'));
+      $('#edit_song_org_title').val(song.get('title'));
+      $('#edit_song_org_filename').val(song.get('filename'));
+
+      $('#saving_song_change_i').hide();
+      $("#edit_song_modal").modal('show');
     },
     press_download_song: function(e){
       e.preventDefault();
@@ -491,7 +537,8 @@ var JukeBox = function(swf_path){
       "click #use_mp3_button": "on_press_use_mp3",
       "click .search_more_button": "on_press_search_more",
       "click #edit_current_button": "on_press_edit_song",
-      "click #download_current_button": "on_press_download_song"
+      "click #download_current_button": "on_press_download_song",
+      "click #save_song_change_button": "on_press_save_song_change"
     },
     initialize: function() {
       this.model.fetch();
@@ -707,8 +754,9 @@ var JukeBox = function(swf_path){
     on_press_open_yt_modal: function(e){
       e.preventDefault();
       $('#yt_modal').on('shown.bs.modal', function (e) {
-        $('#yt_url_input').val('').focus();
+        $('#yt_url_input').focus();
       });
+      $('#yt_url_input').val('')
       $('#download_yt_submitting_i').hide();
       $("#yt_modal").modal('show');
     },
@@ -718,7 +766,59 @@ var JukeBox = function(swf_path){
     },
     on_press_edit_song: function(e){
       e.preventDefault();
-      console.log('edit current song');
+      var song = this.model.get('current_song');
+      $('#edit_song_modal').on('shown.bs.modal', function (e) {
+        $('#edit_song_artist_input').focus();
+      });
+      // edit fields
+      $('#edit_song_artist_input').val(song.get('artist'));
+      $('#edit_song_title_input').val(song.get('title'));
+      $('#edit_song_filename_input').val(song.get('filename'));
+      $('#edit_song_uuid_input').val(song.id);
+      // original values
+      $('#edit_song_org_artist').val(song.get('artist'));
+      $('#edit_song_org_title').val(song.get('title'));
+      $('#edit_song_org_filename').val(song.get('filename'));
+
+      $('#saving_song_change_i').hide();
+      $("#edit_song_modal").modal('show');
+    },
+    on_press_save_song_change: function(){
+      $('#saving_song_change_i').show();
+      var artist = $('#edit_song_artist_input').val(),
+          title = $('#edit_song_title_input').val(),
+          filename = $('#edit_song_filename_input').val(),
+          uuid = $('#edit_song_uuid_input').val(),
+          update_data = {},
+          data_changed = false;
+      // Only send changes
+      if(artist != $('#edit_song_org_artist').val()){
+        update_data['artist'] = artist;
+        data_changed = true;
+      }
+      if(title != $('#edit_song_org_title').val()){
+        update_data['title'] = title;
+        data_changed = true;
+      }
+      if(filename != $('#edit_song_org_filename').val()){
+        update_data['filename'] = filename;
+        data_changed = true;
+      }
+      if(data_changed){
+        $.ajax({
+          url: '/api/v1/song/'+uuid,
+          type: 'PUT',
+          dataType: 'JSON',
+          data: update_data
+        }).success(
+          function(response){
+            $('#edit_song_modal').modal('hide');
+            // TODO: Update current, searched, queued, played
+          }
+        );
+      }else{
+        $('#edit_song_modal').modal('hide');
+      }
     },
     on_press_download_song: function(e){
       e.preventDefault();
