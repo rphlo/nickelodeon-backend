@@ -1,1007 +1,391 @@
-{% extends 'site_base.html' %}
-{% load i18n %}
-{% load url from future %}
-{% load staticfiles %}
+{% load i18n %}{% load url from future %}{% load staticfiles %}<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="handheldFriendly" content="true">
+    <link rel="icon" href="icons/favicon.ico">
+    <title>Backbone JukeBox</title>
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'vendor/bootstrap/3.2.0/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/font-awesome/4.2.0/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/enscroll/0.6.1/enscroll.css' %}" rel="stylesheet">
 
-{% block head_title %}Music{% endblock %}
-
-{% block extra_head %}
-<style>
-.enscroll_track {
-  width: 10px;
-  background: rgba(0, 0, 0, 0);
-  margin-right: 2px;
-  border-radius: 10px;
-  -webkit-transition: background 250ms linear;
-  transition: background 250ms linear;
-}
-
-.enscroll_track:hover,
-.enscroll_track.dragging {
-  background: #d9d9d9; /* Browsers without rgba support */
-  background: rgba(0, 0, 0, 0.15);
-}
-
-.enscroll_handle {
-  width: 7px;
-  right: 0;
-  background: #999;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 7px;
-  -webkit-transition: width 250ms;
-  transition: width 250ms;
-}
-
-.enscroll_track:hover .enscroll_handle,
-.enscroll_track.dragging .enscroll_handle {
-  width: 10px;
-}
-</style>
-{% endblock %}
-
-{% block body %}
-<div class="row">
-  <div class="col-sm-12">
-      <p>
-          <kbd id="current_song_display" class="span-12"
-               style="display:block; width:auto; white-space:nowrap;overflow: hidden; text-overflow:ellipsis"></kbd>
-      </p>
-  </div>
-  <div class="col-sm-12">
-      <div style="float:left;margin-right:5px;">
-        <div class="btn-group">
-          <a href="#" role="button" class="btn btn-sm btn-default" id="prev_button">
-              <i class="fa fa-backward"></i>
-          </a>
-          <a href="#" role="button" class="btn btn-sm btn-default" id="play_pause_button">
-              <i class="fa fa-play"></i>
-          </a>
-          <a href="#" role="button" class="btn btn-sm btn-default" id="next_button">
-              <i class="fa fa-forward"></i>
-          </a>
-        </div>
-        <div class="btn-group">
-          <button type="button" class="btn btn-sm btn-default active" id="use_aac_button">AAC</button>
-          <button type="button" class="btn btn-sm btn-default" id="use_mp3_button">MP3</button>
-        </div>
-        <div class="btn-group">
-          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">
-            <i class="fa fa-plus"></i>
+    <!-- Custom styles for this template -->
+    <link href="{% static 'nickelodeon/app.css' %}" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation" id="main_navbar">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
           </button>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="#" id="youtube_import_btn"><i class="fa fa-lg fa-youtube"></i> Import from YouTube</a></li>
+          <a class="navbar-brand" href="#">rphl.net JukeBox</a>
+        </div>
+      </div>
+    </div>
+    <!-- Begin page content -->
+    <div id="main_div">
+      <div class="container" id="jukebox_div">
+        <div class="row" id="main_container" style="padding-top:15px">
+          <div class="col-md-4 col-sm-12">
+            <p>
+              <kbd class="span-12" style="overflow: hidden; display: block; white-space:nowrap;">
+                <span id="current_song_display" style="white-space:nowrap; display: block; overflow: hidden; text-overflow:ellipsis">Unknow</span>
+              </kbd>
+            </p>
+            <div>
+              <div class="btn-group">
+                <a href="#" role="button" class="btn btn-sm btn-default" id="prev_button"><i class="fa fa-backward"></i></a>
+                <a href="#" role="button" class="btn btn-sm btn-default" id="play_pause_button"><i class="fa fa-play"></i></a>
+                <a href="#" role="button" class="btn btn-sm btn-default" id="next_button"><i class="fa fa-forward"></i></a>
+              </div>
+              <div class="btn-group">
+                <a href="#" role="button" class="btn btn-sm btn-default active" id="use_aac_button">AAC</a>
+                <a href="#" role="button" class="btn btn-sm btn-default" id="use_mp3_button">MP3</a>
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-plus"></i>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                  <!-- [
+                  <li><a href="#" id="stop_next_button"><i class="fa fa-lg fa-stop"></i> Stop after current</a></li>
+                  <li><a href="#" id="stop_end_queue_button"><i class="fa fa-lg fa-stop"></i> Stop at the end of the queue</a></li>
+                  ]-->
+                  <li><a href="#" id="edit_current_button"><i class="fa fa-lg fa-edit"></i> Edit</a></li>
+                  <li><a href="#" id="download_current_button"><i class="fa fa-lg fa-download"></i> Download</a></li>
+                  <li><a href="#" id="open_yt_modal_button"><i class="fa fa-lg fa-youtube"></i> Import from YouTube</a></li>
+                </ul>
+              </div>
+            </div>
+            <div style="padding-top:5px;">
+              <div id="full_progress_bar" class="progress" style="cursor: pointer">
+                <div id="progress_bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                  <span id="progress_bar_text" style="color:#666;padding:5px">00:00/00:00</span>
+                </div>
+              </div>
+            </div>
+            <div class="input-group" style="margin-top:-15px;margin-bottom:15px;">
+              <input id="search_input" type="text" class="form-control" placeholder="Search"/>
+              <span class="input-group-btn">
+                <button id="search_button" class="btn btn-default" type="button">Search <i class="fa fa-search"></i></button>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-8 col-sm-12">
+            <ul class="nav nav-tabs small" role="tablist" id="tab_selector">
+              <li class="active"><a href="#queueTab" role="tab" data-toggle="tab"><i class="fa fa-database"></i> Queue</a></li>
+              <li><a href="#historyTab" role="tab" data-toggle="tab"><i class="fa fa-book"></i> History</a></li>
+              <li><a id="search_tab" href="#searchTab" role="tab" data-toggle="tab" class="hidden"><i class="fa fa-search"></i> Search results</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane scrollable" id="searchTab">
+                <div>
+                  <table class="table table-striped">
+                    <tbody id="search_results_table">
+                      <tr><td>No search so far.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="tab-pane scrollable active" id="queueTab">
+                <div>
+                  <table class="table table-striped" id="play_queue_table">
+                    <tr><td><i class="fa fa-random"></i> Random</td></tr>
+                  </table>
+                </div>
+              </div>
+              <div class="tab-pane scrollable" id="historyTab">
+                <div>
+                  <table class="table table-striped" id="play_history_table">
+                    <tr><td>No history so far.</td></tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal fade" id="yt_modal" tabindex="-1" role="dialog" aria-labelledby="yt_modal_label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="yt_modal_label">Import from YouTube</h4>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="yt_url_input">YouTube URL</label>
+                  <input type="text" class="form-control" id="yt_url_input" placeholder="YouTube URL">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="download_yt_button"><span id="download_yt_submitting_i"><i class="fa fa-circle-o-notch fa-spin"></i> </span>Download</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal fade" id="edit_song_modal" tabindex="-1" role="dialog" aria-labelledby="edit_song_modal_label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="edit_song_modal_label">Song details</h4>
+              </div>
+              <div class="modal-body">
+                <form role="form">
+                  <div class="form-group">
+                    <label for="id_song_artist">Artist</label>
+                    <input type="text" class="form-control" id="edit_song_artist_input" placeholder="Artist">
+                  </div>
+                  <div class="form-group">
+                    <label for="id_song_title">Title</label>
+                    <input type="text" class="form-control" id="edit_song_title_input" placeholder="Title">
+                  </div>
+                  <div class="form-group">
+                    <label for="id_song_filename">File path</label>
+                    <input type="text" class="form-control" id="edit_song_filename_input" placeholder="File path">
+                  </div>
+                  <label>
+                    <input type="hidden" id='edit_song_uuid_input'>
+                    <input type="hidden" id='edit_song_org_artist'>
+                    <input type="hidden" id='edit_song_org_title'>
+                    <input type="hidden" id='edit_song_org_filename'>
+                  </label>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save_song_change_button"><span id="saving_song_change_i"><i class="fa fa-circle-o-notch fa-spin"></i> </span>Save changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer" id="main_footer">
+        <div class="container">
+          <p class="text-muted text-center">rphl.net &copy; 2014 Rapha&euml;l Stefanini</p>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/template" id="search_loading_template">
+      <tr><td><i class="fa fa-circle-o-notch fa-spin"></i> Searching &quot;<%= query %>&quot;</td></tr>
+    </script>
+
+    <script type="text/template" id="search_more_template">
+      <tr><td><a href="#" class='search_more_button'><i class="fa fa-plus"></i> Search more</a></td></tr>
+    </script>
+
+    <script type="text/template" id="search_no_results_template">
+      <tr><td><i class="fa fa-exclamation"></i> No result for &quot;<%= query %>&quot;</td></tr>
+    </script>
+
+    <script type="text/template" id="played_song_template">
+      <td>
+        <a href="/jukebox/<%= song.id %>"
+           title="<%= song.get('filename') %>" class="song_link">
+          <%= song.getDisplayText() %>
+        </a>
+      <td>
+        <div class="dropdown">
+          <a href="#"
+             class="btn btn-default btn-xs"
+             data-toggle="dropdown"
+             role="button"
+             title="Options"
+             style="float:right; margin-left: 3px;">
+            <i class="fa fa-cog fa-lg"></i>
+          </a>
+          <ul class="dropdown-menu text-left pull-right">
+            <li class="edit_song_button">
+              <a href="#"><i class="fa fa-edit"></i> Edit</a>
+            </li>
+            <li class="download_song_button">
+              <a href="#"><i class="fa fa-download"></i> Download</a>
+            </li>
           </ul>
         </div>
-      </div>
-      <div style="padding-top:6px;">
-        <div id="full_progress_bar" class="progress">
-          <div id="progress_bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-            <span id="progress_bar_text" style="color:#666"></span>
-          </div>
+      </td>
+    </script>
+
+    <script type="text/template" id="history_queue_template">
+      <tr><td><i class="fa fa-exclamation"></i> Nothing played</td></tr>
+    </script>
+
+    <script type="text/template" id="empty_queue_template">
+      <tr><td><i class="fa fa-exclamation"></i> Nothing queued</td></tr>
+    </script>
+
+    <script type="text/template" id="queued_song_template">
+      <td>
+        <div class="btn-group">
+          <a href="#" class="move_up_button btn btn-default btn-xs <% if(is_first){ %>disabled<% }%>" role="button">
+            <i class="fa fa-chevron-up"></i>
+          </a>
+          <a href="#" class="move_down_button btn btn-default btn-xs <% if(is_last){ %>disabled<% }%>" role="button"s>
+            <i class="fa fa-chevron-down"></i>
+          </a>
         </div>
-      </div>
-  </div>
-  <div class="col-sm-12">
-    <div class="input-group">
-     <input id="search_input" type="text" class="form-control" placeholder="Search"/>
-     <span class="input-group-btn">
-      <button id="start_search_button" class="btn btn-default" type="button">Search <i class="fa fa-search"></i></button>
-      </span>
-    </div>
-  </div>
-  <div class="row"><div class="col-sm-12">&nbsp;</div></div>
-  <div class="col-sm-12">
-    <ul class="nav nav-pills" role="tablist" id="tab_selector">
-      <li class="active"><a href="#queue" role="tab" data-toggle="tab"><i class="fa fa-align-left"></i> Queue</a></li>
-      <li><a href="#history" role="tab" data-toggle="tab"><i class="fa fa-book"></i> History</a></li>
-      <li><a id="search_tab" href="#search" role="tab" data-toggle="tab"><i class="fa fa-search"></i> Search results</a></li>
-    </ul>
-  </div>
-  <div class="row"><div class="col-sm-12">&nbsp;</div></div>
- <div class="tab-content">
-  <div class="tab-pane" id="search">
-   <div class="col-sm-12">
-    <div id="search_results_navigation_top"></div>
-     <table class="table table-striped" id="search_results_table">
-       <tr><td>No search so far.</td></tr>
-     </table>
-    <div id="search_results_navigation_bottom"></div>
-   </div>
-  </div>
-  <div class="tab-pane active" id="queue">
-   <div class="col-sm-12">
-    <table class="table table-striped" id="play_queue_table">
-     <tr><td><i class="fa fa-random"> Random</i></td></tr>
-    </table>
-   </div>
-  </div>
-  <div class="tab-pane" id="history">
-   <div class="col-sm-12">
-    <table class="table table-striped" id="play_history_table">
-     <tr><td></td></tr>
-    </table>
-   </div>
-  </div>
- </div>
-</div>
+        <a href="/jukebox/<%= song.id %>"
+           title="<%= song.get('filename') %>" class="song_link">
+          <%= song.getDisplayText() %>
+        </a>
+      </td>
+      <td>
+        <div class="dropdown">
+          <a href="#"
+             class="btn btn-default btn-xs"
+             data-toggle="dropdown"
+             role="button"
+             title="Options"
+             style="float:right; margin-left: 3px;">
+            <i class="fa fa-cog fa-lg"></i>
+          </a>
+          <ul class="dropdown-menu text-left pull-right">
+            <li class="edit_song_button">
+              <a href="#"><i class="fa fa-edit"></i> Edit</a>
+            </li>
+            <li class="download_song_button">
+              <a href="#"><i class="fa fa-download"></i> Download</a>
+            </li>
+            <li class="drop_queued_song_button">
+              <a href="#"><i class="fa fa-times"></i> Drop from queue</a>
+            </li>
+          </ul>
+        </div>
+      </td>
+    </script>
 
-<div class="modal fade" id="editSongModal" tabindex="-1" role="dialog" aria-labelledby="editSongModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title" id="editSongModalLabel">Song details</h4>
-      </div>
-      <div class="modal-body">
-        <form role="form">
-          <div class="form-group">
-            <label for="id_song_artist">Artist</label>
-            <input type="text" class="form-control" id="id_song_artist" placeholder="Artist">
-          </div>
-          <div class="form-group">
-            <label for="id_song_title">Title</label>
-            <input type="text" class="form-control" id="id_song_title" placeholder="Title">
-          </div>
-          <div class="form-group">
-            <label for="id_song_filename">File path</label>
-            <input type="text" class="form-control" id="id_song_filename" placeholder="File path">
-          </div>
-          <label>
-            <input type="hidden" id='id_song_uuid'>
-          </label>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="save_song_change_btn"><span id="saving_change_i"><i class="fa fa-circle-o-notch fa-spin"></i> </span>Save changes</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="youtubeModal" tabindex="-1" role="dialog" aria-labelledby="youtubeModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title" id="youtubeModalLabel">Import from YouTube</h4>
-      </div>
-      <div class="modal-body">
-          <div class="form-group">
-            <label for="id_song_artist">YouTube URL</label>
-            <input type="text" class="form-control" id="id_youtube_url" placeholder="YouTube URL">
-          </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="download_yt_btn"><span id="downloading_yt_i"><i class="fa fa-circle-o-notch fa-spin"></i> </span>Download</button>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
-
-
-{% block extra_script %}
-<script src="{% static 'jStorage/0.4.4/jstorage.min.js' %}"></script>
-<script src="{% static 'underscore-1.7.0/underscore-min.js' %}"></script>
-<script src="{% static 'enscroll-0.6.0/enscroll.min.js' %}"></script>
-<script>
-(function($, SM2_URL, SONGS_API_URL){
-  var escapeHTML = function(unsafe) {
-    return unsafe.replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
-  };
-
-  var loadSoundManager = function(sm2_url, onReadyCallback){
-    var sm2_swf_path = sm2_url + 'swf/',
-        sm2_js_path = sm2_url + 'script/soundmanager2-nodebug-jsmin.js';
-    var options = {
-      url: sm2_swf_path,
-      useHighPerformance: true,
-      useHTML5Audio: true,
-      preferFlash: true,
-      flashVersion: 9,
-      flashPollingInterval: 100,
-      debugMode: false,
-      onready: onReadyCallback,
-      ontimeout: function() {}
-    };
-    if(typeof soundManager !== "undefined"){
-      soundManager.reset();
-      soundManager.setup(options);
-    } else {
-      $.getScript(
-        sm2_js_path,
-        function(){
-          soundManager.setup(options);
+    <script type="text/template" id="search_result_template">
+      <td>
+        <a href="/jukebox/<%= song.id %>"
+           title="<%= song.get('filename') %>" class="song_link">
+          <i class="fa fa-play"></i> <%= song.getDisplayText() %>
+        </a>
+      </td>
+      <td>
+        <div class="dropdown">
+          <a href="#"
+             class="btn btn-default btn-xs"
+             data-toggle="dropdown"
+             role="button"
+             title="Options"
+             style="float:right; margin-left: 3px;">
+            <i class="fa fa-cog fa-lg"></i>
+          </a>
+          <ul class="dropdown-menu text-left pull-right">
+            <li class="edit_song_button">
+              <a href="#"><i class="fa fa-edit"></i> Edit</a>
+            </li>
+            <li class="download_song_button">
+              <a href="#"><i class="fa fa-download"></i> Download</a>
+            </li>
+            <li class="queue_song_button">
+              <a href="#"><i class="fa fa-level-down fa-rotate-90"></i> Queue</a>
+            </li>
+          </ul>
+        </div>
+      </td>
+    </script>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{% static 'vendor/jquery/2.1.1/jquery-2.1.1.min.js' %}"></script>
+    <script src="{% static 'vendor/jstorage/0.4.12/jstorage.min.js' %}"></script>
+    <script src="{% static 'vendor/jquery-backstretch/2.0.4/jquery.backstretch.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/3.3.0/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendor/enscroll/0.6.1/enscroll-0.6.1.min.js' %}"></script>
+    <script src="{% static 'vendor/underscore/1.7.0/underscore-min.js' %}"></script>
+    <script src="{% static 'vendor/backbone/1.1.2/backbone-min.js' %}"></script>
+    <script src="{% static 'vendor/soundmanager2/v297a-20140901/script/soundmanager2-nodebug-jsmin.js' %}"></script>
+    <script src="{% static 'nickelodeon/app.js' %}"></script>
+    <script>
+// JQUERY DJANGO CRSF
+$(document).ajaxSend(function(event, xhr, settings) {
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = jQuery.trim(cookies[i]);
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
         }
-      );
+      }
     }
-  };
+    return cookieValue;
+  }
+  function sameOrigin(url) {
+    // url could be relative or scheme relative or absolute
+    var host = document.location.host, // host + port
+        protocol = document.location.protocol,
+        sr_origin = '//' + host,
+        origin = protocol + sr_origin;
+    // Allow absolute or scheme relative URLs to same origin
+    return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+           (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+           // or any other URL that isn't scheme relative or absolute i.e relative.
+           !(/^(\/\/|http:|https:).*/.test(url));
+  }
+  function safeMethod(method) {
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
+    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+  }
+});
+    </script>
+    <script>
+      (function($){
+        $(window).load(function(){
+          // Console Decoration
+          console.log('\n                          ___        ____\n                         /   \\      /   /\n      ________ _______  /    /___  /   /                     ___\n     /        /       \\/         \\/   /       ______  ____  /  /_\n    /     ___/__      /    _     /   /       /  __  \\/ _  \\/  __/\n   /    /   ___/     /    / /   /    \\__ __ /  / /  / ____/  /\n   \\___/   /     ___/\\___/  \\__/\\______//_//__/ /__/\\_____\\___\\\n          /    /\n          \\___/                            https://www.rphl.net/\n\n');
 
-  $(window).load(function(){
-    /*
-    $('#tab_selector a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-      e.target // activated tab
-      e.relatedTarget // previous tab
-      var targetDiv = $($(e.target).attr('href'));
-      if($(targetDiv).next().children().hasClass('enscroll_track')){
-        return
-      }
-      targetDiv.css({'max-height': '480px'})
-      targetDiv.enscroll({
-        // a configuration property
-        showOnHover: false,
-        verticalScrolling: true,
-        verticalTrackClass: 'enscroll_track',
-        verticalHandleClass: 'enscroll_handle'
-      });
-    });
-    */
-    loadSoundManager(SM2_URL, function(){
-      var PLAYING = 1;
-      var PAUSED = 0;
-      var HISTORY_MAX_LENGTH = 20;
-      var SEARCH_RESULTS_PER_PAGE = 20;
-      var playing_status = PAUSED;
-      var stopping_after_current = false;
-      var song_count = 0;
-      var current_index = 1;
-      var current_song_data = null;
-      var play_history = [];
-      var play_queue = [];
-      var prefer_aac = true;
-      var search_request = null;
-
-      var save_state = function(){
-        $.jStorage.set('nickelodeon_playing_status',
-                       JSON.stringify(playing_status));
-        $.jStorage.set('nickelodeon_current_song_data',
-                       JSON.stringify(current_song_data));
-        $.jStorage.set('nickelodeon_song_count',
-                       JSON.stringify(song_count));
-        $.jStorage.set('nickelodeon_current_index',
-                       JSON.stringify(current_index));
-        $.jStorage.set('nickelodeon_stopping_after_current',
-                       JSON.stringify(stopping_after_current));
-        $.jStorage.set('nickelodeon_play_history',
-                       JSON.stringify(play_history));
-        $.jStorage.set('nickelodeon_play_queue',
-                       JSON.stringify(play_queue));
-        $.jStorage.set('nickelodeon_prefer_aac',
-                       JSON.stringify(prefer_aac));
-      };
-
-      var load_state = function(){
-        playing_status = parseInt($.jStorage.get('nickelodeon_playing_status', PAUSED));
-        current_index = $.jStorage.get('nickelodeon_current_index', 1);
-        current_index = parseInt(current_index);
-        if(current_index<1){
-          current_index = 1;
-        }
-        song_count = $.jStorage.get('nickelodeon_song_count', 0);
-        song_count = parseInt(song_count);
-        current_song_data = JSON.parse($.jStorage.get('nickelodeon_current_song_data', "null"));
-        stopping_after_current = $.jStorage.get('nickelodeon_stopping_after_current', false);
-        if (stopping_after_current == "false"){
-          stopping_after_current = false;
-        } else {
-          stopping_after_current = true;
-        }
-        prefer_aac = $.jStorage.get('nickelodeon_prefer_aac', true);
-        if (prefer_aac == "false"){
-          prefer_aac = false;
-        } else {
-          prefer_aac = true;
-        }
-        play_queue = JSON.parse($.jStorage.get('nickelodeon_play_queue', '[]'));
-        play_history = JSON.parse($.jStorage.get('nickelodeon_play_history', '[]'));
-        display_history();
-        display_queue();
-      };
-      
-      var push_to_queue = function(value){
-        play_queue.push(value);
-        save_state();
-        display_queue();
-      };
-
-      var remove_from_queue = function(value){
-        var index= play_queue.indexOf(value);
-        if(index > -1) {
-          play_queue.splice(index, 1);
-        }
-        save_state();
-        display_queue();
-      };
-
-      var shift_queue = function(){
-        var value = play_queue.shift();
-        save_state();
-        display_queue();
-        return value;
-      };
-
-      var push_to_history = function(value){
-        play_history.push(value);
-        while(play_history.length > HISTORY_MAX_LENGTH){
-          play_history.shift()
-        }
-        save_state();
-        display_history();
-      };
-
-      var pop_history = function(){
-        var value = play_history.pop();
-        save_state();
-        display_history();
-        return value;
-      };
-
-      var printTime = function(t){
-        var mf = Math.floor,
-            to2digits = function(x){return ('0'+mf(x)).slice(-2);},
-            txt = t>3600?mf(t/3600)+':':'';
-        txt += to2digits((t/60)%60)+':'+to2digits(t%60);
-        return txt;
-      }
-
-      var while_playing_song = function(song_data){
-        return function(){
-          var sound = soundManager.getSoundById(song_data.uuid),
-              position = sound?sound.position/1e3:0,
-              total = sound?sound.durationEstimate/1e3:0,
-              txt=printTime(position)+"/"+printTime(total),
-              perc = position/total*100;
-          $('#progress_bar_text').html(txt);
-          $('#progress_bar').css('width', perc+'%').attr('aria-valuenow', perc);
-        }
-      }
-      
-      var play_song = function(song_data){
-        var format, type, title, page_title;
-        auto_play = (playing_status==PLAYING)?true:false;
-        stop_song();
-        playing_status = auto_play?PLAYING:PAUSED;
-        save_state()
-        if(song_data.availability['aac'] && (prefer_aac || !song_data.availability['mp3'])){
-            format = 'aac'
-            type = 'audio/aac'
-        } else if(song_data.availability['mp3']){
-            format = 'mp3'
-            type = 'audio/mpeg'
-        } else {
-            play_next_song();
-            return;
-        }
-        soundManager.createSound({
-            id: song_data.uuid,
-            url: song_data.download_url+'.'+format,
-            volume: 100,
-            autoPlay: auto_play,
-            type: type,
-            multiShot:false,
-            whileplaying:_.throttle(while_playing_song(song_data), 100),
-            onfinish:function(){
-              if(stopping_after_current){
-                stopping_after_current = false;
-                playing_status = PAUSED;
-                play_song(current_song_data);
-                save_state();
-                return
-              }
-              play_next_song();
-            },
-        });
-        if(song_data.artist){
-            title = [song_data.artist, song_data.title].join(" - ")
-        } else {
-            title = song_data.title;
-        }
-
-        page_title = (playing_status==PLAYING?"\u25B6 ":"")+title
-        document.title = page_title
-
-        $('#current_song_display').text(title);
-        if(format == 'aac'){
-            $('#use_aac_button').addClass('active');
-            $('#use_mp3_button').removeClass('active');
-        }else{
-            $('#use_aac_button').removeClass('active');
-            $('#use_mp3_button').addClass('active');
-        }
-        if(!song_data.availability['aac']){
-            $('#use_aac_button').attr('disabled', 'disabled');
-        } else {
-            $('#use_aac_button').removeAttr('disabled');
-        }
-        if(!song_data.availability['mp3']){
-            $('#use_mp3_button').attr('disabled', 'disabled');
-        } else {
-            $('#use_mp3_button').removeAttr('disabled');
-        }
-      };
-
-      var jump_to_song = function(song){
-        stopping_after_current = false;
-        push_to_history(current_song_data);
-        current_song_data = song;
-        play_song(song)
-      }
-
-      var stop_song = function(){
-        soundManager.stopAll();
-        while(soundManager.soundIDs.length>0){
-            soundManager.destroySound(soundManager.soundIDs[0]);
-        }
-        playing_status = PAUSED;
-        save_state();
-      };
-      
-      var play_prev_song = function(e){
-        if(e){e.preventDefault();}
-        stopping_after_current = false;
-        play_queue.unshift(current_song_data);
-        save_state();
-        display_queue()
-        if(play_history.length > 0){
-          var next_song = play_history.pop();
-          current_song_data = next_song;
-          play_song(next_song);
-          save_state();
-          display_history()
-          return;
-        }
-        current_index = Math.floor(Math.random()*song_count)+1;
-        save_state();
-        soundManager.stopAll();
-        while(soundManager.soundIDs.length>0){
-            soundManager.destroySound(soundManager.soundIDs[0]);
-        }
-        get_current_info(function(){
-          play_song(current_song_data);
-        });
-      };
-
-      var play_next_song = function(e){
-        if(e){e.preventDefault();}
-        stopping_after_current = false;
-        push_to_history(current_song_data);
-        if(play_queue.length>0){
-          var next_song = shift_queue();
-          current_song_data = next_song;
-          play_song(next_song);
-          return;
-        }
-        current_index = Math.floor(Math.random()*song_count)+1;
-        save_state();
-        soundManager.stopAll();
-        while(soundManager.soundIDs.length>0){
-            soundManager.destroySound(soundManager.soundIDs[0]);
-        }
-        get_current_info(function(){
-          play_song(current_song_data);
-        });
-      };
-      
-      var toggle_play = function(){
-        var sound_id = soundManager.soundIDs[0];
-        var sound = soundManager.getSoundById(sound_id)
-        if(sound){
-          var is_playing = !sound.paused && sound.playState!=0;
-          playing_status = is_playing?PAUSED:PLAYING;
-        }
-        soundManager.togglePause(sound_id);
-        save_state();
-      };
-      
-      var get_current_info = function(callback){
-        $.ajax({
-          type: "GET",
-          url: SONGS_API_URL,
-          data: {'results_per_page': 1, 'page': Math.max(1, current_index)},
-          dataType: "JSON",
-          success: function(response){
-              song_count = response.count;
-              if(song_count > 0){
-                  current_song_data = response.results[0];
-                  save_state();
-                  callback();
-              }
-          },
-          error: function(xhr, tStatus, err){
-            if(xhr.status === 404 && current_index !== 1){
-              current_index = 1;
-              get_current_info(callback);
-            } else if(xhr.status === 403) {
-              window.reload();
-            }
-          }
-        });
-      };
-
-      var search = function(search_query, page){
-        page = page || 1
-        if(search_query){
-            $('#search_results_table').html('')
-            var link = $('<i>').addClass("fa fa-circle-o-notch fa-spin")
-            var el = $('<tr>').append($('<td>').append(link));
-            $('#search_results_table').append(el);
-            if(search_request){
-              search_request.abort();
-            }
-            search_request = $.ajax({
-                type:"GET",
-                url:SONGS_API_URL,
-                data:{
-                    'q':search_query,
-                    'page':Math.max(page, 1),
-                    'results_per_page': SEARCH_RESULTS_PER_PAGE
-                },
-                dataType:"JSON",
-                success:on_search_results,
-                error:function(){
-                }
-            });
-            $('#search_tab').tab('show');
-        }
-      };
-
-      var extract_search_query_from_link = function(link){
-        var query_re = /(\?|&)q=([^&]+)/;
-        var matches = link.match(query_re)
-        if(matches){
-          return decodeURIComponent(matches[2]);
-        }
-        return ''
-      };
-
-      var extract_page_from_link = function(link){
-        var page_re = /(\?|&)page=([\d]+)/;
-        var matches = link.match(page_re)
-        if(matches){
-          return matches[2]
-        }
-        return 1
-      };
-      var swapArrayElements = function(array_object, index_a, index_b) {
-        var temp = array_object[index_a];
-        array_object[index_a] = array_object[index_b];
-        array_object[index_b] = temp;
-      }
-
-      var move_queue_item_up = function(index){
-        if(index===0){return;}
-        swapArrayElements(play_queue, index-1, index);
-      }
-
-      var move_queue_item_down = function(index){
-        if(index+1>=play_queue.length){return;}
-        swapArrayElements(play_queue, index, index+1);
-      }
-
-      var on_search_results = function(response){
-        var results = response.results;
-        var search_query = '';
-        var page = 1;
-        var current_page = 1;
-        $('#search_results_navigation_top').html('');
-        $('#search_results_navigation_bottom').html('');
-        $('#search_results_table').html('');
-        if(response.previous){
-          search_query = extract_search_query_from_link(response.previous);
-          page = extract_page_from_link(response.previous);
-          current_page = parseInt(page)+1;
-          var top_btn = $('<button>').addClass('btn btn-default')
-                        .attr('href', '#')
-                        .on('click', (function(q, p){
-                          return function(e){
-                            e.preventDefault();
-                            search(q, p);
-                          }
-                        })(search_query, page))
-                        .append($('<i>').addClass('fa fa-angle-double-left'))
-                        .appendTo($('#search_results_navigation_top'))
-          var bottom_btn = top_btn.clone(true, true)
-                                  .appendTo($('#search_results_navigation_bottom'));
-        }
-        if(response.next){
-          search_query = extract_search_query_from_link(response.next);
-          page = extract_page_from_link(response.next);
-          current_page = parseInt(page)-1;
-          var top_btn = $('<button>').addClass('btn btn-default')
-                        .attr('href', '#')
-                        .on('click', (function(q, p){
-                          return function(e){
-                            e.preventDefault();
-                            search(q, p);
-                          }
-                        })(search_query, page))
-                        .append($('<i>').addClass('fa fa-angle-double-right'))
-                        .appendTo($('#search_results_navigation_top'))
-          var bottom_btn = top_btn.clone(true, true)
-                           .appendTo($('#search_results_navigation_bottom'));
-        }
-        if(results.length==0){
-          var link = $('<span>').text("No results...")
-          var el = $('<tr>').append($('<td>').append(link));
-          $('#search_results_table').append(el)
-        } else {
-          $.each(results, function(ii, item){
-            var title = item.title;
-            if(item.artist){
-              title = [item.artist, item.title].join(' - ');
-            }
-            var option_btn = $('<div>')
-                            .addClass('dropdown')
-                            .append(
-                              $('<a>')
-                              .addClass('btn btn-default btn-xs')
-                              .attr({
-                                'href': '#',
-                                'title': 'option',
-                                'data-toggle': 'dropdown',
-                                'role': 'button',
-                                'style':'float:right; margin-left:3px;'
-                              })
-                              .append(
-                                $('<i>').addClass('fa fa-cog fa-lg')
-                              )
-                            );
-            var option_list = $('<ul>')
-                              .addClass('dropdown-menu text-left pull-right')
-                              .attr({
-                                'role': 'menu'
-                              })
-                              .appendTo(option_btn);
-            var edit_btn = $('<li>')
-                           .append(
-                             $('<a>')
-                             .attr({
-                               'href':'#edit',
-                               'title': 'edit'
-                             })
-                             .append($('<i>').addClass('fa fa-edit fa-lg'))
-                             .append(' Edit')
-                             .on(
-                               'click',
-                               (function(song){
-                                 return function(e){
-                                   e.preventDefault();
-                                   edit_song(song);
-                                   display_queue();
-                                 }
-                               })(item)
-                             )
-                           ).appendTo(option_list);
-            var queue_btn = $('<li>')
-                            .append(
-                              $('<a>')
-                              .attr({
-                                'href':'#edit',
-                                'title': 'queue'
-                              })
-                              .append($('<i>').addClass('fa fa-plus-square fa-lg'))
-                              .append(' Add to queue')
-                              .on(
-                                'click',
-                                (function(song){
-                                  return function(e){
-                                    e.preventDefault();
-                                    push_to_queue(song);
-                                  }
-                                })(item)
-                              )
-                            ).appendTo(option_list);
-            var link = $('<a>').text(title)
-                               .attr({
-                                 'title': item.filename,
-                                 'href': item.download_url
-                               })
-                               .on('click', (function(song){
-                                 return function(e){
-                                   e.preventDefault();
-                                   if(e.ctrlKey){
-                                     push_to_queue(song);
-                                   } else {
-                                     jump_to_song(song);
-                                   };
-                                 }
-                               })(item));
-            var el = $('<tr>')
-                     .append(
-                       $('<td>')
-                       .append(link)
-                     )
-                     .append(
-                       $('<td>')
-                       .addClass('text-right')
-                       .append(option_btn)
-                     );
-            $('#search_results_table').append(el);
+          // apply enscroll
+          $('#tab_selector a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $(window).trigger('resize');
           });
-        }
-      };
-
-      // Button Triggers
-      $('#play_pause_button').on('click', function(e){
-        e.preventDefault();
-        if(playing_status==PAUSED){
-          $('#play_pause_button > i').removeClass('fa-play')
-                                     .addClass('fa-pause');
-        } else {
-          if(e.ctrlKey){
-            stopping_after_current = true;
-            return;
-          }
-          $('#play_pause_button > i').removeClass('fa-pause')
-                                     .addClass('fa-play');
-        }
-        toggle_play();
-      });
-
-
-      $('#next_button').on('click', play_next_song);
-      $('#prev_button').on('click', play_prev_song);
-
-      var start_search = function(){
-        var result = $('#search_input').val();
-        if(result){
-          search(result);
-        }
-      };
-      $('#youtube_import_btn').on('click', function(e){
-        e.preventDefault();
-        var yt_vid_re = /^[a-zA-Z0-9_-]{11}$/,
-            yt_full_url_re = /^(https?:\/\/)?www\.youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_-]{11})(&.*)?$/,
-            yt_short_url_re = /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})(\?.*)?$/,
-            yt_vid_id = null;
-        $('#downloading_yt_i').hide();
-        $('#id_youtube_url').val('')
-        $('#youtubeModal').on('shown.bs.modal', function (e) {
-          $('#id_youtube_url').focus();
-        });
-        $("#youtubeModal").modal();
-        $("#download_yt_btn")
-        .off("click") // deactivate previous action
-        .on('click', function(){
-          yt_link = $('#id_youtube_url').val();
-          if(yt_vid_re.test(yt_link)){
-            yt_vid_id = yt_link;
-          } else if(yt_full_url_re.test(yt_link)){
-            yt_vid_id = yt_link.match(yt_full_url_re)[3];
-          }else if(yt_short_url_re.test(yt_link)){
-            yt_vid_id = yt_link.match(yt_short_url_re)[1];
-          }else{
-            alert("Could not recognize YouTube URL")
-            return;
-          }
-          if(yt_vid_id){
-            $('#downloading_yt_i').show();
-            $.ajax({
-              url: '/api/v1/youtube_dl/',
-              type: 'POST',
-              dataType: 'JSON',
-              data: {video_id: yt_vid_id}
-            }).success(
-              function(response){
-                $('#youtubeModal').modal('hide');
-              }
-            );
-          }
-        });
-      })
-      var edit_song = function(song){
-        $('#id_song_artist').val(song.artist);
-        $('#id_song_title').val(song.title);
-        $('#id_song_filename').val(song.filename);
-        $('#saving_change_i').hide();
-        $("#editSongModal").modal();
-        $("#save_song_change_btn")
-        .off("click") // deactivate previous action
-        .on('click',
-          (function(current_data){
-            return function(){
-              var artist = $('#id_song_artist').val(),
-                  title = $('#id_song_title').val(),
-                  filename = $('#id_song_filename').val(),
-                  uuid = current_data.uuid,
-                  update_data = {},
-                  data_changed = false;
-
-              if(artist != current_data.artist){
-                update_data['artist'] = artist;
-                data_changed = true;
-              }
-              if(title != current_data.title){
-                update_data['title'] = title;
-                data_changed = true;
-              }
-              if(filename != current_data.filename){
-                update_data['filename'] = filename;
-                data_changed = true;
-              }
-              if(data_changed){
-                $('#saving_change_i').show()
-                $.ajax({
-                  url: '/api/v1/song/'+uuid,
-                  type: 'PUT',
-                  dataType: 'JSON',
-                  data: update_data
-                }).success(
-                  function(response){
-                    $('#editSongModal').modal('hide');
-                  }
-                );
-              }else{
-                $('#editSongModal').modal('hide');
-              }
+          $('.scrollable').each(
+            function(ii){
+              $(this).enscroll({
+                verticalTrackClass: 'enscroll_track',
+                verticalHandleClass: 'enscroll_handle'
+              });
             }
-          })(song)
-        );
-      }
+          );
 
-      var display_queue = function(){
-        $('#play_queue_table').html('');
-        $.each(play_queue, function(ii, item){
-          var title = item.title;
-          if(item.artist){
-            title = [item.artist, item.title].join(' - ');
-          }
-          var mv_up_btn = $('<a>')
-                          .attr({'href':'#moveup', 'title': 'move up'})
-                          .append($('<i>').addClass('fa fa-chevron-up'))
-                          .on('click',
-                              (function(index){
-                                return function(e){
-                                  e.preventDefault();
-                                  move_queue_item_up(index);
-                                  display_queue();
-                                }
-                              })(ii)
-                          );
-          var mv_down_btn = $('<a>')
-                            .attr({'href':'#movedown', 'title': 'move down'})
-                            .append($('<i>').addClass('fa fa-chevron-down'))
-                            .on('click',
-                                (function(index){
-                                  return function(e){
-                                    e.preventDefault();
-                                    move_queue_item_down(index);
-                                    display_queue();
-                                  }
-                                })(ii)
-                            );
-          var link = $('<a>').text(title)
-                             .attr({
-                               'title': item.filename,
-                               'href': item.download_url
-                             })
-                             .on('click', (function(song){
-                               return function(e){
-                                 if(!e){
-                                   e = window.event;
-                                 }
-                                 e.preventDefault();
-                                 if(e.ctrlKey){
-                                   remove_from_queue(song);
-                                 } else {
-                                   jump_to_song(song);
-                                 };
-                               }
-                             })(item));
-          var el = $('<tr>').append(
-                     $('<td>').append(mv_up_btn)
-                              .append(mv_down_btn)
-                              .append(' ')
-                              .append(link)
-                   );
-          $('#play_queue_table').append(el)
+          // Vertical height adjustement
+          var on_resize = function(){
+            var height = $(window).height() - ($('#main_navbar').height() + $('#main_footer').height());
+            var width = $(window).width();
+            $('#main_container').css('height', height+'px');//, "width":"100%"});
+            $('#main_div').css('height', height+'px');
+            var boxheight = $(window).height() - ($('.tab-pane.active').offset().top  + $('#main_footer').height());
+            $('.tab-pane.active').css('height', boxheight+'px')
+            $('.tab-pane.active').css('width', '100%')
+          };
+          $(window).on('resize', on_resize).trigger('resize');
+
+          // Background
+          $.backstretch("{% static 'nickelodeon/wallpaper.jpg' %}");
+
+          // App
+          var app = JukeBox("{% static 'vendor/soundmanager2/v297a-20140901/swf/' %}");
+          $(window).bind('beforeunload', function(){return "Are you sure?";});
         });
-        var el = $('<tr>').append($('<td>').html('Random <i class="fa fa-random"></i>'));
-        $('#play_queue_table').append(el)
-      };
-
-      var display_history = function(){
-        $('#play_history_table').html('');
-        var play_history_copy = play_history.slice(0).reverse();
-        $.each(play_history_copy, function(ii, item){
-          if(!item)return;
-          var title = item.title;
-          if(item.artist){
-            title = [item.artist, item.title].join(' - ');
-          }
-          var link = $('<a>').text(title)
-                             .attr({
-                               'title': item.filename,
-                               'href': item.download_url
-                             })
-                             .on('click', (function(song){
-                               return function(e){
-                                 e.preventDefault();
-                                 jump_to_song(song);
-                               }
-                             })(item));
-          var el = $('<tr>').append($('<td>').append(link));
-          $('#play_history_table').append(el)
-        });
-      };
-
-      $('#start_search_button').on('click', start_search);
-      $('#search_input').on('keyup', function(e){
-        if(e.keyCode == 13){
-          start_search();
-        }
-      });
-
-      $('#use_aac_button').on('click', function(){
-        if(!prefer_aac){
-          prefer_aac = true;
-          play_song(current_song_data);
-        }
-      });
-      $('#use_mp3_button').on('click', function(){
-        if(prefer_aac){
-          prefer_aac = false;
-          play_song(current_song_data);
-        }
-      });
-      $('#full_progress_bar')
-      .css({'cursor': 'pointer'})
-      .on('click', function(e){
-        var sound = soundManager.getSoundById(current_song_data.uuid),
-            perc = (e.pageX - $(this).offset().left)/$(this).width();
-        sound.setPosition(perc*sound.durationEstimate);
-      });
-
-      // Keyboard Support
-      $('body').on('keydown', function(e){
-        if(document.activeElement.tagName=='INPUT'){
-          return;
-        }
-        if(!e){
-          e = window.event;
-        }
-        var code = e.keyCode;
-        if(e.charCode && code == 0){
-          code == e.charCode;
-        }
-        if(e.key=='Spacebar' || code==32){
-          $('#play_pause_button').click();
-          e.preventDefault();
-        } else if(e.key=='b' || code==66){
-          $('#prev_button').click();
-        } else if(e.key=='n' || code==78){
-          $('#next_button').click();
-        } else if(e.keyCode=="S".charCodeAt(0)) {
-          if(!$('#search_input').is(":focus")){
-            e.preventDefault();
-            $('#search_input').focus()
-          }
-        }
-      });
-
-      load_state();
-      if(!current_song_data){
-        get_current_info(function(){
-          play_song(current_song_data);
-        });
-      }else{
-        play_song(current_song_data);
-      }
-      if(playing_status==PLAYING){
-        $('#play_pause_button > i').removeClass('fa-play')
-                                   .addClass('fa-pause');
-      } else {
-        $('#play_pause_button > i').removeClass('fa-pause')
-                                   .addClass('fa-play');
-      }
-    })
-  });
-})(jQuery, '{{STATIC_URL}}soundmanagerv297a-20131201/', '{% url 'song_list' %}');
-</script>
-{% endblock %}
+      })(jQuery);
+    </script>
+  </body>
+</html>
