@@ -156,10 +156,10 @@
                     <input type="text" class="form-control" id="edit_song_filename_input" placeholder="File path">
                   </div>
                   <label>
-                    <input type="hidden" id='edit_song_uuid_input'>
-                    <input type="hidden" id='edit_song_org_artist'>
-                    <input type="hidden" id='edit_song_org_title'>
-                    <input type="hidden" id='edit_song_org_filename'>
+                    <input type="hidden" id="edit_song_uuid_input">
+                    <input type="hidden" id="edit_song_org_artist">
+                    <input type="hidden" id="edit_song_org_title">
+                    <input type="hidden" id="edit_song_org_filename">
                   </label>
                 </form>
               </div>
@@ -222,20 +222,9 @@
       <tr><td><i class="fa fa-exclamation"></i> Nothing played</td></tr>
     </script>
 
-<<<<<<< HEAD
     <script type="text/template" id="empty_queue_template">
       <tr><td><i class="fa fa-exclamation"></i> Nothing queued</td></tr>
     </script>
-=======
-      var extract_search_query_from_link = function(link){
-        var query_re = /(\?|&)q=([^&]+)/;
-        var matches = link.match(query_re)
-        if(matches){
-          return decodeURIComponent(matches[2].replace(/\+/g, '%20'));
-        }
-        return ''
-      };
->>>>>>> 5fe5bfb9995622b926e3d2921e53b9ae1c7669a7
 
     <script type="text/template" id="queued_song_template">
       <td>
@@ -368,131 +357,12 @@ $(document).ajaxSend(function(event, xhr, settings) {
           $('#tab_selector a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             $(window).trigger('resize');
           });
-<<<<<<< HEAD
           $('.scrollable').each(
             function(ii){
               $(this).enscroll({
                 verticalTrackClass: 'enscroll_track',
                 verticalHandleClass: 'enscroll_handle'
               });
-=======
-        }
-      };
-
-      // Button Triggers
-      $('#play_pause_button').on('click', function(e){
-        e.preventDefault();
-        if(playing_status==PAUSED){
-          $('#play_pause_button > i').removeClass('fa-play')
-                                     .addClass('fa-pause');
-        } else {
-          if(e.ctrlKey){
-            stopping_after_current = true;
-            return;
-          }
-          $('#play_pause_button > i').removeClass('fa-pause')
-                                     .addClass('fa-play');
-        }
-        toggle_play();
-      });
-
-
-      $('#next_button').on('click', play_next_song);
-      $('#prev_button').on('click', play_prev_song);
-
-      var start_search = function(){
-        var result = $('#search_input').val();
-        if(result){
-          search(result);
-        }
-      };
-      $('#youtube_import_btn').on('click', function(e){
-        e.preventDefault();
-        var yt_vid_re = /^[a-zA-Z0-9_-]{11}$/,
-            yt_full_url_re = /^(https?:\/\/)?(www\.|m\.)?youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_-]{11})(&.*)?$/,
-            yt_short_url_re = /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})(\?.*)?$/,
-            yt_vid_id = null;
-        $('#downloading_yt_i').hide();
-        $('#id_youtube_url').val('')
-        $('#youtubeModal').on('shown.bs.modal', function (e) {
-          $('#id_youtube_url').focus();
-        });
-        $("#youtubeModal").modal();
-        $("#download_yt_btn")
-        .off("click") // deactivate previous action
-        .on('click', function(){
-          yt_link = $('#id_youtube_url').val();
-          if(yt_vid_re.test(yt_link)){
-            yt_vid_id = yt_link;
-          } else if(yt_full_url_re.test(yt_link)){
-            yt_vid_id = yt_link.match(yt_full_url_re)[4];
-          }else if(yt_short_url_re.test(yt_link)){
-            yt_vid_id = yt_link.match(yt_short_url_re)[2];
-          }else{
-            alert("Could not recognize YouTube URL")
-            return;
-          }
-          if(yt_vid_id){
-            $('#downloading_yt_i').show();
-            $.ajax({
-              url: '/api/v1/youtube_dl/',
-              type: 'POST',
-              dataType: 'JSON',
-              data: {video_id: yt_vid_id}
-            }).success(
-              function(response){
-                $('#youtubeModal').modal('hide');
-              }
-            );
-          }
-        });
-      })
-      var edit_song = function(song){
-        $('#id_song_artist').val(song.artist);
-        $('#id_song_title').val(song.title);
-        $('#id_song_filename').val(song.filename);
-        $('#saving_change_i').hide();
-        $("#editSongModal").modal();
-        $("#save_song_change_btn")
-        .off("click") // deactivate previous action
-        .on('click',
-          (function(current_data){
-            return function(){
-              var artist = $('#id_song_artist').val(),
-                  title = $('#id_song_title').val(),
-                  filename = $('#id_song_filename').val(),
-                  uuid = current_data.uuid,
-                  update_data = {},
-                  data_changed = false;
-
-              if(artist != current_data.artist){
-                update_data['artist'] = artist;
-                data_changed = true;
-              }
-              if(title != current_data.title){
-                update_data['title'] = title;
-                data_changed = true;
-              }
-              if(filename != current_data.filename){
-                update_data['filename'] = filename;
-                data_changed = true;
-              }
-              if(data_changed){
-                $('#saving_change_i').show()
-                $.ajax({
-                  url: '/api/v1/song/'+uuid,
-                  type: 'PUT',
-                  dataType: 'JSON',
-                  data: update_data
-                }).success(
-                  function(response){
-                    $('#editSongModal').modal('hide');
-                  }
-                );
-              }else{
-                $('#editSongModal').modal('hide');
-              }
->>>>>>> 5fe5bfb9995622b926e3d2921e53b9ae1c7669a7
             }
           );
 
