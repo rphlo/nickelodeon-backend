@@ -302,7 +302,7 @@ var JukeBox = function(swf_path){
     },
     pull_queued: function(){
       var queue = _.clone(this.get('play_queue')),
-          song = queue.unshift();
+          song = queue.shift();
       this.set('play_queue', queue);
       return song;
     },
