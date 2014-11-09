@@ -361,7 +361,9 @@ $(document).ajaxSend(function(event, xhr, settings) {
             function(ii){
               $(this).enscroll({
                 verticalTrackClass: 'enscroll_track',
-                verticalHandleClass: 'enscroll_handle'
+                verticalHandleClass: 'enscroll_handle',
+                scrollIncrement: 40,
+                easingDuration: 250
               });
             }
           );
