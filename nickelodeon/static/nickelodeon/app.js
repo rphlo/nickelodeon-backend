@@ -338,7 +338,7 @@ var JukeBox = function(swf_path){
     set_played: function(song){
       var played = _.clone(this.get('play_history'));
       played.unshift(song);
-      played.slice(0, HISTORY_MAX_LENGTH);
+      played = played.slice(0, HISTORY_MAX_LENGTH);
       this.set('play_history', played);
     },
     pull_played: function(){
