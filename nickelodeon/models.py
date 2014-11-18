@@ -20,7 +20,9 @@ class Song(UuidModel):
                                     recursive=True, allow_files=True,
                                     allow_folders=False,
                                     verbose_name=_('file name'),
-                                    max_length=255, unique=True)
+                                    max_length=255,
+                                    unique=True,
+                                    db_index=True)
 
     def __unicode__(self):
         if self.artist:
