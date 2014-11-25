@@ -64,7 +64,7 @@ class Command(BaseCommand):
         existing_songs = Song.objects.filter(
             filename__startswith=self.folder_root[len(settings.MEDIA_ROOT):]
         )
-        self.songs_to_find = set(existing_songs.values_list('filename', 
+        self.songs_to_find = set(existing_songs.values_list('filename',
                                                             flat=True))
         self.songs_to_remove = self.songs_to_find.copy()
         self.stdout.write(
