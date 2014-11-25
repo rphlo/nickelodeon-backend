@@ -34,7 +34,7 @@ class Command(BaseCommand):
     encoding = 'UTF-8'
     folder_root = ROOT_DIRECTORY
 
-    def handle(self, *args, **options):
+    def parse_args(self, args):
         self.encoding = sys.getfilesystemencoding()
         if len(args) > 1:
             raise CommandError('Too many arguments. See usage.')
@@ -54,6 +54,9 @@ class Command(BaseCommand):
                     self.folder_root.decode(self.encoding)
                 )
             )
+
+    def handle(self, *args, **options):
+        self.parse_args(args)
         self.t0 = self.last_flush = time.time()
         self.songs_count = 0
         self.songs_to_add = set()
@@ -61,7 +64,8 @@ class Command(BaseCommand):
         existing_songs = Song.objects.filter(
             filename__startswith=self.folder_root[len(settings.MEDIA_ROOT):]
         )
-        self.songs_to_find = set(existing_songs.values_list('filename', flat=True))
+        self.songs_to_find = set(existing_songs.values_list('filename', 
+                                                            flat=True))
         self.songs_to_remove = self.songs_to_find.copy()
         self.stdout.write(
             u'Scanning directory {} for music'.format(
@@ -72,20 +76,21 @@ class Command(BaseCommand):
         for filename in self.scan_directory():
             self.process_music_file(filename)
         self.print_scan_status(True)
+        nb_songs_to_add = len(self.songs_to_add)
         self.stdout.write(
             u'\nDiscovered %d %s' % (
-                len(self.songs_to_add),
-                pluralize('file', self.songs_to_add)
+                nb_songs_to_add,
+                pluralize('file', nb_songs_to_add)
             )
         )
-        if len(self.songs_to_remove) > 0:
+        nb_songs_to_remove = len(self.songs_to_remove)
+        if nb_songs_to_remove > 0:
             self.stdout.write(
                 u'Could not find %d %s' % (
-                    len(self.songs_to_remove),
-                    pluralize('file', self.songs_to_remove)
+                    nb_songs_to_remove,
+                    pluralize('file', nb_songs_to_remove)
                 )
             )
-        if len(self.songs_to_find) > 0:
             Song.objects.filter(filename__in=self.songs_to_remove).delete()
         if len(self.songs_to_add) > 0:
             self.bulk_create()
@@ -129,8 +134,9 @@ class Command(BaseCommand):
         if time.time() - self.last_flush > 1 or force:
             self.last_flush = time.time()
             self.stdout.write(
-                u'\rScanned %d music files in %s' % (
+                u'\rScanned %d music %s in %s' % (
                     self.songs_count,
+                    pluralize('file', self.songs_count),
                     readable_duration(time.time()-self.t1)
                 ),
                 ending=""
