@@ -166,14 +166,16 @@ class FFmpegTask(object):
 def convert_audio(input_file, output_file_aac, output_file_mp3, callback=None):
     command = [
         'ffmpeg', '-y', '-i', input_file, '-threads', '0', '-vn',
+        # Below MP3 file
         '-ar', '44100', '-ac', '2',
         '-b:a', '192k',
         '-f', 'mp3', output_file_mp3,
+        # Below AAC file
         '-ar', '44100', '-ac', '2',
         '-b:a', '32k',
         '-c:a', 'libfdk_aac', '-level', '10', '-profile:a', 'aac_he_v2',
         '-movflags', '+faststart', '-cutoff', '20000',
-        '-f', 'mp4', output_file_aac
+        '-f', 'mp4', output_file_aac,
     ]
     task = FFmpegTask(command, callback)
     task.run()
