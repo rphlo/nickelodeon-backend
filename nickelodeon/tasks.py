@@ -60,8 +60,8 @@ def file_move_safe(old_file_name, new_file_name, chunk_size=1024 * 64,
     with open(old_file_name, 'rb') as old_file:
         # now open the new file, not forgetting allow_overwrite
         fd = os.open(new_file_name,
-                     (os.O_WRONLY | os.O_CREAT | getattr(os, 'O_BINARY', 0) |
-                     (os.O_EXCL if not allow_overwrite else 0)))
+                     (os.O_WRONLY | os.O_CREAT | getattr(os, 'O_BINARY', 0)
+                      | (os.O_EXCL if not allow_overwrite else 0)))
         try:
             locks.lock(fd, locks.LOCK_EX)
             current_chunk = None
@@ -86,13 +86,84 @@ def file_move_safe(old_file_name, new_file_name, chunk_size=1024 * 64,
             raise
 
 
-def convert_audio(input_file, output_file_aac, output_file_mp3, callback=None):
-    def parse_ff_time(time_str):
+class FFmpegTask(object):
+    duration = ''
+    duration_prefix = 'Duration: '
+    duration_prefix_chr_found = 0
+    duration_found = False
+    progress = ''
+    progress_prefix = 'time='
+    progress_prefix_chr_found = 0
+    process = None
+    process_completed = False
+
+    def __init__(self, command, callback=None):
+        self.command = command
+        self.callback = callback
+
+    def run(self):
+        self.process = subprocess.Popen(self.command,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT,
+                                        bufsize=10**8)
+        while not self.process_completed:
+            self.track_progress()
+
+    @staticmethod
+    def parse_time_str(time_str):
         if not re.match('\d+:\d{2}:\d{2}\.\d+', time_str):
             return 0
         hours, minutes, seconds = [float(x) for x in time_str.split(':')]
         return (hours*60+minutes)*60+seconds
 
+    def search_duration_str(self, out):
+        if self.duration_prefix_chr_found < len(self.duration_prefix):
+            # While the prefix hasn't been found yet
+            if out == self.duration_prefix[self.duration_prefix_chr_found]:
+                self.duration_prefix_chr_found += 1
+            elif out == self.duration_prefix[0]:
+                self.duration_prefix_chr_found = 1
+            else:
+                self.duration_prefix_chr_found = 0
+        else:
+            # Prefix has been found
+            # Read data until comma
+            if out in '0123456789:.':
+                self.duration += out
+            else:
+                self.duration_found = True
+
+    def search_progress_str(self, out):
+        if self.progress_prefix_chr_found < len(self.progress_prefix):
+            if out == self.progress_prefix[self.progress_prefix_chr_found]:
+                self.progress_prefix_chr_found += 1
+            elif out == self.progress_prefix[0]:
+                self.progress_prefix_chr_found = 1
+            else:
+                self.progress_prefix_chr_found = 0
+        else:
+            if out in '0123456789:.':
+                self.progress += out
+            else:
+                if self.callback:
+                    prog_sec = self.parse_time_str(self.progress)
+                    dura_sec = self.parse_time_str(self.duration)
+                    percent = min(1, prog_sec/dura_sec)
+                    self.callback(percent)
+                self.progress = ''
+                self.progress_prefix_chr_found = 0
+
+    def track_progress(self):
+        out = self.process.stdout.read(1)
+        if out == '' and self.process.poll() is not None:
+            self.process_completed = True
+        if out != '':
+            if not self.duration_found:
+                self.search_duration_str(out)
+            self.search_progress_str(out)
+
+
+def convert_audio(input_file, output_file_aac, output_file_mp3, callback=None):
     command = [
         'ffmpeg', '-y', '-i', input_file, '-threads', '0', '-vn',
         '-ar', '44100', '-ac', '2',
@@ -104,47 +175,8 @@ def convert_audio(input_file, output_file_aac, output_file_mp3, callback=None):
         '-movflags', '+faststart', '-cutoff', '20000',
         '-f', 'mp4', output_file_aac
     ]
-    process = subprocess.Popen(command,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT,
-                               bufsize=10**8)
-    duration = ''
-    progress = ''
-    duration_str = 'Duration: '
-    duration_read = False
-    read_duration_str_index = 0
-    progress_str = 'time='
-    read_progress_str_index = 0
-    while True:
-        out = process.stdout.read(1)
-        if out == '' and process.poll() is not None:
-            break
-        if out != '':
-            if not duration_read:
-                if read_duration_str_index < len(duration_str):
-                    if out == duration_str[read_duration_str_index]:
-                        read_duration_str_index += 1
-                    else:
-                        read_duration_str_index = 0
-                else:
-                    if out != ',':
-                        duration += out
-                    else:
-                        duration_read = True
-            if read_progress_str_index < len(progress_str):
-                if out == progress_str[read_progress_str_index]:
-                    read_progress_str_index += 1
-                else:
-                    read_progress_str_index = 0
-            else:
-                if out != ' ':
-                    progress += out
-                else:
-                    if callback:
-                        per = parse_ff_time(progress)/parse_ff_time(duration)
-                        callback(per)
-                    progress = ''
-                    read_progress_str_index = 0
+    task = FFmpegTask(command, callback)
+    task.run()
     return
 
 

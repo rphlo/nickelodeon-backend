@@ -3,7 +3,8 @@ from django.views.generic import TemplateView
 from . import views
 from django.contrib.auth.decorators import permission_required
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^jukebox(/((?P<pk>[a-zA-Z0-9]{22})/?)?)?$',
         view=permission_required('nickelodeon.can_listen_song')(
             TemplateView.as_view(template_name="nickelodeon/music_player.html")
@@ -15,7 +16,8 @@ urlpatterns = patterns('',
     url(r'^api/v1/song/(?P<pk>[a-zA-Z0-9]{22})/?$',
         view=views.SongView.as_view(),
         name='song_detail'),
-    url(r'^api/v1/song/dl/(?P<pk>[a-zA-Z0-9]{22})(\.(?P<extension>(mp3|aac)))?$',
+    url(r'^api/v1/song/dl/(?P<pk>[a-zA-Z0-9]{22})'
+        r'(\.(?P<extension>(mp3|aac)))?$',
         view=views.download_song,
         name='song_download'),
     url(r'^api/v1/youtube_dl/?$',

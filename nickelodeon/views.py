@@ -18,7 +18,6 @@ def x_accel_redirect(request, path, filename='',
                      mime="application/force-download"):
     if settings.DEBUG:
         from django.core.servers.basehttp import FileWrapper
-        import re
         import os.path
         path = re.sub(r'^/internal', settings.MEDIA_ROOT, path)
         wrapper = FileWrapper(file(path))
