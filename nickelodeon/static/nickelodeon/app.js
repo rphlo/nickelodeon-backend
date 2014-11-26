@@ -2,7 +2,10 @@ var JukeBox = function(swf_path){
   var PLAYING = 1,
       PAUSED = 0,
       HISTORY_MAX_LENGTH = 50,
-      SEARCH_RESULTS_PER_PAGE = 50;
+      SEARCH_RESULTS_PER_PAGE = 50,
+      NEXT_RANDOM = 0,
+      NEXT_STOP = 1,
+      NEXT_FINISH_QUEUE = 2;
 
   var Song = Backbone.Model.extend({
     idAttribute: "uuid",
@@ -24,8 +27,7 @@ var JukeBox = function(swf_path){
   var JukeBoxState = Backbone.Model.extend({
     defaults: {
       'playing_state': PAUSED,
-      'stop_after_current': false,
-      'stop_after_playlist': false,
+      'behaviour': NEXT_RANDOM,
       'songs_count': 0,
       'play_history': [],
       'play_queue': [],
@@ -164,10 +166,10 @@ var JukeBox = function(swf_path){
       this.set('loaded', +new Date());
     },
     on_song_finish: function(){
-      if(this.get('stop_after_current')){
+      if(this.get('behaviour') === NEXT_STOP || (this.get('behaviour') && this.get('play_queue').length === 0)){
         this.stop();
         this.set('play_state', PAUSED);
-        this.set('stop_after_current', false);
+        this.set('behaviour', NEXT_RANDOM);
         this.load_song();
         return;
       }
@@ -346,6 +348,16 @@ var JukeBox = function(swf_path){
       		song = played.shift();
       this.set('play_history', played);
       return song;
+    },
+    switch_behaviour: function(){
+      var behav = this.get('behaviour');
+      if(behav === NEXT_RANDOM){
+        this.set('behaviour', NEXT_FINISH_QUEUE);
+      }else if(behav === NEXT_FINISH_QUEUE){
+        this.set('behaviour', NEXT_STOP);
+      }else{
+        this.set('behaviour', NEXT_RANDOM);
+      }
     }
   });
 
@@ -545,7 +557,8 @@ var JukeBox = function(swf_path){
       "click .search_more_button": "on_press_search_more",
       "click #edit_current_button": "on_press_edit_song",
       "click #download_current_button": "on_press_download_song",
-      "click #save_song_change_button": "on_press_save_song_change"
+      "click #save_song_change_button": "on_press_save_song_change",
+      "click #behaviour_switch_button": "on_press_behaviour_switch"
     },
     initialize: function() {
       this.model.fetch();
@@ -563,8 +576,8 @@ var JukeBox = function(swf_path){
               e = window.event;
             }
             var code = e.keyCode;
-            if(e.charCode && code == 0){
-              code == e.charCode;
+            if(e.charCode && code === 0){
+              code = e.charCode;
             }
             if(e.key=='Spacebar' || code==32){
               _this.on_press_play_pause(e);
@@ -574,9 +587,9 @@ var JukeBox = function(swf_path){
               _this.on_press_next(e);
             } else if(e.keyCode=="S".charCodeAt(0)) {
               e.preventDefault();
-              $('#search_input').focus()
+              $('#search_input').focus();
             }
-          }
+          };
         })(this)
       );
 
@@ -690,6 +703,18 @@ var JukeBox = function(swf_path){
           $('#progress_bar').css('width', '100%').attr('aria-valuenow', '100');
         }
       }
+      if(force || JB.changed.behaviour !== undefined){
+        target_div = $("#behaviour_switch_button > i");
+        target_div.removeClass();
+        var behav = JB.get('behaviour');
+        if(behav === NEXT_RANDOM){
+          target_div.addClass('fa fa-random');
+        }else if(behav === NEXT_FINISH_QUEUE){
+          target_div.addClass('fa fa-sort-amount-asc');
+        }else{
+          target_div.addClass('fa fa-minus-circle');
+        }
+      }
       // history
       if(force || JB.changed.play_history){
         target_div = this.$el.find('#play_history_table');
@@ -708,6 +733,7 @@ var JukeBox = function(swf_path){
           target_div.append($(div_template()));
         }
       }
+      // queue
       if(force || JB.changed.play_queue){
         results = JB.get('play_queue');
         target_div = this.$el.find('#play_queue_table');
@@ -727,6 +753,7 @@ var JukeBox = function(swf_path){
           target_div.append($(div_template()));
         }
       }
+      // Search
       if(force || JB.changed.search_results || JB.changed.search_query || JB.changed.searching){
         results = JB.get('search_results');
         target_div = this.$el.find('#search_results_table');
@@ -793,7 +820,7 @@ var JukeBox = function(swf_path){
       $('#yt_modal').on('shown.bs.modal', function (e) {
         $('#yt_url_input').focus();
       });
-      $('#yt_url_input').val('')
+      $('#yt_url_input').val('');
       $('#download_yt_submitting_i').hide();
       $("#yt_modal").modal('show');
     },
@@ -830,15 +857,15 @@ var JukeBox = function(swf_path){
           data_changed = false;
       // Only send changes
       if(artist != $('#edit_song_org_artist').val()){
-        update_data['artist'] = artist;
+        update_data.artist = artist;
         data_changed = true;
       }
       if(title != $('#edit_song_org_title').val()){
-        update_data['title'] = title;
+        update_data.title = title;
         data_changed = true;
       }
       if(filename != $('#edit_song_org_filename').val()){
-        update_data['filename'] = filename;
+        update_data.filename = filename;
         data_changed = true;
       }
       if(data_changed){
@@ -908,6 +935,10 @@ var JukeBox = function(swf_path){
     on_press_use_mp3: function(e){
       e.preventDefault();
       this.model.switch_format('mp3');
+    },
+    on_press_behaviour_switch: function(e){
+      e.preventDefault();
+      this.model.switch_behaviour();
     }
   });
 
