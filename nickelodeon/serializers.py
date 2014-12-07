@@ -2,30 +2,30 @@ from rest_framework import serializers
 from nickelodeon.models import Song, YouTubeDownloadTask
 
 
-class RelativeURLField(serializers.Field):
+class RelativeURLField(serializers.ReadOnlyField):
     """
     Field that returns a link to the relative url.
     """
-    url_field = 'get_absolute_url'
-
-    def to_native(self, value):
+    def to_representation(self, value):
         request = self.context.get('request')
         url = request and request.build_absolute_uri(value) or ''
         return url
 
 
 class SongSerializer(serializers.ModelSerializer):
-    url = RelativeURLField('get_absolute_url')
-    download_url = RelativeURLField('get_download_url')
-    availability = serializers.Field('available_formats')
-    filename = serializers.WritableField(required=False)
+    url = RelativeURLField(source='get_absolute_url')
+    download_url = RelativeURLField(source='get_download_url')
+    availability = serializers.ReadOnlyField(source='available_formats')
+    filename = serializers.CharField(required=False)
 
-    def save_object(self, obj, **kwargs):
-        if obj.pk is not None:
-            orig = Song.objects.get(pk=obj.pk)
-            if orig.filename != obj.filename:
-                obj.move_file_from(orig)
-        super(SongSerializer, self).save_object(obj, **kwargs)
+    def update(self, instance, validated_data):
+        has_moved = (validated_data['filename'] != instance.filename)
+        original_instance = Song(filename=instance.filename)
+        saved_instance = super(SongSerializer, self).update(instance,
+                                                            validated_data)
+        if has_moved:
+            saved_instance.move_file_from(original_instance)
+        return saved_instance
 
     class Meta:
         model = Song
@@ -34,7 +34,7 @@ class SongSerializer(serializers.ModelSerializer):
 
 
 class YouTubeDownloadTaskSerializer(serializers.ModelSerializer):
-    task_progress_url = RelativeURLField('get_task_url')
+    task_progress_url = RelativeURLField(source='get_task_url')
 
     class Meta:
         model = YouTubeDownloadTask
