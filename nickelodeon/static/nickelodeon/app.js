@@ -279,7 +279,7 @@ var JukeBox = function(swf_path){
       return function(response){
         _this.set('searching', false);
         _this.set('search_more_link', response.next);
-        if(response.results.length>0){
+        if(response.results.length > 0){
           var results = _this.get('search_results');
           _this.set('search_results', results.concat(_.map(response.results, function(s){return new Song(s);})));
         }
@@ -345,7 +345,7 @@ var JukeBox = function(swf_path){
     },
     pull_played: function(){
       var played = _.clone(this.get('play_history')),
-      		song = played.shift();
+          song = played.shift();
       this.set('play_history', played);
       return song;
     },
@@ -754,7 +754,7 @@ var JukeBox = function(swf_path){
         }
       }
       // Search
-      if(force || JB.changed.search_results || JB.changed.search_query || JB.changed.searching){
+      if(force || JB.changed.search_results || JB.changed.search_query || (JB.changed.searching != undefined)){
         results = JB.get('search_results');
         target_div = this.$el.find('#search_results_table');
         target_div.html('');
