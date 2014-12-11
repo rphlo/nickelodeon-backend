@@ -121,7 +121,7 @@ var JukeBox = function(swf_path){
       mime = {mp3: 'audio/mpeg', aac: 'audio/aac'}[format];
       var smsound = soundManager.createSound({
           id: song.id,
-          url: song.get('download_url')+'.'+format,
+          url: song.get('download_url')+'.'+format+'?;',
           volume: 100,
           autoPlay: auto_play,
           type: mime,
@@ -952,7 +952,7 @@ var JukeBox = function(swf_path){
       url: swf_path,
       flashVersion: 9, // optional: shiny features (default = 8)
       // optional: ignore Flash where possible, use 100% HTML5 mode
-      // preferFlash: false,
+      preferFlash: false,
       onready: function() {
         // Ready to use; soundManager.createSound() etc. can now be called.
         player = new JukeBoxView();
