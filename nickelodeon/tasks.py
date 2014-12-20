@@ -5,14 +5,14 @@ import pafy
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from celery import shared_task, current_task
-from zippy import ZippyshareHelper
+from nickelodeon.zippy import ZippyshareHelper
 from nickelodeon.models import Song, YouTubeDownloadTask, Mp3DownloadTask
 from nickelodeon.utils import file_move_safe, convert_audio
 
 
 @shared_task()
 def fetch_zippyshare_mp3(zippy_url=''):
-    def update_dl_progress(*progress_stats):
+    def update_dl_progress(progress_stats):
         current_task.update_state(state='PROGRESS',
                                   meta={'description': _('downloading'),
                                         'current': progress_stats*100,
@@ -29,7 +29,8 @@ def fetch_zippyshare_mp3(zippy_url=''):
                                         'step_total': 2})
 
     try:
-        media = ZippyshareHelper(zippy_url).retrieve_details()
+        media = ZippyshareHelper(zippy_url)
+        media.retrieve_details()
     except (ValueError, IOError):
         return "Could not retrieve Zippyshare MP3 {}".format(zippy_url)
     title = media.file_name[:-4]

@@ -102,7 +102,7 @@ class Mp3DownloadTask(models.Model):
         return ('task_status', (), {'task_id': self.task_id})
 
     def save(self, *args, **kwargs):
-        from zippy import ZIPPYSHARE_URL_RE
+        from nickelodeon.zippy import ZIPPYSHARE_URL_RE
         from nickelodeon.tasks import fetch_zippyshare_mp3
         if ZIPPYSHARE_URL_RE.match(self.url) and not self.task_id:
             task = fetch_zippyshare_mp3.s(self.url).delay()

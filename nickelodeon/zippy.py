@@ -25,8 +25,8 @@ class ZippyshareHelper(object):
             raise ValueError('Not a valid zippyshare url')
         host = url_match.group('HOST')
         key = url_match.group('KEY')
-        self.file_name, cksum = self.get_name_and_checksum()
-        p_url = '/'.join(("d", key, str(cksum), self.file_name))
+        self.file_name, checksum = self.get_name_and_checksum()
+        p_url = '/'.join(("d", key, str(checksum), self.file_name))
         self.download_url = urljoin(host, p_url)
 
     def get_name_and_checksum(self):
@@ -73,8 +73,8 @@ class ZippyshareHelper(object):
         with open(download_path, 'wb') as fp:
             response = self.session.get(self.download_url, stream=True)
             bytes_downloaded = 0
-            bytes_total = response.headers['content-length']
-            for chunk in response.iter_content(chunk_size=500*1024):
+            bytes_total = int(response.headers['content-length'])
+            for chunk in response.iter_content(chunk_size=32*1024):
                 if chunk:
                     fp.write(chunk)
                     fp.flush()
@@ -82,7 +82,7 @@ class ZippyshareHelper(object):
                     if not quiet:
                         print "%.2f" % bytes_downloaded/bytes_total*100
                     if callback:
-                        callback(bytes_downloaded/bytes_total)
+                        callback(float(bytes_downloaded)/bytes_total)
 
 
 if __name__ == '__main__':
