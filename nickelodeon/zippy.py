@@ -38,14 +38,13 @@ class ZippyshareHelper(object):
         except requests.exceptions.ConnectionError:
             raise ValueError("Unable to retrieve page")
         try:
-            name = re.search(
-                r'\"/d.*\/(?P<file_name>[^\/]+\.mp3)\"',
-                html
-            ).group('file_name')
+            name = re.search(r'\".*\/(?P<file_name>[^\/]+\.mp3)\"',
+                             html).group('file_name')
             m = re.search(r'\+[ ]*\((\d+)[ ]*\%[ ]*(\d+)'
                           r'[ ]*\+[ ]*(\d+)[ ]*\%[ ]*(\d+)\)[ ]*\+', html)
             if m:
                 a1, a2, c1, c2 = map(int, m.groups())
+                return name, (a1 % a2) + (c1 % c2)
             else:
                 a1, a2 = map(
                     int,
@@ -82,7 +81,7 @@ class ZippyshareHelper(object):
                     fp.flush()
                     bytes_downloaded += len(chunk)
                     if not quiet:
-                        print "%.2f" % bytes_downloaded/bytes_total*100
+                        print "%.2f" % float(bytes_downloaded)/bytes_total*100
                     if callback:
                         callback(float(bytes_downloaded)/bytes_total)
 
