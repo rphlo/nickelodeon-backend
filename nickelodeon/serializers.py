@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from nickelodeon.models import Song, YouTubeDownloadTask
+from nickelodeon.models import Song, YouTubeDownloadTask, Mp3DownloadTask
 
 
 class RelativeURLField(serializers.ReadOnlyField):
@@ -31,6 +31,14 @@ class SongSerializer(serializers.ModelSerializer):
         model = Song
         fields = ('uuid', 'url', 'download_url', 'artist',
                   'title', 'filename', 'availability')
+
+
+class Mp3DownloadTaskSerializer(serializers.ModelSerializer):
+    task_progress_url = RelativeURLField(source='get_task_url')
+
+    class Meta:
+        model = Mp3DownloadTask
+        fields = ('url', 'task_progress_url', )
 
 
 class YouTubeDownloadTaskSerializer(serializers.ModelSerializer):

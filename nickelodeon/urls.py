@@ -23,4 +23,7 @@ urlpatterns = patterns(
     url(r'^api/v1/youtube_dl/?$',
         view=views.YouTubeDownloadApiView.as_view(),
         name='youtube_dl'),
+    url(r'^api/v1/zippy_dl/?$',
+        view=views.Mp3DownloadApiView.as_view(),
+        name='zippy_dl'),
 )

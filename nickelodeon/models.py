@@ -91,3 +91,20 @@ class YouTubeDownloadTask(models.Model):
             task = fetch_youtube_video.s(self.video_id).delay()
             self.task_id = str(task.task_id)
         super(YouTubeDownloadTask, self).save(*args, **kwargs)
+
+
+class Mp3DownloadTask(models.Model):
+    url = models.URLField()
+    task_id = models.CharField(max_length=50, unique=True)
+
+    @models.permalink
+    def get_task_url(self):
+        return ('task_status', (), {'task_id': self.task_id})
+
+    def save(self, *args, **kwargs):
+        from zippy import ZIPPYSHARE_URL_RE
+        from nickelodeon.tasks import fetch_zippyshare_mp3
+        if ZIPPYSHARE_URL_RE.match(self.url) and not self.task_id:
+            task = fetch_zippyshare_mp3.s(self.url).delay()
+            self.task_id = str(task.task_id)
+        super(Mp3DownloadTask, self).save(*args, **kwargs)

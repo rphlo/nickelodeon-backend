@@ -9,8 +9,9 @@ from rest_framework.response import Response
 from common_base.social.decorators import api_key_authentication
 
 from nickelodeon.serializers import (SongSerializer,
-                                     YouTubeDownloadTaskSerializer)
-from nickelodeon.models import Song, YouTubeDownloadTask
+                                     YouTubeDownloadTaskSerializer,
+                                     Mp3DownloadTaskSerializer)
+from nickelodeon.models import Song, YouTubeDownloadTask, Mp3DownloadTask
 
 
 def x_accel_redirect(request, path, filename='',
@@ -50,10 +51,35 @@ def download_song(request, pk, extension=None):
     return x_accel_redirect(request, file_path, mime=mime)
 
 
+class Mp3DownloadApiView(generics.ListCreateAPIView):
+    """
+    Download Mp3 API
+    page -- Page number (Default: 1)
+    results_per_page -- Number of result per page (Default:20 Max: 1000)
+    """
+    queryset = Mp3DownloadTask.objects.all()
+    serializer_class = Mp3DownloadTaskSerializer
+
+    def __init__(self):
+        self.paginate_by = 20
+        self.paginate_by_param = 'results_per_page'
+        self.max_paginate_by = 1000
+        super(Mp3DownloadApiView, self).__init__()
+
+    def list(self, request, *args, **kwargs):
+        object_list = self.get_queryset()
+        page = self.paginate_queryset(object_list)
+        if page is not None:
+            serializer = self.get_pagination_serializer(page)
+        else:
+            serializer = self.get_serializer(object_list, many=True)
+        return Response(serializer.data)
+
+
 class YouTubeDownloadApiView(generics.ListCreateAPIView):
     """
     Download YouTube Video API
-    q -- Search terms (Default: '')
+    v -- Video ID (Default: '')
     page -- Page number (Default: 1)
     results_per_page -- Number of result per page (Default:20 Max: 1000)
     """
