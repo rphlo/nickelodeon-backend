@@ -75,15 +75,18 @@ class ZippyshareHelper(object):
             response = self.session.get(self.download_url, stream=True)
             bytes_downloaded = 0
             bytes_total = int(response.headers['content-length'])
+            prev_callback = -0.01
             for chunk in response.iter_content(chunk_size=32*1024):
                 if chunk:
                     fp.write(chunk)
                     fp.flush()
                     bytes_downloaded += len(chunk)
+                    perc_progress = float(bytes_downloaded)/bytes_total
                     if not quiet:
-                        print "%.2f" % float(bytes_downloaded)/bytes_total*100
-                    if callback:
-                        callback(float(bytes_downloaded)/bytes_total)
+                        print ("%.2f" % (perc_progress*100))
+                    if callback and (perc_progress - prev_callback) > 0.01:
+                        callback(perc_progress)
+                        prev_callback = perc_progress
 
 
 if __name__ == '__main__':
