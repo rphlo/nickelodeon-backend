@@ -33,7 +33,7 @@ def fetch_zippyshare_mp3(zippy_url=''):
         media.retrieve_details()
     except (ValueError, IOError):
         return "Could not retrieve Zippyshare MP3 {}".format(zippy_url)
-    title = media.file_name[:-4]
+    title = media.title
     safe_title = title.replace("<", "")\
                       .replace(">", "")\
                       .replace(":", "")\

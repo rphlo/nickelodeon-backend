@@ -14,6 +14,7 @@ class ZippyshareHelper(object):
     orig_url = None
     file_name = None
     download_url = None
+    self.title = None
 
     def __init__(self, url):
         self.session = requests.Session()
@@ -26,6 +27,7 @@ class ZippyshareHelper(object):
         host = url_match.group('HOST')
         key = url_match.group('KEY')
         self.file_name, checksum = self.get_name_and_checksum()
+        self.title = unquote(self.file_name[:-4])
         p_url = '/'.join(("d", key, str(checksum), self.file_name))
         self.download_url = urljoin(host, p_url)
 
