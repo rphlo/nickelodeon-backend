@@ -853,19 +853,20 @@ var JukeBox = function(swf_path){
           title = $('#edit_song_title_input').val(),
           filename = $('#edit_song_filename_input').val(),
           uuid = $('#edit_song_uuid_input').val(),
-          update_data = {},
+          update_data = {
+            'artist': artist,
+            'filename': filename,
+            'title': title
+          },
           data_changed = false;
       // Only send changes
       if(artist != $('#edit_song_org_artist').val()){
-        update_data.artist = artist;
         data_changed = true;
       }
       if(title != $('#edit_song_org_title').val()){
-        update_data.title = title;
         data_changed = true;
       }
       if(filename != $('#edit_song_org_filename').val()){
-        update_data.filename = filename;
         data_changed = true;
       }
       if(data_changed){
