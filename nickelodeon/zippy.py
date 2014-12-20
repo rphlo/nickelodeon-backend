@@ -14,7 +14,7 @@ class ZippyshareHelper(object):
     orig_url = None
     file_name = None
     download_url = None
-    self.title = None
+    title = None
 
     def __init__(self, url):
         self.session = requests.Session()
