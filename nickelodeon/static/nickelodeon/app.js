@@ -552,6 +552,9 @@ var JukeBox = function(swf_path){
       "click #open_yt_modal_button": "on_press_open_yt_modal",
       "click #download_yt_button": "on_press_download_yt",
       "keyup #yt_url_input": "on_type_yt_url",
+      "click #open_zippy_modal_button": "on_press_open_zippy_modal",
+      "click #download_zippy_button": "on_press_download_zippy",
+      "keyup #zippy_url_input": "on_type_zippy_url",
       "click #use_aac_button": "on_press_use_aac",
       "click #use_mp3_button": "on_press_use_mp3",
       "click .search_more_button": "on_press_search_more",
@@ -815,19 +818,6 @@ var JukeBox = function(swf_path){
       e.preventDefault();
       this.model.search_more();
     },
-    on_press_open_yt_modal: function(e){
-      e.preventDefault();
-      $('#yt_modal').on('shown.bs.modal', function (e) {
-        $('#yt_url_input').focus();
-      });
-      $('#yt_url_input').val('');
-      $('#download_yt_submitting_i').hide();
-      $("#yt_modal").modal('show');
-    },
-    on_press_download_yt: function(e){
-      e.preventDefault();
-      this.submit_yt_download();
-    },
     on_press_edit_song: function(e){
       e.preventDefault();
       var song = this.model.get('current_song');
@@ -853,20 +843,19 @@ var JukeBox = function(swf_path){
           title = $('#edit_song_title_input').val(),
           filename = $('#edit_song_filename_input').val(),
           uuid = $('#edit_song_uuid_input').val(),
-          update_data = {
-            'artist': artist,
-            'filename': filename,
-            'title': title
-          },
+          update_data = {},
           data_changed = false;
       // Only send changes
       if(artist != $('#edit_song_org_artist').val()){
+        update_data.artist = artist;
         data_changed = true;
       }
       if(title != $('#edit_song_org_title').val()){
+        update_data.title = title;
         data_changed = true;
       }
       if(filename != $('#edit_song_org_filename').val()){
+        update_data.filename = filename;
         data_changed = true;
       }
       if(data_changed){
@@ -888,6 +877,19 @@ var JukeBox = function(swf_path){
     on_press_download_song: function(e){
       e.preventDefault();
       window.open(this.model.get('current_song').get('download_url'));
+    },
+    on_press_open_yt_modal: function(e){
+      e.preventDefault();
+      $('#yt_modal').on('shown.bs.modal', function (e) {
+        $('#yt_url_input').focus();
+      });
+      $('#yt_url_input').val('');
+      $('#download_yt_submitting_i').hide();
+      $("#yt_modal").modal('show');
+    },
+    on_press_download_yt: function(e){
+      e.preventDefault();
+      this.submit_yt_download();
     },
     on_type_yt_url: function(e){
       if(e.keyCode == 13){
@@ -927,6 +929,51 @@ var JukeBox = function(swf_path){
         );
       } else {
         // TODO: Warn not valid youtube url
+      }
+    },
+    on_press_open_zippy_modal: function(e){
+      e.preventDefault();
+      $('#zippy_modal').on('shown.bs.modal', function (e) {
+        $('#zippy_url_input').focus();
+      });
+      $('#zippy_url_input').val('');
+      $('#download_zippy_submitting_i').hide();
+      $("#zippy_modal").modal('show');
+    },
+    on_press_download_zippy: function(e){
+      e.preventDefault();
+      this.submit_zippy_download();
+    },
+    on_type_zippy_url: function(e){
+      if(e.keyCode == 13){
+        this.submit_zippy_download();
+      }
+    },
+    submit_zippy_download: function(){
+      var zippy_url_re = /^http:\/\/www\d{0,2}\.zippyshare\.com\/v\/\d+\/file\.html$/,
+          user_val = $('#zippy_url_input').val();
+      is_zippy_url = zippy_url_re.test(user_val);
+      if(is_zippy_url){
+        // TODO: Move away from view
+        $('#download_zippy_submitting_i').show();
+        $.ajax(
+          {
+            url: '/api/v1/zippy_dl/',
+            type: 'POST',
+            dataType: 'JSON',
+            data: {
+              url: user_val
+            }
+          }
+        ).success(
+          function(response){
+            $('#zippy_modal').modal('hide');
+            // TODO: track import process
+          }
+        );
+      } else {
+        // TODO: Warn not valid youtube url
+        alert('Invalid URL');
       }
     },
     on_press_use_aac: function(e){

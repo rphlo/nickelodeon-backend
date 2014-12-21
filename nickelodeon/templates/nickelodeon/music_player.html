@@ -69,6 +69,7 @@
                   <li><a href="#" id="edit_current_button"><i class="fa fa-lg fa-edit"></i> Edit</a></li>
                   <li><a href="#" id="download_current_button"><i class="fa fa-lg fa-download"></i> Download</a></li>
                   <li><a href="#" id="open_yt_modal_button"><i class="fa fa-lg fa-youtube"></i> Import from YouTube</a></li>
+                  <li><a href="#" id="open_zippy_modal_button"><i class="fa fa-lg fa-cloud-download"></i> Import from Zippyshare</a></li>
                 </ul>
               </div>
             </div>
@@ -139,6 +140,26 @@
             </div>
           </div>
         </div>
+        <div class="modal fade" id="zippy_modal" tabindex="-1" role="dialog" aria-labelledby="zippy_modal_label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="_modal_label">Import from Zippyshare</h4>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="zippy_url_input">Zippyshare URL</label>
+                  <input type="text" class="form-control" id="zippy_url_input" placeholder="Zippyshare URL">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="download_zippy_button"><span id="download_zippy_submitting_i"><i class="fa fa-circle-o-notch fa-spin"></i> </span>Download</button>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="modal fade" id="edit_song_modal" tabindex="-1" role="dialog" aria-labelledby="edit_song_modal_label" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
@@ -183,6 +204,9 @@
       </div>
     </div>
 
+
+    <!-- Templates
+    ================================================== -->
     <script type="text/template" id="search_loading_template">
       <tr><td><i class="fa fa-circle-o-notch fa-spin"></i> Searching &quot;<%= query %>&quot;</td></tr>
     </script>
@@ -304,7 +328,6 @@
     </script>
     <!-- Bootstrap core JavaScript
     ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
     <script src="{% static 'vendor/jquery/2.1.1/jquery-2.1.1.min.js' %}"></script>
     <script src="{% static 'vendor/jstorage/0.4.12/jstorage.min.js' %}"></script>
     <script src="{% static 'vendor/jquery-backstretch/2.0.4/jquery.backstretch.min.js' %}"></script>
