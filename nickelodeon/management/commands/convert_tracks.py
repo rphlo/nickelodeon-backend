@@ -88,9 +88,9 @@ class Command(BaseCommand):
         if not MP3_FILE_EXT_RE.search(media_path) \
                 and not AAC_FILE_EXT_RE.search(media_path):
             return
-        if len(media_path) > 255:
-            self.stderr(u'Media path too long, '
-                        u'255 characters maximum. %s' % media_path)
+        if len(media_path)-len(settings.MEDIA_ROOT) > 255:
+            self.stderr.write(u'Media path too long, '
+                              u'255 characters maximum. %s' % media_path)
             return
         target_filename = media_path[:-4]
         ext = media_path[-4:].lower()
