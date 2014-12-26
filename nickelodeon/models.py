@@ -1,6 +1,8 @@
 import sys
 import os.path
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.files.move import file_move_safe
@@ -72,6 +74,18 @@ class Song(UuidModel):
 
     class Meta:
         permissions = (("can_listen_songs", _("Can listen songs")),)
+
+
+@receiver(post_delete, sender=Song)
+def song_post_delete_handler(sender, **kwargs):
+    if sender:
+        pass
+    song_obj = kwargs['instance']
+    for ext in AVAILABLE_FORMATS:
+        file_path = song_obj.get_file_format_path(ext)\
+                            .encode(sys.getfilesystemencoding())
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 
 class YouTubeDownloadTask(models.Model):

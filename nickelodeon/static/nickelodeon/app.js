@@ -358,6 +358,14 @@ var JukeBox = function(swf_path){
       }else{
         this.set('behaviour', NEXT_RANDOM);
       }
+    },
+    delete_song: function(song){
+      var uuid = song.id;
+      $.ajax({
+        url: '/api/v1/song/'+uuid,
+        type: 'DELETE',
+        dataType: 'JSON',
+      })
     }
   });
 
@@ -368,7 +376,8 @@ var JukeBox = function(swf_path){
       'click .song_link': 'press_song_link',
       'click .edit_song_button': 'press_edit_song',
       'click .queue_song_button': 'press_queue_song',
-      'click .download_song_button': 'press_download_song'
+      'click .download_song_button': 'press_download_song',
+      'click .delete_song_button': 'press_delete_song'
     },
     initialize: function(options){
       this.player = options.player;
@@ -413,6 +422,13 @@ var JukeBox = function(swf_path){
     press_queue_song: function(e){
       e.preventDefault();
       this.player.queue_song(this.model);
+    },
+    press_delete_song: function(e){
+      e.preventDefault();
+      var song = this.model;
+      if(window.confirm('Are you sure?!')){
+        this.player.delete_song(song)
+      }
     }
   });
 
