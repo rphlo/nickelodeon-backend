@@ -1,4 +1,5 @@
 import re
+import urllib
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, StreamingHttpResponse
 from django.conf import settings
@@ -26,7 +27,7 @@ def x_accel_redirect(request, path, filename='',
         response['Content-Type'] = mime
     else:
         response = HttpResponse('', status=206)
-        response['X-Accel-Redirect'] = path.encode('utf-8')
+        response['X-Accel-Redirect'] = urllib.quote(path.encode('utf-8'))
         response['Content-Type'] = mime
     response['Content-Disposition'] = "attachment; filename=%s" % filename
     response['Accept-Ranges'] = 'bytes'
