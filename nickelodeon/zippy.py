@@ -6,7 +6,7 @@ from urllib import unquote
 
 
 ZIPPYSHARE_URL_RE = re.compile(r'(?P<HOST>http://www\d{0,2}\.zippyshare\.com)'
-                               r'/v(?:/|iew\.jsp.*key=)(?P<KEY>\d+)')
+                               r'/v(?:/|iew\.jsp.*key=)(?P<KEY>[0-9a-zA-Z]+)')
 
 
 class ZippyshareHelper(object):

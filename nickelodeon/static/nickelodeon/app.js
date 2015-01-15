@@ -961,7 +961,7 @@ var JukeBox = function(swf_path){
       }
     },
     submit_zippy_download: function(){
-      var zippy_url_re = /^http:\/\/www\d{0,2}\.zippyshare\.com\/v\/\d+\/file\.html$/,
+      var zippy_url_re = /^http:\/\/www\d{0,2}\.zippyshare\.com\/v\/[0-9a-zA-Z]+\/file\.html$/,
           user_val = $('#zippy_url_input').val();
       is_zippy_url = zippy_url_re.test(user_val);
       if(is_zippy_url){

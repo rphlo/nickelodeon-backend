@@ -108,7 +108,7 @@ class Command(BaseCommand):
 
     def bulk_convert(self):
         for data in self.songs_to_convert:
-            self.stdout.write("Converting {}".format(data['src']))
+            self.stdout.write(u"Converting %s" % data['src'])
             kwargs = {'callback': self.print_conversion_status}
             kwargs["output_file_{}".format(data['out'][-3:])] = data['out']
             convert_audio(data['src'], **kwargs)
