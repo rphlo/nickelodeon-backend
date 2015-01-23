@@ -24,14 +24,13 @@ def x_accel_redirect(request, path, filename='',
         wrapper = FileWrapper(file(path))
         response = StreamingHttpResponse(wrapper, content_type=mime)
         response['Content-Length'] = os.path.getsize(path)
-        response['Content-Type'] = mime
     else:
         response = HttpResponse('', status=206)
         response['X-Accel-Redirect'] = urllib.quote(path.encode('utf-8'))
-        response['Content-Type'] = mime
+	response['X-Accel-Buffering'] = 'no'
+	response['Accept-Ranges'] = 'bytes'
+    response['Content-Type'] = mime
     response['Content-Disposition'] = "attachment; filename=%s" % filename
-    response['Accept-Ranges'] = 'bytes'
-    response['X-Accel-Buffering'] = 'no'
     return response
 
 
@@ -49,7 +48,8 @@ def download_song(request, pk, extension=None):
     mime = 'audio/mpeg' if extension == 'mp3' else 'audio/x-m4a'
     file_path = u'{}.{}'.format(file_path, extension)
     file_path = u"/internal{}".format(file_path)
-    return x_accel_redirect(request, file_path, mime=mime)
+    filename = song.title + '.' + extension
+    return x_accel_redirect(request, file_path, filename=filename, mime=mime)
 
 
 class Mp3DownloadApiView(generics.ListCreateAPIView):
