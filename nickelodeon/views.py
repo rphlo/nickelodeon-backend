@@ -27,8 +27,8 @@ def x_accel_redirect(request, path, filename='',
     else:
         response = HttpResponse('', status=206)
         response['X-Accel-Redirect'] = urllib.quote(path.encode('utf-8'))
-	response['X-Accel-Buffering'] = 'no'
-	response['Accept-Ranges'] = 'bytes'
+        response['X-Accel-Buffering'] = 'no'
+        response['Accept-Ranges'] = 'bytes'
     response['Content-Type'] = mime
     response['Content-Disposition'] = "attachment; filename=%s" % filename
     return response
