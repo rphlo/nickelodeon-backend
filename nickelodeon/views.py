@@ -112,11 +112,6 @@ class SongView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = SongSerializer
     queryset = Song.objects.all()
 
-    def destroy(self, request, *args, **kwargs):
-        if request.user.is_authenticated() \
-           and not request.user.username == 'rphl':
-            raise PermissionDenied()
-        super(SongView, self).destroy(*args, **kwargs)
 
 class TextSearchApiView(generics.ListAPIView):
     """
