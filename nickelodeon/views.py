@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.decorators import permission_required
 from rest_framework import generics
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from common_base.social.decorators import api_key_authentication
 
@@ -111,6 +112,11 @@ class SongView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = SongSerializer
     queryset = Song.objects.all()
 
+    def destroy(self, request, *args, **kwargs):
+        if request.user.is_authenticated() \
+           and not request.user.username == 'rphl':
+            raise PermissionDenied()
+        super(SongView, self).destroy(*args, **kwargs)
 
 class TextSearchApiView(generics.ListAPIView):
     """
