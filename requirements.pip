@@ -1,5 +1,0 @@
-django-common_base>=0.1.1
-djangorestframework>=3.0.0
-celery
-scandir
-pafy

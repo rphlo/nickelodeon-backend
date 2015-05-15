@@ -22,7 +22,7 @@ ROOT_DIRECTORY = os.path.join(settings.MEDIA_ROOT, 'exthd', 'music')
 
 class Command(BaseCommand):
     args = '[folder]'
-    help = 'Scan the media folder and update the database of mp3 files'
+    help = 'Scan the media folder and convert files found in aac or mp3'
     songs_to_convert = []
     t0 = t1 = last_flush = 0
     encoding = 'UTF-8'

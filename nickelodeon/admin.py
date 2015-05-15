@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Song
+
+from nickelodeon.models import Song
 
 
 class SongAdmin(admin.ModelAdmin):

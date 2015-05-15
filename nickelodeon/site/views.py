@@ -1,19 +1,18 @@
 import re
 import urllib
+
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, StreamingHttpResponse
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.decorators import permission_required
-from rest_framework import generics
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.response import Response
-from common_base.social.decorators import api_key_authentication
 
-from nickelodeon.serializers import (SongSerializer,
-                                     YouTubeDownloadTaskSerializer,
-                                     Mp3DownloadTaskSerializer)
-from nickelodeon.models import Song, YouTubeDownloadTask, Mp3DownloadTask
+from rest_framework import generics
+from rest_framework.response import Response
+
+from nickelodeon.api.serializers import (SongSerializer,
+                                         YouTubeDownloadTaskSerializer)
+from nickelodeon.models import Song, YouTubeDownloadTask
 
 
 def x_accel_redirect(request, path, filename='',
@@ -35,7 +34,6 @@ def x_accel_redirect(request, path, filename='',
     return response
 
 
-@api_key_authentication()
 @permission_required('nickelodeon.can_listen_song')
 def download_song(request, pk, extension=None):
     song = get_object_or_404(Song, pk=pk)
@@ -51,31 +49,6 @@ def download_song(request, pk, extension=None):
     file_path = u"/internal{}".format(file_path)
     filename = song.title + '.' + extension
     return x_accel_redirect(request, file_path, filename=filename, mime=mime)
-
-
-class Mp3DownloadApiView(generics.ListCreateAPIView):
-    """
-    Download Mp3 API
-    page -- Page number (Default: 1)
-    results_per_page -- Number of result per page (Default:20 Max: 1000)
-    """
-    queryset = Mp3DownloadTask.objects.all()
-    serializer_class = Mp3DownloadTaskSerializer
-
-    def __init__(self):
-        self.paginate_by = 20
-        self.paginate_by_param = 'results_per_page'
-        self.max_paginate_by = 1000
-        super(Mp3DownloadApiView, self).__init__()
-
-    def list(self, request, *args, **kwargs):
-        object_list = self.get_queryset()
-        page = self.paginate_queryset(object_list)
-        if page is not None:
-            serializer = self.get_pagination_serializer(page)
-        else:
-            serializer = self.get_serializer(object_list, many=True)
-        return Response(serializer.data)
 
 
 class YouTubeDownloadApiView(generics.ListCreateAPIView):
@@ -100,11 +73,7 @@ class YouTubeDownloadApiView(generics.ListCreateAPIView):
             object_list = self.get_queryset().filter(video_id=video_id)
         else:
             object_list = self.get_queryset()
-        page = self.paginate_queryset(object_list)
-        if page is not None:
-            serializer = self.get_pagination_serializer(page)
-        else:
-            serializer = self.get_serializer(object_list, many=True)
+        serializer = self.get_serializer(object_list, many=True)
         return Response(serializer.data)
 
 
@@ -146,9 +115,5 @@ class TextSearchApiView(generics.ListAPIView):
         else:
             object_list = self.get_queryset()
         object_list = object_list.order_by('title', 'artist')
-        page = self.paginate_queryset(object_list)
-        if page is not None:
-            serializer = self.get_pagination_serializer(page)
-        else:
-            serializer = self.get_serializer(object_list, many=True)
+        serializer = self.get_serializer(object_list, many=True)
         return Response(serializer.data)

@@ -1,5 +1,8 @@
 import sys
 import os.path
+import random
+import struct
+
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
@@ -7,13 +10,21 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.files.move import file_move_safe
 from django.core.validators import RegexValidator
-from common_base.core.models import UuidModel
 
 
 AVAILABLE_FORMATS = ('mp3', 'aac')
 
 
-class Song(UuidModel):
+def random_key():
+    b64 = bytes(struct.pack('L', random.getrandbits(64))).encode('base64')
+    b64 = b64[:11]
+    b64 = b64.replace('+', '-')
+    b64.replace('/', '_')
+    return b64
+
+
+class Song(models.Model):
+    id = models.CharField(default=random_key, max_length=12, primary_key=True)
     artist = models.CharField(_('artist'),
                               max_length=255, blank=True)
     title = models.CharField(_('title'),
@@ -52,11 +63,11 @@ class Song(UuidModel):
 
     @models.permalink
     def get_absolute_url(self):
-        return ("song_detail", (), {"pk": self.pk})
+        return "song_detail", (), {"pk": self.pk}
 
     @models.permalink
     def get_download_url(self):
-        return ("song_download", (), {"pk": self.pk})
+        return "song_download", (), {"pk": self.pk}
 
     def move_file_from(self, orig):
         for ext, available in orig.available_formats.iteritems():
@@ -97,7 +108,7 @@ class YouTubeDownloadTask(models.Model):
 
     @models.permalink
     def get_task_url(self):
-        return ('task_status', (), {'task_id': self.task_id})
+        return 'task_status', (), {'task_id': self.task_id}
 
     def save(self, *args, **kwargs):
         from nickelodeon.tasks import fetch_youtube_video
@@ -105,20 +116,3 @@ class YouTubeDownloadTask(models.Model):
             task = fetch_youtube_video.s(self.video_id).delay()
             self.task_id = str(task.task_id)
         super(YouTubeDownloadTask, self).save(*args, **kwargs)
-
-
-class Mp3DownloadTask(models.Model):
-    url = models.URLField()
-    task_id = models.CharField(max_length=50, unique=True)
-
-    @models.permalink
-    def get_task_url(self):
-        return ('task_status', (), {'task_id': self.task_id})
-
-    def save(self, *args, **kwargs):
-        from nickelodeon.zippy import ZIPPYSHARE_URL_RE
-        from nickelodeon.tasks import fetch_zippyshare_mp3
-        if ZIPPYSHARE_URL_RE.match(self.url) and not self.task_id:
-            task = fetch_zippyshare_mp3.s(self.url).delay()
-            self.task_id = str(task.task_id)
-        super(Mp3DownloadTask, self).save(*args, **kwargs)
