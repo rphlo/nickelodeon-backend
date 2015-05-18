@@ -1,6 +1,7 @@
 celery
 scandir
 pafy
+django-celery
 django>=1.8,<1.9
 django-appconf>=1.0.1
 djangorestframework>=3.1.0
