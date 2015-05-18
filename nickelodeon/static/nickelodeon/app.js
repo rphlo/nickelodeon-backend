@@ -1018,7 +1018,7 @@ var JukeBox = function(swf_path){
         if(!Backbone.history.start({
           hasChange: true,
           pushState: true,
-          root: "/jukebox/"
+          root: "/listen/"
         })){
           // No Song playing...
           player.model.play_next();
@@ -1030,11 +1030,11 @@ var JukeBox = function(swf_path){
   var router = new (Backbone.Router.extend({
     initialize: function(options){
       // Matches /<uuid>/,
-      this.route(/^([a-zA-Z0-9]{22})/, "playSong");
+      this.route(/^([a-zA-Z0-9]{11})/, "playSong");
     },
     playSong: function(song_uuid){
       player.model.stop();
-      player.model.switch_song(new Song({uuid: song_uuid}), false);
+      player.model.switch_song(new Song({id: song_uuid}), false);
     }
   }))();
   init();

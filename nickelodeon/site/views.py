@@ -8,7 +8,6 @@ from django.db.models import Q
 from django.contrib.auth.decorators import permission_required
 
 from rest_framework import generics
-from rest_framework.response import Response
 
 from nickelodeon.api.serializers import (SongSerializer,
                                          YouTubeDownloadTaskSerializer)
@@ -61,20 +60,12 @@ class YouTubeDownloadApiView(generics.ListCreateAPIView):
     queryset = YouTubeDownloadTask.objects.all()
     serializer_class = YouTubeDownloadTaskSerializer
 
-    def __init__(self):
-        self.paginate_by = 20
-        self.paginate_by_param = 'results_per_page'
-        self.max_paginate_by = 1000
-        super(YouTubeDownloadApiView, self).__init__()
-
-    def list(self, request, *args, **kwargs):
-        video_id = request.QUERY_PARAMS.get('v', '').strip()
+    def get_queryset(self):
+        qs = super(YouTubeDownloadApiView, self).get_queryset()
+        video_id = self.request.QUERY_PARAMS.get('v', '').strip()
         if video_id:
-            object_list = self.get_queryset().filter(video_id=video_id)
-        else:
-            object_list = self.get_queryset()
-        serializer = self.get_serializer(object_list, many=True)
-        return Response(serializer.data)
+            qs = qs.filter(video_id=video_id)
+        return qs
 
 
 class SongView(generics.RetrieveUpdateDestroyAPIView):
@@ -97,14 +88,9 @@ class TextSearchApiView(generics.ListAPIView):
     serializer_class = SongSerializer
     lookup_fields = ('filename', 'artist', 'title')
 
-    def __init__(self):
-        self.paginate_by = 20
-        self.paginate_by_param = 'results_per_page'
-        self.max_paginate_by = 1000
-        super(TextSearchApiView, self).__init__()
-
-    def list(self, request, *args, **kwargs):
-        search_text = request.QUERY_PARAMS.get('q', '').strip()
+    def get_queryset(self):
+        qs = super(TextSearchApiView, self).get_queryset()
+        search_text = self.request.QUERY_PARAMS.get('q', '').strip()
         if search_text:
             search_terms = search_text.split(' ')
             query = Q()
@@ -115,9 +101,6 @@ class TextSearchApiView(generics.ListAPIView):
                     kwargs['%s__icontains' % field_name] = search_term
                     sub_query |= Q(**kwargs)
                 query &= sub_query
-            object_list = self.get_queryset().filter(query)
-        else:
-            object_list = self.get_queryset()
-        object_list = object_list.order_by('title', 'artist')
-        serializer = self.get_serializer(object_list, many=True)
-        return Response(serializer.data)
+            qs = qs.filter(query)
+        qs = qs.order_by('title', 'artist')
+        return qs
