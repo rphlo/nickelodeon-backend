@@ -94,6 +94,6 @@ REST_FRAMEWORK = {
 CORS_ORIGIN_ALLOW_ALL = True
 
 try:
-    from seuranta.app.local_settings import *
+    from nickelodeon.site.local_settings import *
 except ImportError:
     pass

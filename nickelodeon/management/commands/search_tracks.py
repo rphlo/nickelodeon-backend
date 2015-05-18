@@ -4,12 +4,8 @@ import time
 import re
 
 from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
 
-from common_base.core.models import safe_bulk_create
-from common_base.utils.format import readable_duration
-from common_base.utils.strings import pluralize
-
+from nickelodeon.conf import settings
 from nickelodeon.models import Song
 
 try:
@@ -20,7 +16,7 @@ except ImportError:
 
 MP3_FILE_EXT_RE = re.compile(r'(.+)\.mp3$', re.IGNORECASE)
 AAC_FILE_EXT_RE = re.compile(r'(.+)\.aac$', re.IGNORECASE)
-ROOT_DIRECTORY = os.path.join(settings.MEDIA_ROOT, 'exthd', 'music')
+ROOT_DIRECTORY = settings.NICKELODEON_MEDIA_ROOT
 
 
 class Command(BaseCommand):
@@ -47,7 +43,9 @@ class Command(BaseCommand):
                     raise CommandError('Absolute path should be '
                                        'within Media root.')
             else:
-                self.folder_root = os.path.join(settings.MEDIA_ROOT, folder)
+                self.folder_root = os.path.join(
+                    settings.NICKELODEON_MEDIA_ROOT,
+                    folder)
         if not os.path.exists(self.folder_root):
             raise CommandError(
                 u"Specified folder '{}' does not exist".format(
@@ -62,7 +60,8 @@ class Command(BaseCommand):
         self.songs_to_add = set()
         self.stdout.write(u'Loading cached files...')
         existing_songs = Song.objects.filter(
-            filename__startswith=self.folder_root[len(settings.MEDIA_ROOT):]
+            filename__startswith=self.folder_root[
+                                 len(settings.NICKELODEON_MEDIA_ROOT):]
         )
         self.songs_to_find = set(existing_songs.values_list('filename',
                                                             flat=True))
@@ -78,24 +77,18 @@ class Command(BaseCommand):
         self.print_scan_status(True)
         nb_songs_to_add = len(self.songs_to_add)
         self.stdout.write(
-            u'\nDiscovered %d %s' % (
-                nb_songs_to_add,
-                pluralize('file', nb_songs_to_add)
-            )
+            u'\nDiscovered {} file(s)'.format(nb_songs_to_add)
         )
         nb_songs_to_remove = len(self.songs_to_remove)
         if nb_songs_to_remove > 0:
             self.stdout.write(
-                u'Could not find %d %s' % (
-                    nb_songs_to_remove,
-                    pluralize('file', nb_songs_to_remove)
-                )
+                u'Could not find {} file(s)'.format(nb_songs_to_remove)
             )
             Song.objects.filter(filename__in=self.songs_to_remove).delete()
         if len(self.songs_to_add) > 0:
             self.bulk_create()
         self.stdout.write(
-            u"Task completed in %s" % readable_duration(time.time()-self.t0)
+            u"Task completed in {} seconds".format(time.time()-self.t0)
         )
 
     def scan_directory(self):
@@ -104,7 +97,7 @@ class Command(BaseCommand):
                 if not isinstance(root, unicode):
                     root = root.decode(self.encoding)
                 media_path = os.path.join(
-                    root[len(settings.MEDIA_ROOT):],
+                    root[len(settings.NICKELODEON_MEDIA_ROOT):],
                     filename.decode(self.encoding)
                 )
                 yield media_path
@@ -134,10 +127,9 @@ class Command(BaseCommand):
         if time.time() - self.last_flush > 1 or force:
             self.last_flush = time.time()
             self.stdout.write(
-                u'\rScanned %d music %s in %s' % (
+                u'\rScanned {} music file(s) in {} seconds'.format(
                     self.songs_count,
-                    pluralize('file', self.songs_count),
-                    readable_duration(time.time()-self.t1)
+                    time.time()-self.t1
                 ),
                 ending=""
             )
@@ -151,4 +143,4 @@ class Command(BaseCommand):
                 title=title,
                 filename=song_file
             ))
-        safe_bulk_create(bulk)
+        Song.objects.bulk_create(bulk)

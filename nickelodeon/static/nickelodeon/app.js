@@ -8,8 +8,8 @@ var JukeBox = function(swf_path){
       NEXT_FINISH_QUEUE = 2;
 
   var Song = Backbone.Model.extend({
-    idAttribute: "uuid",
-    urlRoot : '/api/v1/song',
+    idAttribute: "id",
+    urlRoot : '/api/songs',
     defaults: {
       duration: -1
     },
@@ -212,7 +212,7 @@ var JukeBox = function(swf_path){
       var index = page || Math.floor(Math.random()*this.get('songs_count'))+1;
       $.ajax({
         type: "GET",
-        url: "/api/v1/songs/",
+        url: "/api/songs/",
         data: {
           'results_per_page': 1,
           'page': Math.max(1, index)
@@ -243,7 +243,7 @@ var JukeBox = function(swf_path){
       this.set('searching', true);
       $.ajax({
         type: "GET",
-        url: "/api/v1/songs/",
+        url: "/api/songs/",
         data: {
           'q': keyword,
           'results_per_page': SEARCH_RESULTS_PER_PAGE,
@@ -362,7 +362,7 @@ var JukeBox = function(swf_path){
     delete_song: function(song){
       var uuid = song.id;
       $.ajax({
-        url: '/api/v1/song/'+uuid,
+        url: '/api/song/'+uuid,
         type: 'DELETE',
         dataType: 'JSON',
       })
@@ -871,7 +871,7 @@ var JukeBox = function(swf_path){
       }
       if(data_changed){
         $.ajax({
-          url: '/api/v1/song/'+uuid,
+          url: '/api/song/'+uuid,
           type: 'PUT',
           dataType: 'JSON',
           data: update_data
@@ -925,7 +925,7 @@ var JukeBox = function(swf_path){
         $('#download_yt_submitting_i').show();
         $.ajax(
           {
-            url: '/api/v1/youtube_dl/',
+            url: '/api/youtube_dl/',
             type: 'POST',
             dataType: 'JSON',
             data: {
@@ -969,7 +969,7 @@ var JukeBox = function(swf_path){
         $('#download_zippy_submitting_i').show();
         $.ajax(
           {
-            url: '/api/v1/zippy_dl/',
+            url: '/api/zippy_dl/',
             type: 'POST',
             dataType: 'JSON',
             data: {

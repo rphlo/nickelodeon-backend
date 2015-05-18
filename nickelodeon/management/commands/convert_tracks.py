@@ -4,9 +4,8 @@ import time
 import re
 
 from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
-from common_base.utils.format import readable_duration
-from common_base.utils.strings import pluralize
+
+from nickelodeon.conf import settings
 from nickelodeon.utils import convert_audio
 
 try:
@@ -17,7 +16,7 @@ except ImportError:
 
 MP3_FILE_EXT_RE = re.compile(r'(.+)\.mp3$', re.IGNORECASE)
 AAC_FILE_EXT_RE = re.compile(r'(.+)\.aac$', re.IGNORECASE)
-ROOT_DIRECTORY = os.path.join(settings.MEDIA_ROOT, 'exthd', 'music')
+ROOT_DIRECTORY = settings.NICKELODEON_MEDIA_ROOT
 
 
 class Command(BaseCommand):
@@ -41,7 +40,9 @@ class Command(BaseCommand):
                     raise CommandError('Absolute path should be '
                                        'within Media root.')
             else:
-                self.folder_root = os.path.join(settings.MEDIA_ROOT, folder)
+                self.folder_root = os.path.join(
+                    settings.NICKELODEON_MEDIA_ROOT,
+                    folder)
         if not os.path.exists(self.folder_root):
             raise CommandError(
                 u"Specified folder '{}' does not exist".format(
@@ -62,15 +63,12 @@ class Command(BaseCommand):
             self.process_music_file(filename)
         nb_songs_to_convert = len(self.songs_to_convert)
         self.stdout.write(
-            u'Discovered %d %s to convert' % (
-                nb_songs_to_convert,
-                pluralize('file', nb_songs_to_convert)
-            )
+            u'Discovered %d file(s) to convert'.format(nb_songs_to_convert)
         )
         if nb_songs_to_convert > 0:
             self.bulk_convert()
         self.stdout.write(
-            u"Task completed in %s" % readable_duration(time.time()-self.t0)
+            u"Task completed in {} seconds".format(time.time()-self.t0)
         )
 
     def scan_directory(self):
@@ -88,9 +86,9 @@ class Command(BaseCommand):
         if not MP3_FILE_EXT_RE.search(media_path) \
                 and not AAC_FILE_EXT_RE.search(media_path):
             return
-        if len(media_path)-len(settings.MEDIA_ROOT) > 255:
+        if len(media_path)-len(settings.NICKELODEON_MEDIA_ROOT) > 255:
             self.stderr.write(u'Media path too long, '
-                              u'255 characters maximum. %s' % media_path)
+                              u'255 characters maximum. {}'.format(media_path))
             return
         target_filename = media_path[:-4]
         ext = media_path[-4:].lower()
@@ -108,7 +106,7 @@ class Command(BaseCommand):
 
     def bulk_convert(self):
         for data in self.songs_to_convert:
-            self.stdout.write(u"Converting %s" % data['src'])
-            kwargs = {'callback': self.print_conversion_status}
-            kwargs["output_file_{}".format(data['out'][-3:])] = data['out']
+            self.stdout.write(u"Converting {}".format(data['src']))
+            kwargs = {"callback": self.print_conversion_status,
+                      "output_file_{}".format(data['out'][-3:]): data['out']}
             convert_audio(data['src'], **kwargs)

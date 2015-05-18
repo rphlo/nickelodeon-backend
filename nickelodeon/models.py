@@ -19,7 +19,7 @@ def random_key():
     b64 = bytes(struct.pack('L', random.getrandbits(64))).encode('base64')
     b64 = b64[:11]
     b64 = b64.replace('+', '-')
-    b64.replace('/', '_')
+    b64 = b64.replace('/', '_')
     return b64
 
 
@@ -45,7 +45,8 @@ class Song(models.Model):
     def get_file_format_path(self, extension, full=True):
         file_path = u"%s.%s" % (self.filename, extension)
         if full:
-            file_path = os.path.join(settings.MEDIA_ROOT, file_path[1:])
+            file_path = os.path.join(settings.NICKELODEON_MEDIA_ROOT,
+                                     file_path)
         return file_path
 
     def file_format_available(self, extension):
@@ -83,20 +84,15 @@ class Song(models.Model):
                     os.rmdir(src_folder)
                     src_folder = os.path.dirname(src_folder)
 
+    def remove_file(self):
+        for ext in AVAILABLE_FORMATS:
+            file_path = self.get_file_format_path(ext)\
+                            .encode(sys.getfilesystemencoding())
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
     class Meta:
         permissions = (("can_listen_songs", _("Can listen songs")),)
-
-
-@receiver(post_delete, sender=Song)
-def song_post_delete_handler(sender, **kwargs):
-    if sender:
-        pass
-    song_obj = kwargs['instance']
-    for ext in AVAILABLE_FORMATS:
-        file_path = song_obj.get_file_format_path(ext)\
-                            .encode(sys.getfilesystemencoding())
-        if os.path.exists(file_path):
-            os.remove(file_path)
 
 
 class YouTubeDownloadTask(models.Model):

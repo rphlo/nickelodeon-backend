@@ -29,7 +29,7 @@ class SongSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Song
-        fields = ('uuid', 'url', 'download_url', 'artist',
+        fields = ('id', 'url', 'download_url', 'artist',
                   'title', 'filename', 'availability')
 
 

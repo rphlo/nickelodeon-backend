@@ -20,7 +20,7 @@ def x_accel_redirect(request, path, filename='',
     if settings.DEBUG:
         from django.core.servers.basehttp import FileWrapper
         import os.path
-        path = re.sub(r'^/internal', settings.MEDIA_ROOT, path)
+        path = re.sub(r'^/internal', settings.NICKELODEON_MEDIA_ROOT, path)
         wrapper = FileWrapper(file(path))
         response = StreamingHttpResponse(wrapper, content_type=mime)
         response['Content-Length'] = os.path.getsize(path)
@@ -80,6 +80,10 @@ class YouTubeDownloadApiView(generics.ListCreateAPIView):
 class SongView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = SongSerializer
     queryset = Song.objects.all()
+
+    def perform_destroy(self, instance):
+        instance.remove_file()
+        super(SongView, self).perform_destroy()
 
 
 class TextSearchApiView(generics.ListAPIView):

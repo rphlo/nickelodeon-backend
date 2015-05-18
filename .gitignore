@@ -11,3 +11,4 @@ MANIFEST
 *.save.*
 *.idea
 docs/_build/
+nickelodeon/site/local_settings.py
