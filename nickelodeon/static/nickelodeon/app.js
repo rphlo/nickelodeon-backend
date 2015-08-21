@@ -568,9 +568,6 @@ var JukeBox = function(swf_path){
       "click #open_yt_modal_button": "on_press_open_yt_modal",
       "click #download_yt_button": "on_press_download_yt",
       "keyup #yt_url_input": "on_type_yt_url",
-      "click #open_zippy_modal_button": "on_press_open_zippy_modal",
-      "click #download_zippy_button": "on_press_download_zippy",
-      "keyup #zippy_url_input": "on_type_zippy_url",
       "click #use_aac_button": "on_press_use_aac",
       "click #use_mp3_button": "on_press_use_mp3",
       "click .search_more_button": "on_press_search_more",
@@ -940,51 +937,6 @@ var JukeBox = function(swf_path){
         );
       } else {
         // TODO: Warn not valid youtube url
-      }
-    },
-    on_press_open_zippy_modal: function(e){
-      e.preventDefault();
-      $('#zippy_modal').on('shown.bs.modal', function (e) {
-        $('#zippy_url_input').focus();
-      });
-      $('#zippy_url_input').val('');
-      $('#download_zippy_submitting_i').hide();
-      $("#zippy_modal").modal('show');
-    },
-    on_press_download_zippy: function(e){
-      e.preventDefault();
-      this.submit_zippy_download();
-    },
-    on_type_zippy_url: function(e){
-      if(e.keyCode == 13){
-        this.submit_zippy_download();
-      }
-    },
-    submit_zippy_download: function(){
-      var zippy_url_re = /^http:\/\/www\d{0,2}\.zippyshare\.com\/v\/[0-9a-zA-Z]+\/file\.html$/,
-          user_val = $('#zippy_url_input').val();
-      is_zippy_url = zippy_url_re.test(user_val);
-      if(is_zippy_url){
-        // TODO: Move away from view
-        $('#download_zippy_submitting_i').show();
-        $.ajax(
-          {
-            url: '/api/zippy_dl/',
-            type: 'POST',
-            dataType: 'JSON',
-            data: {
-              url: user_val
-            }
-          }
-        ).success(
-          function(response){
-            $('#zippy_modal').modal('hide');
-            // TODO: track import process
-          }
-        );
-      } else {
-        // TODO: Warn not valid youtube url
-        alert('Invalid URL');
       }
     },
     on_press_use_aac: function(e){
