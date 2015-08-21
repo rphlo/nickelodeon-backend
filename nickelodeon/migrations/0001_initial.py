@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('id', models.CharField(default=nickelodeon.models.random_key, max_length=12, serialize=False, primary_key=True)),
                 ('artist', models.CharField(max_length=255, verbose_name='artist', blank=True)),
                 ('title', models.CharField(max_length=255, verbose_name='title', blank=True)),
-                ('filename', models.FilePathField(recursive=True, max_length=255, path=b'/home/rphl/projects/django-nickelodeon/nickelodeon/app/media', unique=True, verbose_name='file name', db_index=True)),
+                ('filename', models.FilePathField(recursive=True, max_length=255, path=b'/home/', unique=True, verbose_name='file name', db_index=True)),
             ],
             options={
                 'permissions': (('can_listen_songs', 'Can listen songs'),),
