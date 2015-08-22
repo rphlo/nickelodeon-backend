@@ -9,7 +9,7 @@ var JukeBox = function(swf_path){
 
   var Song = Backbone.Model.extend({
     idAttribute: "id",
-    urlRoot : 'api/songs',
+    urlRoot : '../api/songs',
     defaults: {
       duration: -1
     },
@@ -94,7 +94,7 @@ var JukeBox = function(swf_path){
     load_song:function(replace_url){
       this.stop();
       replace_url = (replace_url===false)? false: true;
-      router.navigate('/'+this.get('current_song').id, {trigger: false, replace: replace_url});
+      router.navigate(this.get('current_song').id, {trigger: false, replace: replace_url});
       var song, auto_play, format, mime;
       auto_play = (this.get('play_state')==PLAYING)? true: false;
       song = this.get('current_song');
@@ -212,7 +212,7 @@ var JukeBox = function(swf_path){
       var index = page || Math.floor(Math.random()*this.get('songs_count'))+1;
       $.ajax({
         type: "GET",
-        url: "api/songs/",
+        url: "../api/songs/",
         data: {
           'results_per_page': 1,
           'page': Math.max(1, index)
@@ -243,7 +243,7 @@ var JukeBox = function(swf_path){
       this.set('searching', true);
       $.ajax({
         type: "GET",
-        url: "api/songs/",
+        url: "../api/songs/",
         data: {
           'q': keyword,
           'results_per_page': SEARCH_RESULTS_PER_PAGE,
@@ -362,7 +362,7 @@ var JukeBox = function(swf_path){
     delete_song: function(song){
       var uuid = song.id;
       $.ajax({
-        url: 'api/song/'+uuid,
+        url: '../api/song/'+uuid,
         type: 'DELETE',
         dataType: 'JSON',
       })
@@ -868,7 +868,7 @@ var JukeBox = function(swf_path){
       }
       if(data_changed){
         $.ajax({
-          url: 'api/song/'+uuid,
+          url: '../api/song/'+uuid,
           type: 'PUT',
           dataType: 'JSON',
           data: update_data
@@ -922,7 +922,7 @@ var JukeBox = function(swf_path){
         $('#download_yt_submitting_i').show();
         $.ajax(
           {
-            url: 'api/youtube_dl/',
+            url: '../api/youtube_dl/',
             type: 'POST',
             dataType: 'JSON',
             data: {
@@ -970,7 +970,7 @@ var JukeBox = function(swf_path){
         if(!Backbone.history.start({
           hasChange: true,
           pushState: true,
-          root: "/listen/"
+          root: "listen"
         })){
           // No Song playing...
           player.model.play_next();
@@ -982,7 +982,7 @@ var JukeBox = function(swf_path){
   var router = new (Backbone.Router.extend({
     initialize: function(options){
       // Matches /<uuid>/,
-      this.route(/^([a-zA-Z0-9]{11})/, "playSong");
+      this.route(/^([a-zA-Z0-9_-]{11})$/, "playSong");
     },
     playSong: function(song_uuid){
       player.model.stop();
