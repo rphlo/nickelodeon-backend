@@ -1,6 +1,8 @@
 from django.conf.urls import url, include
-from django.views.generic import TemplateView
 from django.contrib import admin
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import login, logout
+from django.views.generic import TemplateView
 
 
 urlpatterns = [
@@ -8,10 +10,12 @@ urlpatterns = [
         view=TemplateView.as_view(
             template_name="nickelodeon/music_home.html"),
         name='default_view'),
-    url(r'^listen/(?P<pk>[a-zA-Z0-9_-]{11})?/?$',
-        view=TemplateView.as_view(
-            template_name="nickelodeon/music_player.html"),
+    url(r'^listen/(?P<pk>[a-zA-Z0-9_-]{11})?(\.html)?$',
+        view=login_required(TemplateView.as_view(
+                template_name="nickelodeon/music_player.html")),
         name='song_view'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('nickelodeon.api.urls')),
+    url(r'^login/$', login),
+    url(r'^logout/$', logout),
 ]

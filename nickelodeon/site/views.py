@@ -1,10 +1,11 @@
 import re
 import urllib
 
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, StreamingHttpResponse
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.http import HttpResponse, StreamingHttpResponse
+from django.shortcuts import get_object_or_404
 
 from rest_framework import generics
 
@@ -32,6 +33,7 @@ def x_accel_redirect(request, path, filename='',
     return response
 
 
+@login_required()
 def download_song(request, pk, extension=None):
     song = get_object_or_404(Song, pk=pk)
     file_path = song.filename
