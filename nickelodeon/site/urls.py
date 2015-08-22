@@ -4,11 +4,11 @@ from django.contrib import admin
 
 
 urlpatterns = [
-    url(r'^(listen/?)?$',
+    url(r'^/?$',
         view=TemplateView.as_view(
-            template_name="nickelodeon/music_player.html"),
+            template_name="nickelodeon/music_home.html"),
         name='default_view'),
-    url(r'^listen/(?P<pk>[a-zA-Z0-9_-]{11})/?$',
+    url(r'^listen/(?P<pk>[a-zA-Z0-9_-]{11})?/?$',
         view=TemplateView.as_view(
             template_name="nickelodeon/music_player.html"),
         name='song_view'),
