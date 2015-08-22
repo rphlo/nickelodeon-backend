@@ -60,7 +60,7 @@ class YouTubeDownloadApiView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         qs = super(YouTubeDownloadApiView, self).get_queryset()
-        video_id = self.request.QUERY_PARAMS.get('v', '').strip()
+        video_id = self.request.query_params.get('v', '').strip()
         if video_id:
             qs = qs.filter(video_id=video_id)
         return qs
@@ -88,7 +88,7 @@ class TextSearchApiView(generics.ListAPIView):
 
     def get_queryset(self):
         qs = super(TextSearchApiView, self).get_queryset()
-        search_text = self.request.QUERY_PARAMS.get('q', '').strip()
+        search_text = self.request.query_params.get('q', '').strip()
         if search_text:
             search_terms = search_text.split(' ')
             query = Q()
