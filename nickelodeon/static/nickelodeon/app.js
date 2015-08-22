@@ -243,7 +243,7 @@ var JukeBox = function(swf_path){
       this.set('searching', true);
       $.ajax({
         type: "GET",
-        url: "/api/songs/",
+        url: "api/songs/",
         data: {
           'q': keyword,
           'results_per_page': SEARCH_RESULTS_PER_PAGE,
@@ -362,7 +362,7 @@ var JukeBox = function(swf_path){
     delete_song: function(song){
       var uuid = song.id;
       $.ajax({
-        url: '/api/song/'+uuid,
+        url: 'api/song/'+uuid,
         type: 'DELETE',
         dataType: 'JSON',
       })
@@ -868,7 +868,7 @@ var JukeBox = function(swf_path){
       }
       if(data_changed){
         $.ajax({
-          url: '/api/song/'+uuid,
+          url: 'api/song/'+uuid,
           type: 'PUT',
           dataType: 'JSON',
           data: update_data
@@ -922,7 +922,7 @@ var JukeBox = function(swf_path){
         $('#download_yt_submitting_i').show();
         $.ajax(
           {
-            url: '/api/youtube_dl/',
+            url: 'api/youtube_dl/',
             type: 'POST',
             dataType: 'JSON',
             data: {
