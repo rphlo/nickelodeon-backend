@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, StreamingHttpResponse
 from django.conf import settings
 from django.db.models import Q
-from django.contrib.auth.decorators import permission_required
 
 from rest_framework import generics
 
@@ -33,7 +32,6 @@ def x_accel_redirect(request, path, filename='',
     return response
 
 
-@permission_required('nickelodeon.can_listen_song')
 def download_song(request, pk, extension=None):
     song = get_object_or_404(Song, pk=pk)
     file_path = song.filename

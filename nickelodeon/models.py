@@ -4,8 +4,6 @@ import random
 import struct
 
 from django.db import models
-from django.db.models.signals import post_delete
-from django.dispatch import receiver
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.files.move import file_move_safe

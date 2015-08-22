@@ -64,7 +64,7 @@ def fetch_youtube_video(video_id=''):
     now = datetime.datetime.now()
     dst_folder = os.path.join(
         settings.MEDIA_ROOT,
-        'exthd', 'music', 'rphl', 'Assorted', 'me', now.strftime('%Y/%m')
+        'exthd', 'music', 'rphl', 'Assorted', 'by_date', now.strftime('%Y/%m')
     )
     aac_path = os.path.join(dst_folder, safe_title+".aac")
     mp3_path = os.path.join(dst_folder, safe_title+".mp3")
