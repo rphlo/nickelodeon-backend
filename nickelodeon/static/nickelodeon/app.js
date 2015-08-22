@@ -9,7 +9,7 @@ var JukeBox = function(swf_path){
 
   var Song = Backbone.Model.extend({
     idAttribute: "id",
-    urlRoot : '/api/songs',
+    urlRoot : 'api/songs',
     defaults: {
       duration: -1
     },
@@ -212,7 +212,7 @@ var JukeBox = function(swf_path){
       var index = page || Math.floor(Math.random()*this.get('songs_count'))+1;
       $.ajax({
         type: "GET",
-        url: "/api/songs/",
+        url: "api/songs/",
         data: {
           'results_per_page': 1,
           'page': Math.max(1, index)
