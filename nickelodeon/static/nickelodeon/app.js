@@ -959,7 +959,7 @@ var JukeBox = function(swf_path){
     if(!this instanceof JukeBox){
       return new JukeBox(swf_path);
     }
-    var root = window.location.pathname.match(/^(.*\/listen\/)([a-zA-Z0-9_-]{11})?/)[1];
+    var root = window.location.pathname.match(/^(.*\/listen)(\/[a-zA-Z0-9_-]{11})?$/)[1];
     soundManager.setup({
       url: swf_path,
       flashVersion: 9, // optional: shiny features (default = 8)
