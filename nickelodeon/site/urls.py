@@ -18,4 +18,8 @@ urlpatterns = [
     url(r'^api/', include('nickelodeon.api.urls')),
     url(r'^login/$', login),
     url(r'^logout/$', logout),
+    url(r'^tasks/(?P<task_id>[0-9a-f]{8}-[0-9a-f]{4}-'
+        r'[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
+        'djcelery.views.task_status',
+        name='task_status'),
 ]
