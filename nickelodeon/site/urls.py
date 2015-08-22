@@ -11,7 +11,7 @@ urlpatterns = [
             TemplateView.as_view(template_name="nickelodeon/music_player.html")
         ),
         name='default_view'),
-    url(r'^listen/(?P<pk>[a-zA-Z0-9]{11})/?$',
+    url(r'^listen/(?P<pk>[a-zA-Z0-9_-]{11})/?$',
         view=permission_required('nickelodeon.can_listen_song')(
             TemplateView.as_view(template_name="nickelodeon/music_player.html")
         ),
