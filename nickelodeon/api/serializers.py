@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from nickelodeon.models import Song, YouTubeDownloadTask
+from nickelodeon.models import MP3Song
 
 
 class RelativeURLField(serializers.ReadOnlyField):
@@ -12,30 +12,21 @@ class RelativeURLField(serializers.ReadOnlyField):
         return url
 
 
-class SongSerializer(serializers.ModelSerializer):
+class MP3SongSerializer(serializers.ModelSerializer):
     url = RelativeURLField(source='get_absolute_url')
     download_url = RelativeURLField(source='get_download_url')
-    availability = serializers.ReadOnlyField(source='available_formats')
     filename = serializers.CharField(required=False)
+    id = serializers.ReadOnlyField()
 
     def update(self, instance, validated_data):
         has_moved = (validated_data['filename'] != instance.filename)
-        original_instance = Song(filename=instance.filename)
-        saved_instance = super(SongSerializer, self).update(instance,
+        original_instance = MP3Song(filename=instance.filename)
+        saved_instance = super(MP3SongSerializer, self).update(instance,
                                                             validated_data)
         if has_moved:
             saved_instance.move_file_from(original_instance)
         return saved_instance
 
     class Meta:
-        model = Song
-        fields = ('id', 'url', 'download_url', 'artist',
-                  'title', 'filename', 'availability')
-
-
-class YouTubeDownloadTaskSerializer(serializers.ModelSerializer):
-    task_progress_url = RelativeURLField(source='get_task_url')
-
-    class Meta:
-        model = YouTubeDownloadTask
-        fields = ('video_id', 'task_progress_url', )
+        model = MP3Song
+        fields = ('id', 'url', 'download_url', 'filename', 'has_aac')

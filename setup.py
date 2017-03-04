@@ -1,6 +1,5 @@
 import os
 
-#from distutils.core import setup
 from setuptools import setup
 from distutils.command.install import INSTALL_SCHEMES
 import importlib

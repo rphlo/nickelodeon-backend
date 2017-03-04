@@ -3,20 +3,15 @@ import sys
 import time
 import re
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from nickelodeon.conf import settings
-from nickelodeon.models import Song
+from nickelodeon.models import MP3Song
 
-try:
-    from scandir import walk
-except ImportError:
-    from os import walk
+from os import walk
 
 
 MP3_FILE_EXT_RE = re.compile(r'(.+)\.mp3$', re.IGNORECASE)
-AAC_FILE_EXT_RE = re.compile(r'(.+)\.aac$', re.IGNORECASE)
-ROOT_DIRECTORY = settings.NICKELODEON_MEDIA_ROOT
 
 
 class Command(BaseCommand):
@@ -28,44 +23,23 @@ class Command(BaseCommand):
     songs_to_add = set()
     t0 = t1 = last_flush = songs_count = 0
     encoding = 'UTF-8'
-    folder_root = ROOT_DIRECTORY
+    folder_root = None
 
-    def parse_args(self, args):
+    def parse_args(self, args, options):
         self.encoding = sys.getfilesystemencoding()
-        if len(args) > 1:
-            raise CommandError('Too many arguments. See usage.')
-        elif len(args) == 1:
-            folder = args[0]
-            if folder[0] == '/':
-                if folder.startswith(ROOT_DIRECTORY):
-                    self.folder_root = folder
-                else:
-                    raise CommandError('Absolute path should be '
-                                       'within Media root.')
-            else:
-                self.folder_root = os.path.join(
-                    settings.NICKELODEON_MEDIA_ROOT,
-                    folder)
+        self.folder_root = settings.JUKEBOX_MUSIC_ROOT
         if not os.path.exists(self.folder_root):
             raise CommandError(
-                u"Specified folder '{}' does not exist".format(
+                u'Specified folder "{}" does not exist'.format(
                     self.folder_root.decode(self.encoding)
                 )
             )
 
     def handle(self, *args, **options):
-        self.parse_args(args)
+        self.parse_args(args, options)
         self.t0 = self.last_flush = time.time()
         self.songs_count = 0
-        self.songs_to_add = set()
-        self.stdout.write(u'Loading cached files...')
-        existing_songs = Song.objects.filter(
-            filename__startswith=self.folder_root[
-                                 len(settings.NICKELODEON_MEDIA_ROOT):]
-        )
-        self.songs_to_find = set(existing_songs.values_list('filename',
-                                                            flat=True))
-        self.songs_to_remove = self.songs_to_find.copy()
+        self.songs_to_add = []
         self.stdout.write(
             u'Scanning directory {} for music'.format(
                 self.folder_root.decode(self.encoding)
@@ -79,16 +53,11 @@ class Command(BaseCommand):
         self.stdout.write(
             u'\nDiscovered {} file(s)'.format(nb_songs_to_add)
         )
-        nb_songs_to_remove = len(self.songs_to_remove)
-        if nb_songs_to_remove > 0:
-            self.stdout.write(
-                u'Could not find {} file(s)'.format(nb_songs_to_remove)
-            )
-            Song.objects.filter(filename__in=self.songs_to_remove).delete()
+        MP3Song.objects.all().delete()
         if len(self.songs_to_add) > 0:
             self.bulk_create()
         self.stdout.write(
-            u"Task completed in {} seconds".format(time.time()-self.t0)
+            u'Task completed in {} seconds'.format(time.time()-self.t0)
         )
 
     def scan_directory(self):
@@ -97,29 +66,20 @@ class Command(BaseCommand):
                 if not isinstance(root, unicode):
                     root = root.decode(self.encoding)
                 media_path = os.path.join(
-                    root[len(settings.NICKELODEON_MEDIA_ROOT):],
+                    root[len(self.folder_root):],
                     filename.decode(self.encoding)
                 )
                 yield media_path
 
     def process_music_file(self, media_path):
-        if not MP3_FILE_EXT_RE.search(media_path) \
-                and not AAC_FILE_EXT_RE.search(media_path):
+        if not MP3_FILE_EXT_RE.search(media_path):
             return
         if len(media_path) > 255:
             self.stderr(u'Media path too long, '
                         u'255 characters maximum. %s' % media_path)
             return
         new_song = media_path[:-4]
-        if new_song in self.songs_to_find:
-            if new_song in self.songs_to_remove:
-                self.songs_to_remove.remove(new_song)
-            else:
-                return
-        else:
-            if new_song in self.songs_to_add:
-                return
-            self.songs_to_add.add(new_song)
+        self.songs_to_add.append(new_song)
         self.songs_count += 1
         self.print_scan_status()
 
@@ -131,16 +91,14 @@ class Command(BaseCommand):
                     self.songs_count,
                     time.time()-self.t1
                 ),
-                ending=""
+                ending=''
             )
             self.stdout.flush()
 
     def bulk_create(self):
         bulk = []
         for song_file in self.songs_to_add:
-            media_dir, title = os.path.split(song_file)
-            bulk.append(Song(
-                title=title,
+            bulk.append(MP3Song(
                 filename=song_file
             ))
-        Song.objects.bulk_create(bulk)
+        MP3Song.objects.bulk_create(bulk)
