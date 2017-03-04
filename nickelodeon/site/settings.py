@@ -100,7 +100,7 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, '..', '..', 'static')
 
-JUKEBOX_MUSIC_ROOT = os.path.join(BASE_DIR, '..', '..', 'media')
+NICKELODEON_MUSIC_ROOT = os.path.join(BASE_DIR, '..', '..', 'media')
 
 REST_FRAMEWORK = {
     # other settings...

@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
     def parse_args(self, args, options):
         self.encoding = sys.getfilesystemencoding()
-        self.folder_root = settings.JUKEBOX_MUSIC_ROOT
+        self.folder_root = settings.NICKELODEON_MUSIC_ROOT
         if not os.path.exists(self.folder_root):
             raise CommandError(
                 u'Specified folder "{}" does not exist'.format(
