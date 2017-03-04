@@ -3,6 +3,7 @@ import urllib
 from random import randint
 
 from django.conf import settings
+from django.db.models import Q
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 
@@ -76,10 +77,10 @@ class TextSearchApiView(generics.ListAPIView):
         search_text = self.request.query_params.get('q', '').strip()
         if search_text:
             search_terms = search_text.split(' ')
-            regex = r''
+            query = Q()
             for search_term in search_terms:
-                regex += '(?=.*{})'.format(re.escape(search_term))
-            qs = qs.filter(filename__iregex=regex)
+                query &= Q(filename__icontains=search_term)
+            qs = qs.filter(query)
         else:
             return qs.none()
         qs = qs.order_by('filename')
