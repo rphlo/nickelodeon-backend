@@ -15,7 +15,7 @@ AVAILABLE_FORMATS = ('mp3', 'aac')
 
 
 def random_key():
-    b64 = bytes(struct.pack('L', random.getrandbits(64))).encode('base64')
+    b64 = bytes(struct.pack('Q', random.getrandbits(64))).encode('base64')
     b64 = b64[:11]
     b64 = b64.replace('+', '-')
     b64 = b64.replace('/', '_')

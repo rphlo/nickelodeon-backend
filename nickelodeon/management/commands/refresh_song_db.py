@@ -8,7 +8,10 @@ from django.core.management.base import BaseCommand, CommandError
 
 from nickelodeon.models import MP3Song
 
-from os import walk
+try:
+    from scandir import walk
+except ImportError:
+    from os import walk
 
 
 MP3_FILE_EXT_RE = re.compile(r'(.+)\.mp3$', re.IGNORECASE)
