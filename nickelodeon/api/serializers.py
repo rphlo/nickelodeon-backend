@@ -22,7 +22,7 @@ class MP3SongSerializer(serializers.ModelSerializer):
         has_moved = (validated_data['filename'] != instance.filename)
         original_instance = MP3Song(filename=instance.filename)
         saved_instance = super(MP3SongSerializer, self).update(instance,
-                                                            validated_data)
+                                                               validated_data)
         if has_moved:
             saved_instance.move_file_from(original_instance)
         return saved_instance
