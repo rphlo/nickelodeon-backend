@@ -82,6 +82,8 @@ class Command(BaseCommand):
                         u'255 characters maximum. %s' % media_path)
             return
         new_song = media_path[:-4]
+        if new_song.startswith('/'):
+            new_song = new_song[1:]
         self.songs_to_add.append(new_song)
         self.songs_count += 1
         self.print_scan_status()
