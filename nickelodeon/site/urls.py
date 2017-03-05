@@ -21,5 +21,5 @@ urlpatterns = [
     url(r'^api/', include('nickelodeon.api.urls')),
     url(r'^(?!/static/.*)(?P<path>.*\..*)$',
         RedirectView.as_view(url='/static/%(path)s', permanent=False)),
-    url(r'^$', serve, kwargs={'path': 'nickelodeon/index.html'}),
+    url(r'^/?$', serve, kwargs={'path': 'index.html'}),
 ]

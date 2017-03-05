@@ -55,7 +55,7 @@ class MP3Song(models.Model):
     def get_file_format_path(self, extension='mp3', full=True):
         file_path = u"%s.%s" % (self.filename, extension)
         if full:
-            file_path = os.path.join(settings.JUKEBOX_MUSIC_ROOT, file_path)
+            file_path = os.path.join(settings.NICKELODEON_MUSIC_ROOT, file_path)
         return file_path
 
     def move_file_from(self, orig):
