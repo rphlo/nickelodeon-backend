@@ -214,7 +214,7 @@ Queue
                    .append(' ')
                    .append($('<a>').attr('href', '#')
                                    .text(results[i].title)
-                                   .attr('title', results[i].path)
+                                   .attr('title', results[i].filename)
                                    .on('click', (function(song){
                                         return function(ev){
                                             ev.preventDefault();
