@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import base64
 import os
 import random
 import re
@@ -15,7 +16,8 @@ AVAILABLE_FORMATS = ('mp3', 'aac')
 
 
 def random_key():
-    b64 = bytes(struct.pack('Q', random.getrandbits(64))).encode('base64')
+    rand_bytes = bytes(struct.pack('Q', random.getrandbits(64)))
+    b64 = base64.b64encode(rand_bytes)
     b64 = b64[:11]
     b64 = b64.replace('+', '-')
     b64 = b64.replace('/', '_')
