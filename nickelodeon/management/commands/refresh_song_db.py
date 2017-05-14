@@ -52,13 +52,23 @@ class Command(BaseCommand):
         for filename in self.scan_directory():
             self.process_music_file(filename)
         self.print_scan_status(True)
+        current_songs = MP3Song.objects.all().values_list('filename', flat=True)
+        self.songs_to_remove = [song for song in current_songs
+                                if song not in self.songs_to_add]
+        self.songs_to_add = [song for song in self.songs_to_add
+                             if song not in current_songs]
         nb_songs_to_add = len(self.songs_to_add)
         self.stdout.write(
-            u'\nDiscovered {} file(s)'.format(nb_songs_to_add)
+            u'\nDiscovered {} new file(s)'.format(nb_songs_to_add)
         )
-        MP3Song.objects.all().delete()
-        if len(self.songs_to_add) > 0:
+        nb_songs_to_remove = len(self.songs_to_remove)
+        self.stdout.write(
+            u'Removing {} file(s)'.format(nb_songs_to_remove)
+        )
+        if nb_songs_to_add > 0:
             self.bulk_create()
+        if nb_songs_to_remove > 0:
+            self.bulk_remove()
         self.stdout.write(
             u'Task completed in {} seconds'.format(time.time()-self.t0)
         )
@@ -107,3 +117,6 @@ class Command(BaseCommand):
                 filename=song_file
             ))
         MP3Song.objects.bulk_create(bulk)
+
+    def bulk_remove(self):
+        MP3Song.objects.filter(filename__in=self.songs_to_remove).delete()
