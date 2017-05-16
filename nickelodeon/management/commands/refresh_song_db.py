@@ -52,7 +52,9 @@ class Command(BaseCommand):
         for filename in self.scan_directory():
             self.process_music_file(filename)
         self.print_scan_status(True)
-        current_songs = MP3Song.objects.all().values_list('filename', flat=True)
+        self.songs_to_add = set(self.songs_to_add)
+        current_songs = set(MP3Song.objects.all().values_list('filename',
+                                                              flat=True))
         self.songs_to_remove = [song for song in current_songs
                                 if song not in self.songs_to_add]
         self.songs_to_add = [song for song in self.songs_to_add
