@@ -90,8 +90,8 @@ class Command(BaseCommand):
         if not MP3_FILE_EXT_RE.search(media_path):
             return
         if len(media_path) > 255:
-            self.stderr(u'Media path too long, '
-                        u'255 characters maximum. %s' % media_path)
+            self.stderr.write(u'Media path too long, '
+                              u'255 characters maximum. %s' % media_path)
             return
         new_song = media_path[:-4]
         if new_song.startswith('/'):
