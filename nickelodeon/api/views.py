@@ -19,7 +19,7 @@ def x_accel_redirect(request, path, filename='',
         from wsgiref.util import FileWrapper
         import os.path
         path = re.sub(r'^/internal', settings.NICKELODEON_MUSIC_ROOT, path)
-        wrapper = FileWrapper(file(path))
+        wrapper = FileWrapper(open(path))
         response = StreamingHttpResponse(wrapper, content_type=mime)
         response['Content-Length'] = os.path.getsize(path)
     else:

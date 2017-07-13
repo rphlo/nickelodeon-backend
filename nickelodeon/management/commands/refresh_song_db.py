@@ -78,8 +78,8 @@ class Command(BaseCommand):
     def scan_directory(self):
         for root, dirs, files in walk(self.folder_root):
             for filename in files:
-                if not isinstance(root, unicode):
-                    root = root.decode(self.encoding)
+                # if not isinstance(root, unicode):
+                #     root = root.decode(self.encoding)
                 media_path = os.path.join(
                     root[len(self.folder_root):],
                     filename.decode(self.encoding)
