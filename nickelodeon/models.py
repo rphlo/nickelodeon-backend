@@ -61,7 +61,7 @@ class MP3Song(models.Model):
         return file_path
 
     def move_file_from(self, orig):
-        for ext, available in orig.available_formats.iteritems():
+        for ext, available in orig.available_formats.items():
             if available:
                 src = orig.get_file_format_path(extension=ext, full=True)
                 dst = self.get_file_format_path(extension=ext, full=True)
