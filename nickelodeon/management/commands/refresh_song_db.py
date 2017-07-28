@@ -72,7 +72,9 @@ class Command(BaseCommand):
         if nb_songs_to_remove > 0:
             self.bulk_remove()
         self.stdout.write(
-            u'Task completed in {} seconds'.format(time.time()-self.t0)
+            u'Task completed in {} seconds'.format(
+                round(time.time()-self.t0, 1)
+            )
         )
 
     def scan_directory(self):
@@ -104,7 +106,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 u'\rScanned {} music file(s) in {} seconds'.format(
                     self.songs_count,
-                    time.time()-self.t1
+                    round(time.time()-self.t1, 1)
                 ),
                 ending=''
             )
