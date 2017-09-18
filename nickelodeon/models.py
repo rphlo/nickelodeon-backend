@@ -17,7 +17,7 @@ AVAILABLE_FORMATS = ('mp3', 'aac')
 
 def random_key():
     rand_bytes = bytes(struct.pack('Q', random.getrandbits(64)))
-    b64 = base64.b64encode(rand_bytes)
+    b64 = base64.b64encode(rand_bytes).decode('utf-8')
     b64 = b64[:11]
     b64 = b64.replace('+', '-')
     b64 = b64.replace('/', '_')
@@ -61,7 +61,7 @@ class MP3Song(models.Model):
         return file_path
 
     def move_file_from(self, orig):
-        for ext, available in orig.available_formats.iteritems():
+        for ext, available in orig.available_formats.items():
             if available:
                 src = orig.get_file_format_path(extension=ext, full=True)
                 dst = self.get_file_format_path(extension=ext, full=True)

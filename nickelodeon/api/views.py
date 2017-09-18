@@ -26,12 +26,12 @@ def x_accel_redirect(request, path, filename='',
         response['Content-Length'] = os.path.getsize(path)
     else:
         response = HttpResponse('', status=206)
-        response['X-Accel-Redirect'] = urllib.quote(path.encode('utf-8'))
+        response['X-Accel-Redirect'] = urllib.parse.quote(path.encode('utf-8'))
         response['X-Accel-Buffering'] = 'no'
         response['Accept-Ranges'] = 'bytes'
     response['Content-Type'] = mime
     response['Content-Disposition'] = "attachment; filename={}".format(
-        urllib.quote_plus(filename.encode('utf-8'))
+        urllib.parse.quote_plus(filename.encode('utf-8'))
     )
     return response
 
