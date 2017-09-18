@@ -8,11 +8,27 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, \
+    renderer_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import BaseRenderer
+from rest_framework.response import Response
 
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
+
+
+class MP3Renderer(BaseRenderer):
+
+    """ Renderer for PDF binary content. """
+
+    media_type = 'audio/mpeg'
+    format = 'mp3'
+    charset = None
+    render_style = 'binary'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        return data
 
 
 def x_accel_redirect(request, path, filename='',
@@ -21,8 +37,8 @@ def x_accel_redirect(request, path, filename='',
         from wsgiref.util import FileWrapper
         import os.path
         path = re.sub(r'^/internal', settings.NICKELODEON_MUSIC_ROOT, path)
-        wrapper = FileWrapper(open(path))
-        response = StreamingHttpResponse(wrapper, content_type=mime)
+        wrapper = FileWrapper(open(path, 'rb'))
+        response = HttpResponse(wrapper, content_type=mime)
         response['Content-Length'] = os.path.getsize(path)
     else:
         response = HttpResponse('', status=206)
@@ -38,6 +54,7 @@ def x_accel_redirect(request, path, filename='',
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
+@renderer_classes((MP3Renderer, ))
 def download_song(request, pk, extension=None):
     song = get_object_or_404(MP3Song, pk=pk)
     file_path = song.filename

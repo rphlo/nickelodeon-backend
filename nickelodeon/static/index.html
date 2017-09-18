@@ -75,7 +75,7 @@
     <button id="login_btn">Login</button>
 </pre>
 <pre id="jukebox">
-<a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a> <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a> <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a> <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a>
+<a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a> <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a> <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a> <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a> <a href="#" onclick="logout();return false;" id="logoutBtn"><i class="fa fa-sign-out"></i></a>
 Now Playing: <span id="currentTitle">-</span>
 Queue
 <div id="queuedSongs">-</div>
@@ -133,6 +133,7 @@ Queue
     var queue = [];
     var prefered_format = 'mp3';
     var hardcore = false;
+    var auth_token = null;
     
     var toggleHardcore = function(){
         if(hardcore){
@@ -142,14 +143,22 @@ Queue
         }
         hardcore = !hardcore;
     }
-    var auth_token = null;
-
-    $(document).ready(function(){
+    var logout = function(){
+        stopSounds();
         askLogin();
+        localStorage.setItem("auth_token", null);
+        $('#password').val('')
+    }
+    $(document).ready(function(){
+        auth_token = localStorage.getItem("auth_token");
+        if(auth_token){
+            startJukebox();
+        } else {
+            askLogin();
+        }
         $('#login_btn').on('click', function(){
             var username = $('#username').val();
             var password = $('#password').val();
-
             $.ajax({
                 url: '/api/auth_token/',
                 data: {
@@ -160,14 +169,18 @@ Queue
                 method: 'POST'
             }).done(function(e){
                 auth_token = e.token;
+                localStorage.setItem("auth_token", auth_token);
                 startJukebox();
             }).fail(function(){
                 $('#password').val('')
             })
-        })
+        });
+        $('#seekBar').on('click', onClickSeekSong);
     });
 
     var startJukebox = function(){
+        $('#login').hide();
+        $('#jukebox').show();
         soundManager.setup({
           url: 'https://cdnjs.cloudflare.com/ajax/libs/soundmanager2/2.97a.20150601/swf/',
           flashVersion: 9,
@@ -176,7 +189,6 @@ Queue
             loadRandomSong();
           }
         });
-        $('#seekBar').on('click', onClickSeekSong)
     }
 
     var queueSong = function(song){
