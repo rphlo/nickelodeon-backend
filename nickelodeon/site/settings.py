@@ -31,10 +31,11 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-'django.contrib.auth',
+    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'nickelodeon',
 ]
 
@@ -45,6 +46,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'nickelodeon.site.urls'
@@ -104,7 +106,9 @@ NICKELODEON_MUSIC_ROOT = os.path.join(BASE_DIR, '..', '..', 'media')
 
 REST_FRAMEWORK = {
     # other settings...
-    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'nickelodeon.api.auth.TokenAuthSupportQueryString',
+    ),
     'DEFAULT_PERMISSION_CLASSES': [],
 }
 

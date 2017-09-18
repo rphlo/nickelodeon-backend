@@ -31,7 +31,7 @@
         text-decoration: none;
         color: #ccc;
     }
-    input[type="text"] {
+    input[type="text"], input[type="password"] {
         background-color: transparent;
         color: #ccc;
         border: 0px;
@@ -52,11 +52,29 @@
         height:5px;
         background-color: #ccc;
     }
+
+    button {
+        background-color: #333;
+        border: none;
+        color: #ccc;
+        padding: 5px 15px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+        font-size: calc(.5em + 1vw);
+        text-shadow: 1px 1px #000000;
+    }
     
     </style>
 </head>
 <body>
-<pre>
+<pre id="login">
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password"/>
+    <button id="login_btn">Login</button>
+</pre>
+<pre id="jukebox">
 <a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a> <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a> <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a> <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a>
 Now Playing: <span id="currentTitle">-</span>
 Queue
@@ -85,7 +103,7 @@ Queue
             }
             console.log('Playing '+this.filename);
             var mySound = soundManager.createSound({
-                url: this.path + '.' + prefered_format
+                url: this.path + '.' + prefered_format+'?auth_token='+auth_token
             });
             mySound.play({onfinish: playNextSong, whileplaying: scrollProgressBar});
             $('#currentTitle').text(this.title).attr('title', this.filename)
@@ -124,20 +142,32 @@ Queue
         }
         hardcore = !hardcore;
     }
+    var auth_token = null;
 
     $(document).ready(function(){
-        /*
-        var randomHue = Math.floor(360*Math.random());
-        var setColor = function(){
-            randomHue = (randomHue + 1) % 360;
-            var randColor = 'hsl(' + randomHue + ', 100%, 50%)';
-            $('pre').css('color', randColor);
-            $('a').css('color', randColor);
-            $('input[type="text"]').css('color', randColor);
-            $('.progressbarbar').css('background-color', randColor);
-        }
-        setInterval(setColor, 100);
-        */
+        askLogin();
+        $('#login_btn').on('click', function(){
+            var username = $('#username').val();
+            var password = $('#password').val();
+
+            $.ajax({
+                url: '/api/auth_token/',
+                data: {
+                    username: username,
+                    password: password
+                },
+                dataType: 'json',
+                method: 'POST'
+            }).done(function(e){
+                auth_token = e.token;
+                startJukebox();
+            }).fail(function(){
+                $('#password').val('')
+            })
+        })
+    });
+
+    var startJukebox = function(){
         soundManager.setup({
           url: 'https://cdnjs.cloudflare.com/ajax/libs/soundmanager2/2.97a.20150601/swf/',
           flashVersion: 9,
@@ -147,7 +177,7 @@ Queue
           }
         });
         $('#seekBar').on('click', onClickSeekSong)
-    });
+    }
 
     var queueSong = function(song){
         queue.push(song);
@@ -194,14 +224,24 @@ Queue
         $.ajax({
             url: 'api/songs/random',
             method: 'GET',
-            dataType: 'json'
+            dataType: 'json',
+            headers: {
+              Authorization: 'Token ' + auth_token
+            }
         }).done(function(song){
             song = new Song(song.download_url, song.filename, song.has_aac);
             console.log('Loaded random song');
             song.play();
+        }).fail(function(e){
+            if(e.status == 401){
+                askLogin();
+            }
         })
     }
-
+    var askLogin = function(){
+        $('#login').show();
+        $('#jukebox').hide();
+    }
     var playNextSong = function(){
         stopSounds();
         if(queue.length > 0){
@@ -249,7 +289,10 @@ Queue
             url: 'api/songs/',
             data: {'q': query},
             method: 'GET',
-            dataType: 'json'
+            dataType: 'json',
+            headers: {
+              Authorization: 'Token ' + auth_token
+            }
         }).done(function(songs){
             console.log('Found '+songs.length+' match');
             results = [];

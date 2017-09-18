@@ -8,6 +8,8 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
@@ -34,6 +36,8 @@ def x_accel_redirect(request, path, filename='',
     return response
 
 
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def download_song(request, pk, extension=None):
     song = get_object_or_404(MP3Song, pk=pk)
     file_path = song.filename
@@ -49,6 +53,7 @@ def download_song(request, pk, extension=None):
 class RandomSongView(generics.RetrieveAPIView):
     serializer_class = MP3SongSerializer
     queryset = MP3Song.objects.all()
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         count = self.get_queryset().count()
@@ -59,6 +64,7 @@ class RandomSongView(generics.RetrieveAPIView):
 class SongView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MP3SongSerializer
     queryset = MP3Song.objects.all()
+    permission_classes = (IsAuthenticated,)
 
     def perform_destroy(self, instance):
         instance.remove_file()
@@ -73,6 +79,7 @@ class TextSearchApiView(generics.ListAPIView):
     """
     queryset = MP3Song.objects.all()
     serializer_class = MP3SongSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         qs = super(TextSearchApiView, self).get_queryset()
