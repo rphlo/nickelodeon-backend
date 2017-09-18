@@ -20,7 +20,7 @@ from nickelodeon.models import MP3Song
 
 class MP3Renderer(BaseRenderer):
 
-    """ Renderer for PDF binary content. """
+    """ Renderer for Mp3 binary content. """
 
     media_type = 'audio/mpeg'
     format = 'mp3'
@@ -45,7 +45,6 @@ def x_accel_redirect(request, path, filename='',
         response['X-Accel-Redirect'] = urllib.parse.quote(path.encode('utf-8'))
         response['X-Accel-Buffering'] = 'no'
         response['Accept-Ranges'] = 'bytes'
-    response['Content-Type'] = mime
     response['Content-Disposition'] = "attachment; filename={}".format(
         urllib.parse.quote_plus(filename.encode('utf-8'))
     )
