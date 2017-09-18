@@ -69,10 +69,10 @@
     </style>
 </head>
 <body>
-<pre id="login">
+<pre id="login"><form id="login_form" onsubmit="onLogin();return false;">
     <input type="text" id="username" placeholder="Username" />
     <input type="password" id="password" placeholder="Password"/>
-    <button id="login_btn">Login</button>
+    <button type="submit" id="login_btn">Login</button></form>
 </pre>
 <pre id="jukebox">
 <a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a> <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a> <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a> <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a> <a href="#" onclick="logout();return false;" id="logoutBtn"><i class="fa fa-sign-out"></i></a>
@@ -156,27 +156,28 @@ Queue
         } else {
             askLogin();
         }
-        $('#login_btn').on('click', function(){
-            var username = $('#username').val();
-            var password = $('#password').val();
-            $.ajax({
-                url: '/api/auth_token/',
-                data: {
-                    username: username,
-                    password: password
-                },
-                dataType: 'json',
-                method: 'POST'
-            }).done(function(e){
-                auth_token = e.token;
-                localStorage.setItem("auth_token", auth_token);
-                startJukebox();
-            }).fail(function(){
-                $('#password').val('')
-            })
-        });
         $('#seekBar').on('click', onClickSeekSong);
     });
+
+    var onLogin = function(){
+        var username = $('#username').val();
+        var password = $('#password').val();
+        $.ajax({
+            url: '/api/auth_token/',
+            data: {
+                username: username,
+                password: password
+            },
+            dataType: 'json',
+            method: 'POST'
+        }).done(function(e){
+            auth_token = e.token;
+            localStorage.setItem("auth_token", auth_token);
+            startJukebox();
+        }).fail(function(){
+            $('#password').val('')
+        })
+    }
 
     var startJukebox = function(){
         $('#login').hide();
