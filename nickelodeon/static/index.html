@@ -2,8 +2,18 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Nickelodeon</title>
-    <link href="data:image/x-icon;base64,AAABAAEAEBAAAAAAAABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAJiUoACAfIwAfHiEAJSQmAB4dHwBFREYAHx0iAB0cIAAfHiIAHx4gAB8dIwAgHyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAcLCQAAAAAAAAAAAAAACQkJCQkFAAAAAAAAAAAAAAEJCQkJCQYAAAAAAAAAAAAJCQkJCQkJAAAAAAAAAAAAAAkICgUFCQAAAAAAAAAAAAAAAAAACQkAAAAAAAAAAAAAAAAAAAkJAAAAAAAAAAAAAAAAAAAJCQAAAAAAAAAAAAAAAAAACQIAAAAAAAAAAAAAAAAAAAkCAAAEAAAAAAAAAAAAAAAJCQAACQAAAAAAAAAAAAAACQkACQkAAAAAAAAAAAAAAAkJAwoAAAAAAAAAAAAAAAAJCQUAAAAAAAAAAAAAAAAACQkAAAAAAAAAAAAAAAAAAAkJAAAAAAAAAOH/AADA/wAAwH8AAMB/AADgfwAA/n8AAP5/AAD+fwAA/n8AAP5vAAD+bwAA/k8AAP4fAAD+PwAA/n8AAP5/AAA=" rel="icon" type="image/x-icon" />
+    <title>Humppakone.com</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/static//apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static//favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static//favicon-16x16.png">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="mask-icon" href="/static/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+    <meta property="og:title" content="Humppakone.com" />
+    <meta property="og:description" content="Your Fantastic Humppa Machine" />
+    <meta property="og:image" content="background.gif" />
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:600" rel="stylesheet">
     <style>
@@ -12,7 +22,7 @@
         width: 100%;
     }
     body {
-        background:#3f3f3f url('background_optimized.jpg') no-repeat;
+        background:#3f3f3f url('background.gif') no-repeat;
         -webkit-background-size: cover;
         -moz-background-size: cover;
         -o-background-size: cover;
@@ -26,6 +36,9 @@
         font-size: calc(1em + 1vw);
         text-shadow: 1px 1px #000000;
         color: #ccc;
+    }
+    .icon_menu {
+        font-size: calc(1em + 5vh);
     }
     a {
         text-decoration: none;
@@ -74,7 +87,7 @@
     <button type="submit" id="login_btn">Login</button></form>
 </pre>
 <pre id="jukebox">
-<a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a> <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a> <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a> <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a> <a href="#" onclick="logout();return false;" id="logoutBtn"><i class="fa fa-sign-out"></i></a>
+<div class="icon_menu"><a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a> <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a> <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a> <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a> <a href="#" onclick="logout();return false;" id="logoutBtn"><i class="fa fa-sign-out"></i></a></div>
 Now Playing: <span id="currentTitle">-</span>
 Queue
 <div id="queuedSongs">-</div>
@@ -149,6 +162,7 @@ Queue
         $('#password').val('')
     }
     $(document).ready(function(){
+        navigator.serviceWorker.register('sw.js');
         auth_token = localStorage.getItem("auth_token");
         if(auth_token){
             startJukebox();
