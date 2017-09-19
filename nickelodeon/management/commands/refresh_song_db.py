@@ -34,7 +34,7 @@ class Command(BaseCommand):
         if not os.path.exists(self.folder_root):
             raise CommandError(
                 u'Specified folder "{}" does not exist'.format(
-                    self.folder_root.decode(self.encoding)
+                    self.folder_root
                 )
             )
 
