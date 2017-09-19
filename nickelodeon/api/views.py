@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes, \
     renderer_classes
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BaseRenderer
 from rest_framework.response import Response
@@ -73,6 +74,8 @@ class RandomSongView(generics.RetrieveAPIView):
 
     def get_object(self):
         count = self.get_queryset().count()
+        if count == 0:
+            raise NotFound
         random_index = randint(0, count - 1)
         return self.get_queryset()[random_index]
 
