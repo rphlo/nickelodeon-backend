@@ -372,8 +372,11 @@ Queue
         if(video_id){
             $.ajax(
                 {
-                    url: 'submit_yt_download?v='+video_id,
-                    type: 'POST'
+                    url: '/api/youtube-dl/'+video_id,
+                    type: 'POST',
+                    headers: {
+                      Authorization: 'Token ' + auth_token
+                    }
                 }
             ).done(
                 function(response){

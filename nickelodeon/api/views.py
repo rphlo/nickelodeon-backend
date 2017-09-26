@@ -1,10 +1,11 @@
 import re
 import urllib
+
 from random import randint
 
 from django.conf import settings
 from django.db.models import Q
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics
@@ -13,16 +14,14 @@ from rest_framework.decorators import api_view, permission_classes, \
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BaseRenderer
-from rest_framework.response import Response
 
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
+from nickelodeon.tasks import fetch_youtube_video
 
 
 class MP3Renderer(BaseRenderer):
-
-    """ Renderer for Mp3 binary content. """
-
+    """ Renderer for MP3 binary content. """
     media_type = 'audio/mpeg'
     format = 'mp3'
     charset = None
@@ -113,3 +112,10 @@ class TextSearchApiView(generics.ListAPIView):
             return qs.none()
         qs = qs.order_by('filename')
         return qs
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def youtube_grab(request, video_id):
+    task = fetch_youtube_video.s(video_id).delay()
+    return {'task_id': str(task.task_id)}

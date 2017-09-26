@@ -20,4 +20,7 @@ urlpatterns = [
         r'(\.(?P<extension>(mp3|aac)))?$',
         view=views.download_song,
         name='song_download'),
+    url(r'^youtube-dl/(?P<video_id>[a-zA-Z0-9_-]{11})/?$',
+        view=views.youtube_grab,
+        name='youtube_grab')
 ]
