@@ -73,6 +73,7 @@ def fetch_youtube_video(video_id=''):
     file_move_safe(aac_tmp_path, aac_path)
     file_move_safe(mp3_tmp_path, mp3_path)
     os.remove(download_path)
-    song_fn = aac_path[len(settings.NICKELODEON_MUSIC_ROOT):-4]
+    offset = 0 if settings.NICKELODEON_MUSIC_ROOT[-1] == '/' else 1
+    song_fn = aac_path[len(settings.NICKELODEON_MUSIC_ROOT)+offset:-4]
     song, dummy_created = MP3Song.objects.get_or_create(filename=song_fn)
     return {'pk': song.pk}
