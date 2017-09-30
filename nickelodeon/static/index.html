@@ -159,7 +159,8 @@ Queue
         stopSounds();
         askLogin();
         localStorage.setItem("auth_token", null);
-        $('#password').val('')
+        $('#password').val('');
+        auth_token = null;
     }
     $(document).ready(function(){
         if ('serviceWorker' in navigator) {
@@ -178,6 +179,32 @@ Queue
             askLogin();
         }
         $('#seekBar').on('click', onClickSeekSong);
+
+        $('body').on(
+            'keydown',
+            (function(_this){
+              return function(e){
+                if(document.activeElement.tagName=='INPUT' || !auth_token){
+                  return;
+                }
+                if(!e){
+                  e = window.event;
+                }
+                var code = e.keyCode;
+                if(e.charCode && code === 0){
+                  code = e.charCode;
+                }
+                if(e.key=='Spacebar' || code==32){
+                  togglePause();
+                } else if(e.key=='n' || code==78){
+                  playNextSong();
+                } else if(e.keyCode=="S".charCodeAt(0)) {
+                  e.preventDefault();
+                  $('#searchInput').focus();
+                }
+              };
+            })(this)
+        );
     });
 
     var onLogin = function(){
