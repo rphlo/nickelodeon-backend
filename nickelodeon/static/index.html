@@ -195,12 +195,13 @@ Queue
                   code = e.charCode;
                 }
                 if(e.key=='Spacebar' || code==32){
+                  e.preventDefault();
                   togglePause();
                 } else if(e.key=='n' || code==78){
                   playNextSong();
                 } else if(e.keyCode=="S".charCodeAt(0)) {
                   e.preventDefault();
-                  $('#searchInput').focus();
+                  $('#searchInput').focus().select();
                 }
               };
             })(this)
