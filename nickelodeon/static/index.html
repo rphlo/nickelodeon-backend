@@ -102,10 +102,11 @@ Queue
         integrity="sha384-6RH4ezPrPwFe2n6HTRSlxynJwFgJyOGT66YzDey2DM9X+hTryEjdSvws2FB9WfAw" 
         crossorigin="anonymous"></script>
 <script>
-    var Song = function(path, filename, has_aac){
+    var currentSong = null;
+    var Song = function(id, path, filename){
+        this.id = id;
         this.path = path;
         this.filename = filename;
-        this.has_aac = has_aac;
         var title_matches = filename.match(/[^\/]+$/)
         this.title = title_matches[0];
         this.play = function(){
@@ -114,6 +115,7 @@ Queue
                 return;
             }
             console.log('Playing '+this.filename);
+            currentSong = this;
             var mySound = soundManager.createSound({
                 url: this.path + '.' + prefered_format+'?auth_token='+auth_token
             });
@@ -206,7 +208,30 @@ Queue
               };
             })(this)
         );
+
+        $('#currentTitle').on('click', function(e){
+            e.preventDefault();
+            if(e.ctrlKey){
+                editSong(currentSong);
+            }
+        });
     });
+    var editSong = function(song){
+        new_path = window.prompt('new file path', song.filename);
+        if(new_path && new_path != song.filename){
+            $.ajax({
+                url: '/api/songs/'+song.id,
+                method: 'PATCH',
+                data: {filename: new_path},
+                dataType: 'JSON',
+                headers: {
+                  Authorization: 'Token ' + auth_token
+                }
+            }).done(function(e){
+                console.log('filename changed to ' + new_path)
+            })
+        }
+    };
 
     var onLogin = function(){
         var username = $('#username').val();
@@ -273,6 +298,10 @@ Queue
                                    .on('click', function(song){
                                         return function(ev){
                                             ev.preventDefault();
+                                            if(ev.ctrlKey){
+                                                editSong(song);
+                                                return;
+                                            }
                                             stopSounds();
                                             song.play();
                                         }
@@ -290,8 +319,8 @@ Queue
             headers: {
               Authorization: 'Token ' + auth_token
             }
-        }).done(function(song){
-            song = new Song(song.download_url, song.filename, song.has_aac);
+        }).done(function(song_info){
+            var song = new Song(song_info.id, song_info.download_url, song_info.filename);
             console.log('Loaded random song');
             song.play();
         }).fail(function(e){
@@ -338,6 +367,10 @@ Queue
                                    .on('click', (function(song){
                                         return function(ev){
                                             ev.preventDefault();
+                                            if(ev.ctrlKey){
+                                                editSong(song);
+                                                return;
+                                            }
                                             stopSounds();
                                             song.play();
                                         }
@@ -359,7 +392,7 @@ Queue
             console.log('Found '+songs.length+' match');
             results = [];
             for(var i=0; i<songs.length; i++){
-                results.push(new Song(songs[i].download_url, songs[i].filename, songs[i].has_aac))
+                results.push(new Song(songs[i].id, songs[i].download_url, songs[i].filename))
             }
             displaySearchResults(results);
         });
