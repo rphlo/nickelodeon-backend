@@ -124,7 +124,7 @@ class TextSearchApiView(generics.ListAPIView):
 @permission_classes((IsAuthenticated, ))
 def youtube_grab(request, video_id):
     task = fetch_youtube_video.s(video_id).delay()
-    return HttpResponse({'task_id': str(task.task_id)})
+    return Response({'task_id': str(task.task_id)})
 
 
 class LoginView(GenericAPIView):
