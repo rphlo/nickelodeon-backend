@@ -1,3 +1,4 @@
+import io
 import re
 import subprocess
 
@@ -12,6 +13,7 @@ class FFMPEGTask(object):
     progress_prefix_chr_found = 0
     process = None
     process_completed = False
+    process_reader = None
 
     def __init__(self, command, callback=None):
         self.command = command
@@ -22,6 +24,8 @@ class FFMPEGTask(object):
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT,
                                         bufsize=10**8)
+        self.process_reader = io.TextIOWrapper(self.process.stdout,
+                                               encoding='utf8')
         while not self.process_completed:
             self.track_progress()
 
@@ -70,7 +74,7 @@ class FFMPEGTask(object):
                 self.progress_prefix_chr_found = 0
 
     def track_progress(self):
-        out = self.process.stdout.read(1).decode('utf-8')
+        out = self.process_reader.read(1)
         if out == '' and self.process.poll() is not None:
             self.process_completed = True
         if out != '':
