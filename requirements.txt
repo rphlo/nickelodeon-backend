@@ -3,3 +3,4 @@ djangorestframework>=3.6,<3.7
 youtube-dl
 pafy
 celery[redis]
+django-rest-knox

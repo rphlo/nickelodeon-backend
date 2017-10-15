@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
+    'knox',
     'nickelodeon',
 ]
 
@@ -120,6 +120,10 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
+from datetime import timedelta
+REST_KNOX = {
+  'TOKEN_TTL': timedelta(days=7),
+}
 
 try:
     from .local_settings import *

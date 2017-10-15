@@ -1,12 +1,18 @@
-from django.conf.urls import url
-
-from rest_framework.authtoken import views as token_views
+from django.conf.urls import url, include
 
 from nickelodeon.api import views
-
+from knox import views as knox_views
 
 urlpatterns = [
-    url(r'^auth_token/', token_views.obtain_auth_token),
+    url(r'^auth/login/?$',
+        view=views.LoginView.as_view(),
+        name='knox_login'),
+    url(r'^auth/logout/?$',
+        view=knox_views.LogoutView.as_view(),
+        name='knox_logout'),
+    url(r'^auth/logoutall/?$',
+        view=knox_views.LogoutAllView.as_view(),
+        name='knox_logoutall'),
     url(r'^songs/?$',
         view=views.TextSearchApiView.as_view(),
         name='song_list'),

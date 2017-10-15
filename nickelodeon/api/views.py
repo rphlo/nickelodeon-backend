@@ -1,23 +1,29 @@
 import re
 import urllib
 
+from knox.models import AuthToken
+from knox.serializers import UserSerializer
 from random import randint
 
 from django.conf import settings
+from django.contrib.auth.signals import user_logged_in
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
-from rest_framework import generics
+from rest_framework import parsers, generics, renderers
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import api_view, permission_classes, \
     renderer_classes
 from rest_framework.exceptions import NotFound
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BaseRenderer
 
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video
+from rest_framework.response import Response
 
 
 class MP3Renderer(BaseRenderer):
@@ -119,3 +125,30 @@ class TextSearchApiView(generics.ListAPIView):
 def youtube_grab(request, video_id):
     task = fetch_youtube_video.s(video_id).delay()
     return HttpResponse({'task_id': str(task.task_id)})
+
+
+class LoginView(GenericAPIView):
+    """
+    Login View: mix of knox login view and drf obtain auth token view
+    """
+    throttle_classes = ()
+    permission_classes = ()
+    parser_classes = (parsers.FormParser, parsers.MultiPartParser,
+                      parsers.JSONParser,)
+    renderer_classes = (renderers.JSONRenderer,)
+    serializer_class = AuthTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token = AuthToken.objects.create(user)
+        user_logged_in.send(sender=request.user.__class__,
+                            request=request,
+                            user=user)
+        return Response({
+            'user': UserSerializer(request.user,
+                                   context=self.get_serializer_context()).data,
+            'token': token
+        })

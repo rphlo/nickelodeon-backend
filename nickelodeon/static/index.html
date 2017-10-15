@@ -159,6 +159,15 @@ Queue
     }
     var logout = function(){
         stopSounds();
+        $.ajax({
+            url: '/api/auth/logout/',
+            method: 'POST',
+            headers: {
+              Authorization: 'Token ' + auth_token
+            }
+        }).done(function(e){
+            console.log('logged out, token removed')
+        })
         askLogin();
         localStorage.setItem("auth_token", null);
         $('#password').val('');
@@ -237,13 +246,13 @@ Queue
         var username = $('#username').val();
         var password = $('#password').val();
         $.ajax({
-            url: '/api/auth_token/',
+            url: '/api/auth/login/',
             data: {
                 username: username,
                 password: password
             },
             dataType: 'json',
-            method: 'POST'
+            method: 'POST',
         }).done(function(e){
             auth_token = e.token;
             localStorage.setItem("auth_token", auth_token);
