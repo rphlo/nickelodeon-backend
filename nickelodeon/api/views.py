@@ -144,11 +144,11 @@ class LoginView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token = AuthToken.objects.create(user)
-        user_logged_in.send(sender=request.user.__class__,
+        user_logged_in.send(sender=user.__class__,
                             request=request,
                             user=user)
         return Response({
-            'user': UserSerializer(request.user,
+            'user': UserSerializer(user,
                                    context=self.get_serializer_context()).data,
             'token': token
         })
