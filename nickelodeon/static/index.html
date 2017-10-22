@@ -148,7 +148,8 @@ Queue
     var prefered_format = 'mp3';
     var hardcore = false;
     var auth_token = null;
-    
+    var xhr_search = null;
+
     var toggleHardcore = function(){
         if(hardcore){
             $('#hardcoreSwitch').html('<i class="fa fa-heart-o"></i>');
@@ -157,6 +158,7 @@ Queue
         }
         hardcore = !hardcore;
     }
+
     var logout = function(){
         stopSounds();
         $.ajax({
@@ -173,6 +175,7 @@ Queue
         $('#password').val('');
         auth_token = null;
     }
+
     $(document).ready(function(){
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', function() {
@@ -225,6 +228,7 @@ Queue
             }
         });
     });
+
     var editSong = function(song){
         new_path = window.prompt('new file path', song.filename);
         if(new_path && new_path != song.filename){
@@ -389,7 +393,10 @@ Queue
     }
 
     var searchSongs = function(query){
-        $.ajax({
+        if(xhr_search){
+            xhr_search.abort();
+        }
+        xhr_search = $.ajax({
             url: 'api/songs/',
             data: {'q': query},
             method: 'GET',
@@ -398,12 +405,17 @@ Queue
               Authorization: 'Token ' + auth_token
             }
         }).done(function(songs){
+            xhr_search = null;
             console.log('Found '+songs.length+' match');
             results = [];
             for(var i=0; i<songs.length; i++){
                 results.push(new Song(songs[i].id, songs[i].download_url, songs[i].filename))
             }
             displaySearchResults(results);
+        }).fail(function(e){
+            if(e.status == 401){
+                askLogin();
+            }
         });
     }
 
