@@ -173,6 +173,10 @@ Queue
         askLogin();
         localStorage.setItem("auth_token", null);
         $('#password').val('');
+        displaySearchResults([]);
+        queue = [];
+        displayQueue();
+        $('#searchInput').val('');
         auth_token = null;
     }
 
