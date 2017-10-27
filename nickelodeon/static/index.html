@@ -30,8 +30,7 @@
         background-position: 50% 50%;
         display: flex;
         background-attachment: fixed;
-    }
-    pre {
+
         font-family: 'Source Sans Pro', sans-serif;
         font-size: calc(1em + 1vw);
         text-shadow: 1px 1px #000000;
@@ -82,18 +81,27 @@
     </style>
 </head>
 <body>
-<pre id="login"><form id="login_form" onsubmit="onLogin();return false;">    <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password"/>
-    <button type="submit" id="login_btn">Login</button></form>
-</pre>
-<pre id="jukebox">
-<div class="icon_menu"><a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a> <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a> <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a> <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a> <a href="#" onclick="logout();return false;" id="logoutBtn"><i class="fa fa-sign-out"></i></a></div>
-Now Playing: <span id="currentTitle">-</span>
-Queue
+<div id="login">
+  <form id="login_form" onsubmit="onLogin();return false;">
+    <div><input type="text" id="username" placeholder="Username" /></div>
+    <div><input type="password" id="password" placeholder="Password"/></div>
+    <div><button type="submit" id="login_btn">Login</button></div>
+  </form>
+</div>
+<div id="jukebox">
+<div class="icon_menu">
+    <a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a>
+    <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a>
+    <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a>
+    <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a>
+    <a href="#" onclick="logout();return false;" id="logoutBtn"><i class="fa fa-sign-out"></i></a>
+</div>
+<div>Now Playing: <span id="currentTitle">-</span></div>
+<div>Queue</div>
 <div id="queuedSongs">-</div>
 <input type="text" onChange="onSearchInputChange();" id="searchInput" placeholder="Search"/>
 <div id="searchResults"></div>
-</pre>
+</div>
 <div class="progressbar" id="seekBar"><div class="progressbarbar"></div></div>
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"
         integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="
@@ -299,8 +307,10 @@ Queue
             $div.text('-');
         }else{
             $div.html('');
+
             for(var i=0; i < queue.length; i++){
-                $div.append($('<a>').attr('href', '#')
+                var ndiv = $('<div>');
+                ndiv.append($('<a>').attr('href', '#')
                                     .text('[x]')
                                     .on('click', (function(index){
                                         return function(ev){
@@ -322,8 +332,8 @@ Queue
                                             stopSounds();
                                             song.play();
                                         }
-                                    }(queue[i])))
-                    .append('\n')
+                                    }(queue[i])));
+                $div.append(ndiv);
             }
         }
     }
@@ -369,7 +379,8 @@ Queue
         $resdiv = $('#searchResults');
         $resdiv.html('');
         for(var i=0; i < results.length; i++){
-            $resdiv.append($('<a>').attr('href', '#')
+            var ndiv = $('<div>');
+            ndiv.append($('<a>').attr('href', '#')
                                    .text('[q]')
                                    .on('click', (function(song){
                                         return function(ev){
@@ -377,22 +388,22 @@ Queue
                                             queueSong(song);
                                         }
                                    })(results[i])))
-                   .append(' ')
-                   .append($('<a>').attr('href', '#')
-                                   .text(results[i].title)
-                                   .attr('title', results[i].filename)
-                                   .on('click', (function(song){
-                                        return function(ev){
-                                            ev.preventDefault();
-                                            if(ev.ctrlKey){
-                                                editSong(song);
-                                                return;
-                                            }
-                                            stopSounds();
-                                            song.play();
-                                        }
-                                    })(results[i])))
-                   .append('\n')
+                .append(' ')
+                .append($('<a>').attr('href', '#')
+                                .text(results[i].title)
+                                .attr('title', results[i].filename)
+                                .on('click', (function(song){
+                                     return function(ev){
+                                         ev.preventDefault();
+                                         if(ev.ctrlKey){
+                                             editSong(song);
+                                             return;
+                                         }
+                                         stopSounds();
+                                         song.play();
+                                    }
+                                })(results[i])));
+                $resdiv.append(ndiv);
         }
     }
 
