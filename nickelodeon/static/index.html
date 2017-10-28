@@ -117,6 +117,7 @@ var prefered_format = 'mp3';
 var hardcore = false;
 var auth_token = null;
 var xhr_search = null;
+var search_results = [];
 
 $(document).ready(function(){
     if ('serviceWorker' in navigator) {
@@ -172,11 +173,17 @@ $(document).ready(function(){
 });
 
 var Song = function(id, path, filename){
+    this.set_filename = function(filename){
+        this.filename = filename;
+        var title_matches = filename.match(/[^\/]+$/)
+        this.title = title_matches[0];
+    };
+
     this.id = id;
     this.path = path;
-    this.filename = filename;
-    var title_matches = filename.match(/[^\/]+$/)
-    this.title = title_matches[0];
+    this.set_filename(filename);
+
+
     this.play = function(){
         if(!hardcore && this.filename.startsWith('rphl/Happy Hardcore/')){
             playNextSong();
@@ -184,17 +191,21 @@ var Song = function(id, path, filename){
         }
         console.log('Playing '+this.filename);
         currentSong = this;
+        displayCurrentSong();
         var mySound = soundManager.createSound({
             url: this.path + '.' + prefered_format+'?auth_token='+auth_token
         });
         mySound.play({onfinish: playNextSong, whileplaying: scrollProgressBar});
-        $('#currentTitle').text(this.title).attr('title', this.filename)
     };
 };
 
 var askLogin = function(){
     $('#login').show();
     $('#jukebox').hide();
+};
+
+var displayCurrentSong = function(){
+    $('#currentTitle').text(currentSong.title).attr('title', currentSong.filename);
 };
 
 var displayQueue = function() {
@@ -234,7 +245,8 @@ var displayQueue = function() {
     }
 };
 
-var displaySearchResults = function(results){
+var displaySearchResults = function(){
+    var results = search_results;
     $resdiv = $('#searchResults');
     $resdiv.html('');
     for(var i=0; i < results.length; i++){
@@ -278,7 +290,11 @@ var editSong = function(song){
               Authorization: 'Token ' + auth_token
             }
         }).done(function(e){
-            console.log('filename changed to ' + new_path)
+            console.log('filename changed to ' + new_path);
+            song.set_filename(new_path);
+            displayCurrentSong();
+            displayQueue();
+            displaySearchResults();
         })
     }
 };
@@ -432,11 +448,11 @@ var searchSongs = function(query){
     }).done(function(songs){
         xhr_search = null;
         console.log('Found '+songs.length+' match');
-        results = [];
+        search_results = [];
         for(var i=0; i<songs.length; i++){
-            results.push(new Song(songs[i].id, songs[i].download_url, songs[i].filename))
+            search_results.push(new Song(songs[i].id, songs[i].download_url, songs[i].filename))
         }
-        displaySearchResults(results);
+        displaySearchResults();
     }).fail(function(e){
         if(e.status == 401){
             askLogin();
