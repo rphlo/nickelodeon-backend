@@ -436,7 +436,7 @@ var searchSongs = function(query){
     if(xhr_search){
         xhr_search.abort();
     }
-    $('#searchResults').html('<i class="fa fa-circle-o-notch fa-spin fa-fw"></i><span class="sr-only">Loading...</span>')
+    $('#searchResults').html('<i class="fa fa-circle-o-notch fa-spin fa-fw"></i><span class="sr-only">Loading...</span>');
     xhr_search = $.ajax({
         url: 'api/songs/',
         data: {'q': query},
@@ -457,6 +457,7 @@ var searchSongs = function(query){
         if(e.status == 401){
             askLogin();
         }
+        $('#searchResults').html('');
     });
 };
 
