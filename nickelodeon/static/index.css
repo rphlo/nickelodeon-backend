@@ -1,0 +1,76 @@
+html {
+    height: 100%;
+    width: 100%;
+}
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: calc(1em + 1vw);
+    text-shadow: 1px 1px #000000;
+    color: #ccc;
+}
+video {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -100;
+    transform: translateX(-50%) translateY(-50%);
+    background: url('background.jpg') no-repeat;
+    background-size: cover;
+    transition: 1s opacity;
+}
+.video_cover {
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -100;
+    background: rgb(0,0,0, 0.1);
+}
+.icon_menu {
+    font-size: calc(1em + 5vh);
+}
+a {
+    text-decoration: none;
+    color: #ccc;
+}
+input[type="text"], input[type="password"] {
+    background-color: transparent;
+    color: #ccc;
+    border: 0px;
+    padding: 0px;
+    margin: 0px;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: calc(1em + 1vw);
+    text-shadow: 1px 1px #000000;
+}
+.progressbar {
+    position: absolute;
+    top:0px;
+    left:0px;
+    width: 100%;
+    height:20px;
+}
+.progressbarbar {
+    height:5px;
+    background-color: #ccc;
+}
+
+button {
+    background-color: #333;
+    border: none;
+    color: #ccc;
+    padding: 5px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    font-size: calc(.5em + 1vw);
+    text-shadow: 1px 1px #000000;
+}

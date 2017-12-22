@@ -1,99 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Humppakone.com</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="mask-icon" href="/static/safari-pinned-tab.svg" color="#5bbad5">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="Humppakone.com" />
-    <meta property="og:description" content="Your Fantastic Humppa Machine" />
-    <meta property="og:image" content="background.gif" />
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:600" rel="stylesheet">
-    <style>
-    html {
-        height: 100%;
-        width: 100%;
-    }
-    body {
-        font-family: 'Source Sans Pro', sans-serif;
-        font-size: calc(1em + 1vw);
-        text-shadow: 1px 1px #000000;
-        color: #ccc;
-    }
-    video {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        min-width: 100%;
-        min-height: 100%;
-        width: auto;
-        height: auto;
-        z-index: -100;
-        transform: translateX(-50%) translateY(-50%);
-        background: url('background.jpg') no-repeat;
-        background-size: cover;
-        transition: 1s opacity;
-    }
-    .video_cover {
-        position: fixed;
-        top: 0;
-        left: 0;
-        min-width: 100%;
-        min-height: 100%;
-        width: auto;
-        height: auto;
-        z-index: -100;
-        background: rgb(0,0,0, 0.1);
-    }
-    .icon_menu {
-        font-size: calc(1em + 5vh);
-    }
-    a {
-        text-decoration: none;
-        color: #ccc;
-    }
-    input[type="text"], input[type="password"] {
-        background-color: transparent;
-        color: #ccc;
-        border: 0px;
-        padding: 0px;
-        margin: 0px;
-        font-family: 'Source Sans Pro', sans-serif;
-        font-size: calc(1em + 1vw);
-        text-shadow: 1px 1px #000000;
-    }
-    .progressbar {
-        position: absolute;
-        top:0px;
-        left:0px;
-        width: 100%;
-        height:20px;
-    }
-    .progressbarbar {
-        height:5px;
-        background-color: #ccc;
-    }
-
-    button {
-        background-color: #333;
-        border: none;
-        color: #ccc;
-        padding: 5px 15px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        cursor: pointer;
-        font-size: calc(.5em + 1vw);
-        text-shadow: 1px 1px #000000;
-    }
-    
-    </style>
+  <meta charset="utf-8">
+  <title>Humppakone.com</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="mask-icon" href="/static/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="Humppakone.com" />
+  <meta property="og:description" content="Your Fantastic Humppa Machine" />
+  <meta property="og:image" content="background.gif" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:600" integrity="sha256-bq12Y0jcp5dq4jhzA9z1T4sM9LCU1+T+YhSha/saxV4=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="index.css" />
 </head>
 <body>
 <video poster="background.jpg" id="bgvid" playsinline autoplay muted loop>
@@ -110,11 +32,11 @@
 </div>
 <div id="jukebox">
 <div class="icon_menu">
-    <a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a>
-    <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a>
-    <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a>
-    <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a>
-    <a href="#" onclick="logout();return false;" id="logoutBtn"><i class="fa fa-sign-out"></i></a>
+  <a href="#" onclick="togglePause();return false;"><i class="fa fa-pause"></i></a>
+  <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a>
+  <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a>
+  <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a>
+  <a href="#" onclick="logout();return false;" id="logoutBtn"><i class="fa fa-sign-out"></i></a>
 </div>
 <div>Now Playing: <span id="currentTitle">-</span></div>
 <div>Queue</div>
@@ -122,409 +44,22 @@
 <input type="text" onChange="onSearchInputChange();" id="searchInput" placeholder="Search"/>
 <div id="searchResults"></div>
 </div>
-<div class="progressbar" id="seekBar"><div class="progressbarbar"></div></div>
-<script src="https://code.jquery.com/jquery-3.1.0.min.js"
-        integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="
-        crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/soundmanager2/2.97a.20150601/script/soundmanager2-nodebug.js"
-        integrity="sha384-6RH4ezPrPwFe2n6HTRSlxynJwFgJyOGT66YzDey2DM9X+hTryEjdSvws2FB9WfAw" 
-        crossorigin="anonymous"></script>
+<div class="progressbar" id="seekBar">
+  <div class="progressbarbar"></div>
+</div>
+<script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/soundmanager2/2.97a.20150601/script/soundmanager2-nodebug.js" integrity="sha384-6RH4ezPrPwFe2n6HTRSlxynJwFgJyOGT66YzDey2DM9X+hTryEjdSvws2FB9WfAw" crossorigin="anonymous"></script>
+<script src="index.js"></script>
 <script>
-var currentSong = null;
-var songs = [];
-var queue = [];
-var prefered_format = 'mp3';
-var hardcore = false;
-var auth_token = null;
-var xhr_search = null;
-var search_results = [];
-
-$(document).ready(function(){
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js').then(function(registration) {
-          console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        }, function(err) {
-          console.log('ServiceWorker registration failed: ', err);
-        });
-      });
-    }
-    auth_token = localStorage.getItem("auth_token");
-    if(auth_token){
-        startJukebox();
-    } else {
-        askLogin();
-    }
-    $('#seekBar').on('click', onClickSeekSong);
-
-    $('body').on(
-        'keydown',
-        (function(_this){
-          return function(e){
-            if(document.activeElement.tagName=='INPUT' || !auth_token){
-              return;
-            }
-            if(!e){
-              e = window.event;
-            }
-            var code = e.keyCode;
-            if(e.charCode && code === 0){
-              code = e.charCode;
-            }
-            if(e.key=='Spacebar' || code==32){
-              e.preventDefault();
-              togglePause();
-            } else if(e.key=='n' || code==78){
-              playNextSong();
-            } else if(e.keyCode=="S".charCodeAt(0)) {
-              e.preventDefault();
-              $('#searchInput').focus().select();
-            }
-          };
-        })(this)
-    );
-
-    $('#currentTitle').on('click', function(e){
-        e.preventDefault();
-        if(e.ctrlKey){
-            editSong(currentSong);
-        }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/static/sw.js').then(function(registration) {
+      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    }, function(err) {
+      console.log('ServiceWorker registration failed: ', err);
     });
-});
-
-var Song = function(id, path, filename){
-    this.set_filename = function(filename){
-        this.filename = filename;
-        var title_matches = filename.match(/[^\/]+$/)
-        this.title = title_matches[0];
-    };
-
-    this.id = id;
-    this.path = path;
-    this.set_filename(filename);
-
-
-    this.play = function(){
-        if(!hardcore && this.filename.startsWith('rphl/Happy Hardcore/')){
-            playNextSong();
-            return;
-        }
-        console.log('Playing '+this.filename);
-        currentSong = this;
-        displayCurrentSong();
-        var mySound = soundManager.createSound({
-            url: this.path + '.' + prefered_format+'?auth_token='+auth_token
-        });
-        mySound.play({onfinish: playNextSong, whileplaying: scrollProgressBar});
-    };
-};
-
-var askLogin = function(){
-    $('#login').show();
-    $('#jukebox').hide();
-};
-
-var displayCurrentSong = function(){
-    $('#currentTitle').text(currentSong.title).attr('title', currentSong.filename);
-};
-
-var displayQueue = function() {
-    var $div = $('#queuedSongs')
-    if(queue.length == 0){
-        $div.text('-');
-    }else{
-        $div.html('');
-
-        for(var i=0; i < queue.length; i++){
-            var ndiv = $('<div>');
-            ndiv.append($('<a>').attr('href', '#')
-                                .text('[x]')
-                                .on('click', (function(index){
-                                    return function(ev){
-                                        ev.preventDefault();
-                                        unqueueSong(index);
-                                    }
-                                })(i)))
-                .append(' ')
-                .append($('<a>').attr('href', '#')
-                               .text(queue[i].title)
-                               .attr('title', queue[i].path)
-                               .on('click', function(song){
-                                    return function(ev){
-                                        ev.preventDefault();
-                                        if(ev.ctrlKey){
-                                            editSong(song);
-                                            return;
-                                        }
-                                        stopSounds();
-                                        song.play();
-                                    }
-                                }(queue[i])));
-            $div.append(ndiv);
-        }
-    }
-};
-
-var displaySearchResults = function(){
-    var results = search_results;
-    $resdiv = $('#searchResults');
-    $resdiv.html('');
-    for(var i=0; i < results.length; i++){
-        var ndiv = $('<div>');
-        ndiv.append($('<a>').attr('href', '#')
-                               .text('[q]')
-                               .on('click', (function(song){
-                                    return function(ev){
-                                        ev.preventDefault();
-                                        queueSong(song);
-                                    }
-                               })(results[i])))
-            .append(' ')
-            .append($('<a>').attr('href', '#')
-                            .text(results[i].title)
-                            .attr('title', results[i].filename)
-                            .on('click', (function(song){
-                                 return function(ev){
-                                     ev.preventDefault();
-                                     if(ev.ctrlKey){
-                                         editSong(song);
-                                         return;
-                                     }
-                                     stopSounds();
-                                     song.play();
-                                }
-                            })(results[i])));
-            $resdiv.append(ndiv);
-    }
-};
-
-var editSong = function(song){
-    new_path = window.prompt('new file path', song.filename);
-    if(new_path && new_path != song.filename){
-        $.ajax({
-            url: '/api/songs/'+song.id,
-            method: 'PATCH',
-            data: {filename: new_path},
-            dataType: 'JSON',
-            headers: {
-              Authorization: 'Token ' + auth_token
-            }
-        }).done(function(e){
-            console.log('filename changed to ' + new_path);
-            song.set_filename(new_path);
-            displayCurrentSong();
-            displayQueue();
-            displaySearchResults();
-        })
-    }
-};
-
-var loadRandomSong = function(){
-    $.ajax({
-        url: 'api/songs/random',
-        method: 'GET',
-        dataType: 'json',
-        headers: {
-          Authorization: 'Token ' + auth_token
-        }
-    }).done(function(song_info){
-        var song = new Song(song_info.id, song_info.download_url, song_info.filename);
-        console.log('Loaded random song');
-        song.play();
-    }).fail(function(e){
-        if(e.status == 401){
-            askLogin();
-        }
-    })
-};
-
-var logout = function(){
-    stopSounds();
-    $.ajax({
-        url: '/api/auth/logout/',
-        method: 'POST',
-        headers: {
-          Authorization: 'Token ' + auth_token
-        }
-    }).done(function(e){
-        console.log('logged out, token removed')
-    })
-    askLogin();
-    localStorage.setItem("auth_token", null);
-    $('#password').val('');
-    displaySearchResults([]);
-    queue = [];
-    displayQueue();
-    $('#searchInput').val('');
-    auth_token = null;
-};
-
-var onClickSeekSong = function(e){
-    console.log('Seek song');
-    var perc = e.pageX/$('#seekBar').width();
-    var sound_id = soundManager.soundIDs[0];
-    var sound = soundManager.getSoundById(sound_id);
-    if(sound){
-        var target_time = sound.durationEstimate*perc;
-        seekSong(target_time);
-    }
-};
-
-var onLogin = function(){
-    var username = $('#username').val();
-    var password = $('#password').val();
-    $.ajax({
-        url: '/api/auth/login/',
-        data: {
-            username: username,
-            password: password
-        },
-        dataType: 'json',
-        method: 'POST',
-    }).done(function(e){
-        auth_token = e.token;
-        localStorage.setItem("auth_token", auth_token);
-        startJukebox();
-    }).fail(function(){
-        $('#password').val('')
-    })
-};
-
-var onSearchInputChange = function(){
-    var query = $('#searchInput').val();
-    searchSongs(query);
-};
-
-var playNextSong = function(){
-    stopSounds();
-    if(queue.length > 0){
-        queue[0].play();
-        unqueueSong(0);
-    }else{
-        loadRandomSong();
-    }
-};
-
-var promptYoutubeURL = function(){
-    var url = window.prompt('Enter a Youtube URL');
-    if(url===null){
-        return;
-    }
-    var yt_video_id_re = [
-        {pos: 1, re: /^([a-zA-Z0-9_-]{11})$/},
-        {pos: 4, re: /^(https?:\/\/)?(www\.|m\.)?youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_-]{11})(&.*)?$/},
-        {pos: 2, re: /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})(\?.*)?$/}
-    ];
-    var video_id = null,
-    video_id = yt_video_id_re.map(function(re){
-        if(re.re.test(url)){
-            return url.match(re.re)[re.pos];
-        }
-    }).filter(function(el){return !!el})[0];
-    if(video_id){
-        $.ajax(
-            {
-                url: '/api/youtube-dl/'+video_id,
-                type: 'POST',
-                headers: {
-                  Authorization: 'Token ' + auth_token
-                }
-            }
-        ).done(
-            function(response){
-                // TODO: track import process
-                console.log('Sent intent to download video '+video_id);
-            }
-        );
-    } else {
-        alert('Invalid Youtube URL');
-    }
-};
-
-var queueSong = function(song){
-    queue.push(song);
-    displayQueue();
-};
-
-var scrollProgressBar = function(){
-    var sound_id = soundManager.soundIDs[0];
-    var sound = soundManager.getSoundById(sound_id);
-    var perc = sound.position/sound.durationEstimate*100;
-    $('#seekBar > .progressbarbar').css('width', perc+'%');
-};
-
-var searchSongs = function(query){
-    if(xhr_search){
-        xhr_search.abort();
-    }
-    $('#searchResults').html('<i class="fa fa-circle-o-notch fa-spin fa-fw"></i><span class="sr-only">Loading...</span>');
-    xhr_search = $.ajax({
-        url: 'api/songs/',
-        data: {'q': query},
-        method: 'GET',
-        dataType: 'json',
-        headers: {
-          Authorization: 'Token ' + auth_token
-        }
-    }).done(function(songs){
-        xhr_search = null;
-        console.log('Found '+songs.length+' match');
-        search_results = [];
-        for(var i=0; i<songs.length; i++){
-            search_results.push(new Song(songs[i].id, songs[i].download_url, songs[i].filename))
-        }
-        displaySearchResults();
-    }).fail(function(e){
-        if(e.status == 401){
-            askLogin();
-        }
-        $('#searchResults').html('');
-    });
-};
-
-var seekSong = function(time){
-    var sound_id = soundManager.soundIDs[0];
-    soundManager.setPosition(sound_id, time);
-};
-
-var startJukebox = function(){
-    $('#login').hide();
-    $('#jukebox').show();
-    soundManager.setup({
-      url: 'https://cdnjs.cloudflare.com/ajax/libs/soundmanager2/2.97a.20150601/swf/',
-      flashVersion: 9,
-      preferFlash: false,
-      onready: function() {
-        loadRandomSong();
-      }
-    });
-};
-
-var stopSounds = function(){
-    soundManager.stopAll();
-    while(soundManager.soundIDs.length>0){
-        soundManager.destroySound(soundManager.soundIDs[0]);
-    }
-};
-
-var toggleHardcore = function(){
-    if(hardcore){
-        $('#hardcoreSwitch').html('<i class="fa fa-heart-o"></i>');
-    }else{
-        $('#hardcoreSwitch').html('<i class="fa fa-heartbeat"></i>');
-    }
-    hardcore = !hardcore;
-};
-
-var togglePause = function(){
-    var sound_id = soundManager.soundIDs[0];
-    soundManager.togglePause(sound_id);
-};
-
-var unqueueSong = function(index){
-    queue.splice(index, 1);
-    displayQueue();
-};
+  });
+}
 </script>
 </body>
 </html>
