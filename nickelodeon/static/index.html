@@ -21,19 +21,35 @@
         width: 100%;
     }
     body {
-        background:#3f3f3f url('background.gif') no-repeat;
-        -webkit-background-size: cover;
-        -moz-background-size: cover;
-        -o-background-size: cover;
-        background-size: cover;
-        background-position: 50% 50%;
-        display: flex;
-        background-attachment: fixed;
-
         font-family: 'Source Sans Pro', sans-serif;
         font-size: calc(1em + 1vw);
         text-shadow: 1px 1px #000000;
         color: #ccc;
+    }
+    video {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        min-width: 100%;
+        min-height: 100%;
+        width: auto;
+        height: auto;
+        z-index: -100;
+        transform: translateX(-50%) translateY(-50%);
+        background: url('background.jpg') no-repeat;
+        background-size: cover;
+        transition: 1s opacity;
+    }
+    .video_cover {
+        position: fixed;
+        top: 0;
+        left: 0;
+        min-width: 100%;
+        min-height: 100%;
+        width: auto;
+        height: auto;
+        z-index: -100;
+        background: rgb(0,0,0, 0.1);
     }
     .icon_menu {
         font-size: calc(1em + 5vh);
@@ -80,6 +96,11 @@
     </style>
 </head>
 <body>
+<video poster="background.jpg" id="bgvid" playsinline autoplay muted loop>
+  <source src="background.webm" type="video/webm">
+  <source src="background.mp4" type="video/mp4">
+</video>
+<div class="video_cover"></div>
 <div id="login">
   <form id="login_form" onsubmit="onLogin();return false;">
     <div><input type="text" id="username" placeholder="Username" /></div>
