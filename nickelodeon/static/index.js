@@ -1,7 +1,4 @@
-"use strict";
-
 var currentSong = null;
-var songs = [];
 var queue = [];
 var prefered_format = 'mp3';
 var hardcore = false;
@@ -56,7 +53,7 @@ $(document).ready(function(){
 var Song = function(id, path, filename){
     this.set_filename = function(filename){
         this.filename = filename;
-        var title_matches = filename.match(/[^\/]+$/)
+        var title_matches = filename.match(/[^\/]+$/);
         this.title = title_matches[0];
     };
 
@@ -79,7 +76,7 @@ var Song = function(id, path, filename){
         });
         mySound.play({onfinish: playNextSong, whileplaying: scrollProgressBar});
         if(!autoPlay){
-          mySound.pause()
+          mySound.pause();
         }
     };
 };
@@ -94,37 +91,38 @@ var displayCurrentSong = function(){
 };
 
 var displayQueue = function() {
-    var $div = $('#queuedSongs')
-    if(queue.length == 0){
+    var $div = $('#queuedSongs');
+    if(queue.length === 0){
         $div.text('-');
     }else{
         $div.html('');
-
+        var handleUnqueueSong = function(index){
+          return function(ev){
+            ev.preventDefault();
+            unqueueSong(index);
+          };
+        };
+        var handleEditSong = function(song){
+          return function(ev){
+            ev.preventDefault();
+            if(ev.ctrlKey){
+              editSong(song);
+              return;
+            }
+            stopSounds();
+            song.load();
+          };
+        };
         for(var i=0; i < queue.length; i++){
             var ndiv = $('<div>');
             ndiv.append($('<a>').attr('href', '#')
                                 .text('[x]')
-                                .on('click', (function(index){
-                                    return function(ev){
-                                        ev.preventDefault();
-                                        unqueueSong(index);
-                                    }
-                                })(i)))
+                                .on('click', handleUnqueueSong(i)))
                 .append(' ')
                 .append($('<a>').attr('href', '#')
                                .text(queue[i].title)
                                .attr('title', queue[i].path)
-                               .on('click', function(song){
-                                    return function(ev){
-                                        ev.preventDefault();
-                                        if(ev.ctrlKey){
-                                            editSong(song);
-                                            return;
-                                        }
-                                        stopSounds();
-                                        song.load();
-                                    }
-                                }(queue[i])));
+                               .on('click', handleEditSong(queue[i])));
             $div.append(ndiv);
         }
     }
@@ -134,37 +132,40 @@ var displaySearchResults = function(){
     var results = search_results;
     var $resdiv = $('#searchResults');
     $resdiv.html('');
+    var handleQueueSong = function(song){
+      return function(ev){
+        ev.preventDefault();
+        queueSong(song);
+      };
+    };
+    var handleEditSong = function(song){
+      return function(ev){
+        ev.preventDefault();
+        if(ev.ctrlKey){
+          editSong(song);
+          return;
+        }
+        stopSounds();
+        song.load();
+      };
+    };
     for(var i=0; i < results.length; i++){
         var ndiv = $('<div>');
+
         ndiv.append($('<a>').attr('href', '#')
                                .text('[q]')
-                               .on('click', (function(song){
-                                    return function(ev){
-                                        ev.preventDefault();
-                                        queueSong(song);
-                                    }
-                               })(results[i])))
+                               .on('click', handleQueueSong(results[i])))
             .append(' ')
             .append($('<a>').attr('href', '#')
                             .text(results[i].title)
                             .attr('title', results[i].filename)
-                            .on('click', (function(song){
-                                 return function(ev){
-                                     ev.preventDefault();
-                                     if(ev.ctrlKey){
-                                         editSong(song);
-                                         return;
-                                     }
-                                     stopSounds();
-                                     song.load();
-                                }
-                            })(results[i])));
+                            .on('click', handleEditSong(results[i])));
             $resdiv.append(ndiv);
     }
 };
 
 var editSong = function(song){
-    new_path = window.prompt('new file path', song.filename);
+    var new_path = window.prompt('new file path', song.filename);
     if(new_path && new_path != song.filename){
         $.ajax({
             url: '/api/songs/'+song.id,
@@ -180,7 +181,7 @@ var editSong = function(song){
             displayCurrentSong();
             displayQueue();
             displaySearchResults();
-        })
+        });
     }
 };
 
@@ -201,7 +202,7 @@ var loadRandomSong = function(autoPlay){
         if(e.status == 401){
             askLogin();
         }
-    })
+    });
 };
 
 var logout = function(){
@@ -213,8 +214,8 @@ var logout = function(){
           Authorization: 'Token ' + auth_token
         }
     }).done(function(e){
-        console.log('logged out, token removed')
-    })
+        console.log('logged out, token removed');
+    });
     askLogin();
     localStorage.setItem("auth_token", null);
     $('#password').val('');
@@ -252,8 +253,8 @@ var onLogin = function(){
         localStorage.setItem("auth_token", auth_token);
         startJukebox();
     }).fail(function(){
-        $('#password').val('')
-    })
+        $('#password').val('');
+    });
 };
 
 var onSearchInputChange = function(){
@@ -277,16 +278,16 @@ var promptYoutubeURL = function(){
         return;
     }
     var yt_video_id_re = [
-        {pos: 1, re: /^([a-zA-Z0-9_-]{11})$/},
-        {pos: 4, re: /^(https?:\/\/)?(www\.|m\.)?youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_-]{11})(&.*)?$/},
-        {pos: 2, re: /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})(\?.*)?$/}
+        {pos: 1, re: /^([a-zA-Z0-9_\-]{11})$/},
+        {pos: 4, re: /^(https?:\/\/)?(www\.|m\.)?youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_\-]{11})(&.*)?$/},
+        {pos: 2, re: /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_\-]{11})(\?.*)?$/}
     ];
-    var video_id = null,
+    var video_id = null;
     video_id = yt_video_id_re.map(function(re){
         if(re.re.test(url)){
             return url.match(re.re)[re.pos];
         }
-    }).filter(function(el){return !!el})[0];
+    }).filter(function(el){return !!el;})[0];
     if(video_id){
         $.ajax(
             {
@@ -337,7 +338,7 @@ var searchSongs = function(query){
         console.log('Found '+songs.length+' match');
         search_results = [];
         for(var i=0; i<songs.length; i++){
-            search_results.push(new Song(songs[i].id, songs[i].download_url, songs[i].filename))
+            search_results.push(new Song(songs[i].id, songs[i].download_url, songs[i].filename));
         }
         displaySearchResults();
     }).fail(function(e){
