@@ -121,7 +121,7 @@ var displayQueue = function() {
                 .append(' ')
                 .append($('<a>').attr('href', '#')
                                .text(queue[i].title)
-                               .attr('title', queue[i].path)
+                               .attr('title', queue[i].filename)
                                .on('click', handleEditSong(queue[i])));
             $div.append(ndiv);
         }
