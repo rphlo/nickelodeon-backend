@@ -4,7 +4,10 @@ self.addEventListener('install', function(e){
      return cache.addAll([
        '/',
        '/index.html',
-       '/static/background.gif'
+       '/index.js',
+       '/index.css',
+       '/static/background.mp4'
+       '/static/background.webm'
      ]);
    })
  );

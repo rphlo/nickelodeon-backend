@@ -67,6 +67,10 @@ class ApiTestCase(APITestCase):
                                data={'username': self.username,
                                      'password': self.password})
         auth_token = res.data.get('token')
+        download_url = reverse('song_download', kwargs={'pk': self.song.id})
+        res = self.client.get(download_url, data={'auth_token': auth_token})
+        self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
+        self.assertEquals(res.get('X-Accel-Redirect'), '/internal/foo.mp3')
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + auth_token)
         random_song_url = reverse('song_random')
         res = self.client.get(random_song_url)
@@ -85,10 +89,6 @@ class ApiTestCase(APITestCase):
         song_url = reverse('song_detail', kwargs={'pk': self.song.id})
         res=self.client.get(song_url)
         self.assertEquals(res.data, expected)
-        download_url = reverse('song_download', kwargs={'pk': self.song.id})
-        res = self.client.get(download_url)
-        self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
-        self.assertEquals(res.get('X-Accel-Redirect'), '/internal/foo.mp3')
         res = self.client.put(song_url, data={'filename': 'bar'})
         self.assertEquals(res.status_code, status.HTTP_200_OK)
         expected['filename'] = 'bar'
