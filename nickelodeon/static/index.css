@@ -18,6 +18,7 @@ body {
     height: auto;
     z-index: -100;
     transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
     background: url('background.jpg') no-repeat;
     background-size: cover;
     transition: 1s opacity;
