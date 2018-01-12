@@ -2,6 +2,7 @@ import base64
 import os.path
 import tempfile
 from django.contrib.auth.models import User
+from django.core import management
 from django.test import override_settings
 from django.urls import reverse
 from nickelodeon.models import MP3Song
@@ -114,3 +115,10 @@ class ApiTestCase(APITestCase):
         logout_url = reverse('knox_logout')
         res = self.client.post(logout_url)
         self.assertEquals(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    @override_settings(NICKELODEON_MUSIC_ROOT=PATH_TEMP)
+    def test_management_command(self):
+        MP3Song.objects.all().delete()
+        self.assertEquals(MP3Song.objects.all().count(), 0)
+        management.call_command('refresh_song_db')
+        self.assertEquals(MP3Song.objects.all().count(), 1)
