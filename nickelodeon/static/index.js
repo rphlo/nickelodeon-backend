@@ -6,6 +6,13 @@ var auth_token = null;
 var xhr_search = null;
 var search_results = [];
 
+if (!String.prototype.startsWith) {
+  String.prototype.startsWith = function(searchString, position) {
+    position = position || 0;
+    return this.indexOf(searchString, position) === position;
+  };
+}
+
 $(document).ready(function(){
     auth_token = localStorage.getItem("auth_token");
     if(auth_token){
