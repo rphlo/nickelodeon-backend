@@ -6,6 +6,13 @@ var auth_token = null;
 var xhr_search = null;
 var search_results = [];
 
+if (!String.prototype.startsWith) {
+  String.prototype.startsWith = function(searchString, position) {
+    position = position || 0;
+    return this.indexOf(searchString, position) === position;
+  };
+}
+
 $(document).ready(function(){
     auth_token = localStorage.getItem("auth_token");
     if(auth_token){
@@ -72,7 +79,8 @@ var Song = function(id, path, filename){
         currentSong = this;
         displayCurrentSong();
         var mySound = soundManager.createSound({
-            url: this.path + '.' + prefered_format+'?auth_token='+auth_token
+            url: this.path + '.' + prefered_format+'?auth_token='+auth_token,
+            type: 'audio/mpeg',
         });
         mySound.play({onfinish: playNextSong, whileplaying: scrollProgressBar});
         if(!autoPlay){
@@ -123,7 +131,7 @@ var displayQueue = function() {
                 .append(' ')
                 .append($('<a>').attr('href', '#')
                                .text(queue[i].title)
-                               .attr('title', queue[i].path)
+                               .attr('title', queue[i].filename)
                                .on('click', handleEditSong(queue[i])));
             $div.append(ndiv);
         }
