@@ -8,7 +8,7 @@ body {
     text-shadow: 1px 1px #000000;
     color: #ccc;
 }
-video {
+.bg_video {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -21,6 +21,10 @@ video {
     background: url('background.jpg') no-repeat;
     background-size: cover;
     transition: 1s opacity;
+}
+video {
+    object-fit: contain;
+    vertical-align: baseline;
 }
 .video_cover {
     position: fixed;
