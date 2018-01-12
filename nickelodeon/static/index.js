@@ -82,6 +82,8 @@ var Song = function(id, path, filename){
 };
 
 var askLogin = function(){
+    localStorage.setItem("auth_token", null);
+    auth_token = null;
     $('#login').show();
     $('#jukebox').hide();
 };
@@ -216,14 +218,12 @@ var logout = function(){
     }).done(function(e){
         console.log('logged out, token removed');
     });
-    askLogin();
-    localStorage.setItem("auth_token", null);
     $('#password').val('');
     displaySearchResults([]);
     queue = [];
     displayQueue();
     $('#searchInput').val('');
-    auth_token = null;
+    askLogin();
 };
 
 var onClickSeekSong = function(e){
