@@ -79,7 +79,8 @@ var Song = function(id, path, filename){
         currentSong = this;
         displayCurrentSong();
         var mySound = soundManager.createSound({
-            url: this.path + '.' + prefered_format+'?auth_token='+auth_token
+            url: this.path + '.' + prefered_format+'?auth_token='+auth_token,
+            type: 'audio/mpeg',
         });
         mySound.play({onfinish: playNextSong, whileplaying: scrollProgressBar});
         if(!autoPlay){
