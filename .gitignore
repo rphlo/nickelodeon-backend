@@ -2,6 +2,7 @@ build
 *CACHE*
 dist
 MANIFEST
+.coverage
 *.pyc
 *.egg-info
 *.egg
@@ -10,5 +11,6 @@ MANIFEST
 *.save
 *.save.*
 *.idea
+htmlcov/
 docs/_build/
 nickelodeon/site/local_settings.py

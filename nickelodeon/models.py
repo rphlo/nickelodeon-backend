@@ -33,7 +33,13 @@ class MP3Song(models.Model):
 
     @property
     def has_aac(self):
-        file_path = self.get_file_format_path('aac')\
+        file_path = self.get_file_format_path('aac') \
+            .encode(sys.getfilesystemencoding())
+        return os.path.exists(file_path)
+
+    @property
+    def has_mp3(self):
+        file_path = self.get_file_format_path('mp3') \
             .encode(sys.getfilesystemencoding())
         return os.path.exists(file_path)
 
@@ -52,7 +58,7 @@ class MP3Song(models.Model):
 
     @property
     def available_formats(self):
-        return {'mp3': True, 'aac': self.has_aac}
+        return {'mp3': self.has_mp3, 'aac': self.has_aac}
 
     def get_file_format_path(self, extension='mp3', full=True):
         file_path = u"%s.%s" % (self.filename, extension)
