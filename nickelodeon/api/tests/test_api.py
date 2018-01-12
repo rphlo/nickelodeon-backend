@@ -111,3 +111,6 @@ class ApiTestCase(APITestCase):
         res = self.client.get(search_url, data={'q': ''})
         self.assertEquals(res.status_code, status.HTTP_200_OK)
         self.assertEquals(len(res.data), 0)
+        logout_url = reverse('knox_logout')
+        res = self.client.post(logout_url)
+        self.assertEquals(res.status_code, status.HTTP_204_NO_CONTENT)
