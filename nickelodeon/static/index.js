@@ -82,7 +82,7 @@ var Song = function(id, path, filename){
 };
 
 var askLogin = function(){
-    localStorage.setItem("auth_token", null);
+    localStorage.removeItem('auth_token');
     auth_token = null;
     $('#login').show();
     $('#jukebox').hide();
