@@ -5,9 +5,17 @@ from django.contrib.auth.models import User
 from django.core import management
 from django.test import override_settings
 from django.urls import reverse
-from nickelodeon.models import MP3Song
+from nickelodeon.utils import (
+    convert_audio,
+    has_ffmpeg_libmp3lame,
+    has_ffmpeg_libfdk_aac,
+)
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
+
+from nickelodeon.models import MP3Song
+from nickelodeon.tasks import fetch_youtube_video
+
 
 PATH_TEMP = tempfile.mkdtemp()
 
@@ -112,6 +120,9 @@ class ApiTestCase(APITestCase):
         res = self.client.get(search_url, data={'q': ''})
         self.assertEquals(res.status_code, status.HTTP_200_OK)
         self.assertEquals(len(res.data), 0)
+        youtube_grab_url = reverse('youtube_grab', kwargs={'video_id': '1D7RnHqGbKQ'})
+        self.client.post(youtube_grab_url)
+        self.assertEquals(res.status_code, status.HTTP_200_OK)
         logout_url = reverse('knox_logout')
         res = self.client.post(logout_url)
         self.assertEquals(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -122,3 +133,14 @@ class ApiTestCase(APITestCase):
         self.assertEquals(MP3Song.objects.all().count(), 0)
         management.call_command('refresh_song_db')
         self.assertEquals(MP3Song.objects.all().count(), 1)
+
+    @override_settings(NICKELODEON_MUSIC_ROOT=PATH_TEMP)
+    def test_utils(self):
+        out_aac = None
+        if has_ffmpeg_libfdk_aac():
+            out_aac = os.path.join(PATH_TEMP, 'foo.aac')
+        out_mp3 = None
+        if has_ffmpeg_libmp3lame():
+            out_mp3 = os.path.join(PATH_TEMP, 'bar.mp3')
+        convert_audio(os.path.join(PATH_TEMP, 'foo.mp3'),
+                      out_aac, out_mp3, lambda x: None)
