@@ -6,12 +6,15 @@ var auth_token = null;
 var xhr_search = null;
 var search_results = [];
 
+// IE fixup --
 if (!String.prototype.startsWith) {
   String.prototype.startsWith = function(searchString, position) {
     position = position || 0;
     return this.indexOf(searchString, position) === position;
   };
 }
+$.ajaxSetup({ cache: false });
+// --
 
 $(document).ready(function(){
     auth_token = localStorage.getItem("auth_token");
