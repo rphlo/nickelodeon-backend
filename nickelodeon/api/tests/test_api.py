@@ -1,20 +1,20 @@
 import base64
 import os.path
 import tempfile
+import unittest
 from django.contrib.auth.models import User
 from django.core import management
 from django.test import override_settings
 from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
+
+from nickelodeon.models import MP3Song
 from nickelodeon.utils import (
     convert_audio,
     has_ffmpeg_libmp3lame,
     has_ffmpeg_libfdk_aac,
 )
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
-from nickelodeon.models import MP3Song
-from nickelodeon.tasks import fetch_youtube_video
 
 
 PATH_TEMP = tempfile.mkdtemp()
@@ -134,6 +134,8 @@ class ApiTestCase(APITestCase):
         management.call_command('refresh_song_db')
         self.assertEquals(MP3Song.objects.all().count(), 1)
 
+    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
+                     "Skipping this test on Travis CI.")
     @override_settings(NICKELODEON_MUSIC_ROOT=PATH_TEMP)
     def test_utils(self):
         out_aac = None
