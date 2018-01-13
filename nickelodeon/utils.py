@@ -3,6 +3,25 @@ import re
 import subprocess
 
 
+def has_ffmpeg_lib(lib_name):
+    process = subprocess.Popen(['ffmpeg'],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT,
+                               bufsize=10 ** 8)
+
+
+    process_reader = io.TextIOWrapper(process.stdout, encoding='utf8')
+    return '--enable-{}'.format(lib_name) in process_reader.read()
+
+
+def has_ffmpeg_libmp3lame():
+    return has_ffmpeg_lib('libmp3lame')
+
+
+def has_ffmpeg_libfdk_aac():
+    return has_ffmpeg_lib('libfdk_aac')
+
+
 class FFMPEGTask(object):
     duration = ''
     duration_prefix = 'Duration: '
