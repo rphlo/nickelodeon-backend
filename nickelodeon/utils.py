@@ -19,7 +19,7 @@ def has_ffmpeg_libmp3lame():
 
 
 def has_ffmpeg_libfdk_aac():
-    return has_ffmpeg_lib('libfdk_aac')
+    return has_ffmpeg_lib('libfdk-aac')
 
 
 class FFMPEGTask(object):
