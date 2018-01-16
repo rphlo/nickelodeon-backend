@@ -1,5 +1,5 @@
-Django>=1.11,<2
-djangorestframework>=3.6,<3.7
+Django>=2,<2.1
+djangorestframework>=3.7,<3.8
 youtube-dl
 pafy
 celery[redis]
