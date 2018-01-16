@@ -11,6 +11,7 @@ MANIFEST
 *.save
 *.save.*
 *.idea
+env/
 htmlcov/
 docs/_build/
 nickelodeon/site/local_settings.py
