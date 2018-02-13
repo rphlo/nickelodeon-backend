@@ -50,6 +50,7 @@ def x_accel_redirect(request, path, filename='',
         response['Content-Length'] = os.path.getsize(path)
     else:
         response = HttpResponse('', status=206)
+        response['Content-Type'] = mime
         response['X-Accel-Redirect'] = urllib.parse.quote(path.encode('utf-8'))
         response['X-Accel-Buffering'] = 'no'
         response['Accept-Ranges'] = 'bytes'
