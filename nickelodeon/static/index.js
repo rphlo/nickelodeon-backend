@@ -84,6 +84,7 @@ var Song = function(id, path, filename){
         var mySound = soundManager.createSound({
             url: this.path + '.' + prefered_format+'?auth_token='+auth_token,
             type: 'audio/mpeg',
+            onerror: playNextSong
         });
         mySound.play({onfinish: playNextSong, whileplaying: scrollProgressBar});
         if(!autoPlay){
