@@ -46,16 +46,16 @@ def x_accel_redirect(request, path, filename='',
         if not os.path.exists(path):
             return HttpResponse(status=404)
         wrapper = FileWrapper(open(path, 'rb'))
-        response = HttpResponse(wrapper, content_type=mime)
+        response = HttpResponse(wrapper)
         response['Content-Length'] = os.path.getsize(path)
     else:
         response = HttpResponse('', status=206)
-        response['Content-Type'] = mime
         response['X-Accel-Redirect'] = urllib.parse.quote(path.encode('utf-8'))
         response['X-Accel-Buffering'] = 'no'
         response['Accept-Ranges'] = 'bytes'
-    response['Content-Disposition'] = "attachment; filename={}".format(
-        urllib.parse.quote_plus(filename.encode('utf-8'))
+    response['Content-Type'] = mime
+    response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+        filename.replace('\\', '_').replace('"', '\\"')
     )
     return response
 
