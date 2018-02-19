@@ -11,9 +11,9 @@ from rest_framework.test import APITestCase, APIClient
 
 from nickelodeon.models import MP3Song
 from nickelodeon.utils import (
+    AVAILABLE_FORMATS,
     convert_audio,
-    has_ffmpeg_libmp3lame,
-    has_ffmpeg_libfdk_aac,
+    ffmpeg_has_lib,
 )
 
 
@@ -136,10 +136,10 @@ class ApiTestCase(APITestCase):
     @override_settings(NICKELODEON_MUSIC_ROOT=PATH_TEMP)
     def test_utils(self):
         out_aac = None
-        if has_ffmpeg_libfdk_aac():
+        if ffmpeg_has_lib(AVAILABLE_FORMATS['aac']):
             out_aac = os.path.join(PATH_TEMP, 'foo.aac')
         out_mp3 = None
-        if has_ffmpeg_libmp3lame():
+        if ffmpeg_has_lib(AVAILABLE_FORMATS['mp3']):
             out_mp3 = os.path.join(PATH_TEMP, 'bar.mp3')
         convert_audio(os.path.join(PATH_TEMP, 'foo.mp3'),
                       out_aac, out_mp3, lambda x: None)

@@ -10,8 +10,8 @@ from django.core.files.move import file_move_safe
 from nickelodeon.models import MP3Song
 from nickelodeon.utils import (
     convert_audio,
-    has_ffmpeg_libmp3lame,
-    has_ffmpeg_libfdk_aac,
+    ffmpeg_has_lib,
+    AVAILABLE_FORMATS
 )
 
 
@@ -33,9 +33,11 @@ def fetch_youtube_video(video_id=''):
                                         'step': 2,
                                         'step_total': 2})
 
-    convert_to_mp3 = has_ffmpeg_libmp3lame()
-    convert_to_aac = has_ffmpeg_libfdk_aac()
-    if not convert_to_aac and not convert_to_mp3:
+    extension_converted = []
+    for ext, lib in AVAILABLE_FORMATS.items():
+        if ffmpeg_has_lib(lib):
+            extension_converted.append(ext)
+    if not extension_converted:
         return 'ffmpeg can not do the necesary file conversions'
     try:
         video = pafy.new(video_id)
@@ -63,34 +65,37 @@ def fetch_youtube_video(video_id=''):
         return ('Could not find proper audio stream '
                 'for Youtube video {}').format(video_id)
     download_path = os.path.join("/tmp/", safe_title+".m4a")
-    aac_tmp_path = None
-    if convert_to_aac:
-        aac_tmp_path = os.path.join("/tmp/", safe_title+".aac")
-    mp3_tmp_path = None
-    if convert_to_mp3:
-        mp3_tmp_path = os.path.join("/tmp/", safe_title+".mp3")
+    tmp_paths = {}
+    for ext, lib in AVAILABLE_FORMATS.items():
+        if ext in extension_converted:
+            tmp_paths[ext] = os.path.join("/tmp/", safe_title + '.' + ext)
     now = datetime.datetime.now()
     dst_folder = os.path.join(
         settings.NICKELODEON_MUSIC_ROOT,
         'rphl', 'Assorted', 'by_date', now.strftime('%Y/%m')
     )
-    audio_stream.download(download_path, callback=update_dl_progress,
-                          quiet=True)
-    convert_audio(download_path, aac_tmp_path, mp3_tmp_path,
-                  callback=update_conversion_progress)
+    audio_stream.download(
+        download_path,
+        callback=update_dl_progress,
+        quiet=True
+    )
+    convert_audio(
+        download_path,
+        tmp_paths.get('aac'),
+        tmp_paths.get('mp3'),
+        callback=update_conversion_progress
+    )
     if not os.path.isdir(dst_folder):
         os.makedirs(dst_folder)
-    if convert_to_aac:
-        aac_path = os.path.join(dst_folder, safe_title + ".aac")
-        file_move_safe(aac_tmp_path, aac_path)
-    if convert_to_mp3:
-        mp3_path = os.path.join(dst_folder, safe_title + ".mp3")
-        file_move_safe(mp3_tmp_path, mp3_path)
+    for ext, lib in AVAILABLE_FORMATS.items():
+        if ext in extension_converted:
+            final_path = os.path.join(dst_folder, safe_title +  '.' + ext)
+            file_move_safe(tmp_paths[ext], final_path)
     os.remove(download_path)
     offset = 0 if settings.NICKELODEON_MUSIC_ROOT[-1] == '/' else 1
-    song_fn = os.path.join(
+    song_filename = os.path.join(
         dst_folder,
         safe_title
     )[len(settings.NICKELODEON_MUSIC_ROOT)+offset:]
-    song, dummy_created = MP3Song.objects.get_or_create(filename=song_fn)
+    song, dummy_created = MP3Song.objects.get_or_create(filename=song_filename)
     return {'pk': song.pk}

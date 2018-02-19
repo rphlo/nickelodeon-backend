@@ -12,8 +12,6 @@ from django.core.files.move import file_move_safe
 from django.db import models
 from django.utils.translation import ugettext as _
 
-AVAILABLE_FORMATS = ('mp3', 'aac')
-
 
 def random_key():
     rand_bytes = bytes(struct.pack('Q', random.getrandbits(64)))
@@ -31,17 +29,18 @@ class MP3Song(models.Model):
                                 unique=True,
                                 db_index=True)
 
-    @property
-    def has_aac(self):
-        file_path = self.get_file_format_path('aac') \
+    def has_extension(self, extension):
+        file_path = self.get_file_format_path(extension) \
             .encode(sys.getfilesystemencoding())
         return os.path.exists(file_path)
 
     @property
+    def has_aac(self):
+        return self.has_extension('aac')
+
+    @property
     def has_mp3(self):
-        file_path = self.get_file_format_path('mp3') \
-            .encode(sys.getfilesystemencoding())
-        return os.path.exists(file_path)
+        return self.has_extension('mp3')
 
     @models.permalink
     def get_absolute_url(self):

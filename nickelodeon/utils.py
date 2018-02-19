@@ -3,7 +3,12 @@ import re
 import subprocess
 
 
-def has_ffmpeg_lib(lib_name):
+AVAILABLE_FORMATS = {'mp3': 'libmp3lame', 'aac': 'libfdk-aac'}
+FFMPEG_DURATION_PREFIX = 'Duration '
+FFMPEG_PROGRESS_PREFIX = 'time='
+VALID_TIME_STR_CHARS = '0123456789:.'
+
+def ffmpeg_has_lib(lib_name):
     process = subprocess.Popen(['ffmpeg'],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT,
@@ -14,21 +19,11 @@ def has_ffmpeg_lib(lib_name):
     return '--enable-{}'.format(lib_name) in process_reader.read()
 
 
-def has_ffmpeg_libmp3lame():
-    return has_ffmpeg_lib('libmp3lame')
-
-
-def has_ffmpeg_libfdk_aac():
-    return has_ffmpeg_lib('libfdk-aac')
-
-
 class FFMPEGTask(object):
     duration = ''
-    duration_prefix = 'Duration: '
     duration_prefix_chr_found = 0
     duration_found = False
     progress = ''
-    progress_prefix = 'time='
     progress_prefix_chr_found = 0
     process = None
     process_completed = False
@@ -55,33 +50,39 @@ class FFMPEGTask(object):
         hours, minutes, seconds = [float(x) for x in time_str.split(':')]
         return (hours*60+minutes)*60+seconds
 
-    def search_duration_str(self, out):
-        if self.duration_prefix_chr_found < len(self.duration_prefix):
-            # While the prefix hasn't been found yet
-            if out == self.duration_prefix[self.duration_prefix_chr_found]:
-                self.duration_prefix_chr_found += 1
-            elif out == self.duration_prefix[0]:
-                self.duration_prefix_chr_found = 1
+    def search_time_str(self, out, prefix, prefix_char_found):
+        if prefix_char_found < len(prefix):
+            if out == prefix[prefix_char_found]:
+                prefix_char_found += 1
+            elif out == prefix[0]:
+                prefix_char_found = 1
             else:
-                self.duration_prefix_chr_found = 0
-        else:
+                prefix_char_found = 0
+            return prefix_char_found
+        return -1
+
+    def search_duration_str(self, out):
+        self.duration_prefix_chr_found = self.search_time_str(
+            out,
+            FFMPEG_DURATION_PREFIX,
+            self.duration_prefix_chr_found,
+        )
+        if self.duration_prefix_chr_found == -1:
             # Prefix has been found
             # Read data until comma
-            if out in '0123456789:.':
+            if out in VALID_TIME_STR_CHARS:
                 self.duration += out
             else:
                 self.duration_found = True
 
     def search_progress_str(self, out):
-        if self.progress_prefix_chr_found < len(self.progress_prefix):
-            if out == self.progress_prefix[self.progress_prefix_chr_found]:
-                self.progress_prefix_chr_found += 1
-            elif out == self.progress_prefix[0]:
-                self.progress_prefix_chr_found = 1
-            else:
-                self.progress_prefix_chr_found = 0
-        else:
-            if out in '0123456789:.':
+        self.progress_prefix_chr_found = self.search_time_str(
+            out,
+            FFMPEG_PROGRESS_PREFIX,
+            self.progress_prefix_chr_found
+        )
+        if self.progress_prefix_chr_found == -1:
+            if out in VALID_TIME_STR_CHARS:
                 self.progress += out
             else:
                 if self.callback:
