@@ -59,11 +59,14 @@ class Command(BaseCommand):
                                 if song not in self.songs_to_add]
         self.songs_to_add = [song for song in self.songs_to_add
                              if song not in current_songs]
+        self.finalize()
+
+    def finalize(self):
         nb_songs_to_add = len(self.songs_to_add)
+        nb_songs_to_remove = len(self.songs_to_remove)
         self.stdout.write(
             u'\nDiscovered {} new file(s)'.format(nb_songs_to_add)
         )
-        nb_songs_to_remove = len(self.songs_to_remove)
         self.stdout.write(
             u'Removing {} file(s)'.format(nb_songs_to_remove)
         )
