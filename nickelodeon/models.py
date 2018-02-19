@@ -1,10 +1,7 @@
 from __future__ import unicode_literals
 
-import base64
 import os
-import random
 import re
-import struct
 import sys
 
 from django.conf import settings
@@ -12,14 +9,7 @@ from django.core.files.move import file_move_safe
 from django.db import models
 from django.utils.translation import ugettext as _
 
-
-def random_key():
-    rand_bytes = bytes(struct.pack('Q', random.getrandbits(64)))
-    b64 = base64.b64encode(rand_bytes).decode('utf-8')
-    b64 = b64[:11]
-    b64 = b64.replace('+', '-')
-    b64 = b64.replace('/', '_')
-    return b64
+from nickelodeon.utils import clean_empty_folder, random_key
 
 
 class MP3Song(models.Model):
@@ -65,19 +55,19 @@ class MP3Song(models.Model):
             file_path = os.path.join(settings.NICKELODEON_MUSIC_ROOT, file_path)
         return file_path
 
+    def _move_file_ext_from(self, orig, ext):
+        src = orig.get_file_format_path(extension=ext, full=True)
+        dst = self.get_file_format_path(extension=ext, full=True)
+        dst_folder = os.path.dirname(dst)
+        if not os.path.isdir(dst_folder):
+            os.makedirs(dst_folder)
+        file_move_safe(src, dst)
+        clean_empty_folder(os.path.dirname(src))
+
     def move_file_from(self, orig):
         for ext, available in orig.available_formats.items():
             if available:
-                src = orig.get_file_format_path(extension=ext, full=True)
-                dst = self.get_file_format_path(extension=ext, full=True)
-                dst_folder = os.path.dirname(dst)
-                if not os.path.isdir(dst_folder):
-                    os.makedirs(dst_folder)
-                file_move_safe(src, dst)
-                src_folder = os.path.dirname(src)
-                while not os.listdir(src_folder):
-                    os.rmdir(src_folder)
-                    src_folder = os.path.dirname(src_folder)
+                self._move_file_ext_from(orig, ext)
 
     def remove_file(self):
         for ext in ['mp3', 'aac']:

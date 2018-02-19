@@ -1,5 +1,9 @@
+import base64
 import io
+import os
+import random
 import re
+import struct
 import subprocess
 
 
@@ -7,6 +11,22 @@ AVAILABLE_FORMATS = {'mp3': 'libmp3lame', 'aac': 'libfdk-aac'}
 FFMPEG_DURATION_PREFIX = 'Duration '
 FFMPEG_PROGRESS_PREFIX = 'time='
 VALID_TIME_STR_CHARS = '0123456789:.'
+
+
+def clean_empty_folder(folder):
+    while not os.listdir(folder):
+        os.rmdir(folder)
+        folder = os.path.dirname(folder)
+
+
+def random_key():
+    rand_bytes = bytes(struct.pack('Q', random.getrandbits(64)))
+    b64 = base64.b64encode(rand_bytes).decode('utf-8')
+    b64 = b64[:11]
+    b64 = b64.replace('+', '-')
+    b64 = b64.replace('/', '_')
+    return b64
+
 
 def ffmpeg_has_lib(lib_name):
     process = subprocess.Popen(['ffmpeg'],
