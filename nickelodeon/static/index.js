@@ -89,6 +89,8 @@ var Song = function(id, path, filename){
         mySound.play({onfinish: playNextSong, whileplaying: scrollProgressBar});
         if(!autoPlay){
           mySound.pause();
+        } else {
+          $('#playPauseButton > i').removeClass('fa-play').addClass('fa-pause');
         }
     };
 };
@@ -399,6 +401,12 @@ var toggleHardcore = function(){
 
 var togglePause = function(){
     var sound_id = soundManager.soundIDs[0];
+    var $playButton = $('#playPauseButton > i');
+    if($playButton.hasClass('fa-play')) {
+        $playButton.removeClass('fa-play').addClass('fa-pause');
+    } else {
+        $playButton.removeClass('fa-pause').addClass('fa-play');
+    }
     soundManager.togglePause(sound_id);
 };
 
