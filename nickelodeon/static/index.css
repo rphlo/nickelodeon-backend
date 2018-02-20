@@ -50,10 +50,11 @@ input[type="text"], input[type="password"] {
     color: #ccc;
     border: 0px;
     padding: 0px;
-    margin: 0px;
+    margin: 0 0 0.5vw 0;
     font-family: 'Source Sans Pro', sans-serif;
     font-size: calc(1em + 1vw);
     text-shadow: 1px 1px #000000;
+    border-bottom: 2px solid;
 }
 .progressbar {
     position: absolute;
@@ -78,4 +79,14 @@ button {
     cursor: pointer;
     font-size: calc(.5em + 1vw);
     text-shadow: 1px 1px #000000;
+}
+#searchInputWrapper:before {
+    font-family: FontAwesome;
+    content: "\f002";
+    padding-right: 0.5vw;
+    position: relative;
+    font-size: calc(0.7em + 1vw);
+}
+#searchInput {
+    position: relative;
 }
