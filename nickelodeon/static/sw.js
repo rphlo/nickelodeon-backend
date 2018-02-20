@@ -6,7 +6,7 @@ self.addEventListener('install', function(e){
        '/index.html',
        '/index.js',
        '/index.css',
-       '/static/background.mp4'
+       '/static/background.mp4',
        '/static/background.webm'
      ]);
    })
