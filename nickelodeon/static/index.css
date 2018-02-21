@@ -67,6 +67,7 @@ input[type="text"], input[type="password"] {
 .progressbarbar {
     height:5px;
     background-color: #ccc;
+    border: 0 1px 1px 0 solid #000;
 }
 
 button {
