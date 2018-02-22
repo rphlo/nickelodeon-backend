@@ -85,17 +85,46 @@ def fetch_youtube_video(video_id=''):
         tmp_paths.get('mp3'),
         callback=update_conversion_progress
     )
-    if not os.path.isdir(dst_folder):
-        os.makedirs(dst_folder)
-    for ext, lib in AVAILABLE_FORMATS.items():
-        if ext in extension_converted:
-            final_path = os.path.join(dst_folder, safe_title +  '.' + ext)
-            file_move_safe(tmp_paths[ext], final_path)
     os.remove(download_path)
+    final_filename = move_files_to_destination(
+        dst_folder,
+        safe_title,
+        extension_converted,
+        tmp_paths
+    )
     offset = 0 if settings.NICKELODEON_MUSIC_ROOT[-1] == '/' else 1
     song_filename = os.path.join(
         dst_folder,
-        safe_title
+        final_filename
     )[len(settings.NICKELODEON_MUSIC_ROOT)+offset:]
     song, dummy_created = MP3Song.objects.get_or_create(filename=song_filename)
     return {'pk': song.pk}
+
+def move_files_to_destination(dst_folder, safe_title, extensions, tmp_paths):
+    if not os.path.isdir(dst_folder):
+        os.makedirs(dst_folder)
+    filename = safe_title
+    attempt = 0
+    while True:
+        file_exist = False
+        for ext, lib in AVAILABLE_FORMATS.items():
+            if attempt == 0:
+                filename =  '{}.{}'.format(safe_title, ext)
+            else:
+                filename = '{} ({}).{}'.format(safe_title, attempt, ext)
+            final_path = os.path.join(dst_folder, filename)
+            if ext in extensions and os.path.exists(final_path):
+                file_exist = True
+                break
+        if not file_exist:
+            break
+        attempt += 1
+    for ext, lib in AVAILABLE_FORMATS.items():
+        if ext in extensions:
+            if attempt == 0:
+                filename =  safe_title
+            else:
+                filename = '{} ({})'.format(safe_title, attempt)
+            final_path = os.path.join(dst_folder, filename + '.' + ext)
+            file_move_safe(tmp_paths[ext], final_path)
+    return filename

@@ -101,6 +101,7 @@ class ApiTestCase(APITestCase):
         self.assertEquals(res.status_code, status.HTTP_200_OK)
         expected['filename'] = 'bar'
         self.assertEquals(res.data, expected)
+        print(os.path.join(PATH_TEMP, 'bar.mp3'), os.path.exists(os.path.join(PATH_TEMP, 'bar.mp3')), os.listdir(PATH_TEMP))
         self.assertTrue(os.path.exists(os.path.join(PATH_TEMP, 'bar.mp3')))
         res = self.client.get(download_url)
         self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)

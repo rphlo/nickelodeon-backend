@@ -64,6 +64,18 @@ class MP3Song(models.Model):
         file_move_safe(src, dst)
         clean_empty_folder(os.path.dirname(src))
 
+    def is_filename_available(self, filename):
+        new_instance = MP3Song(filename=filename)
+        for ext, available in self.available_formats.items():
+            if available:
+                dst = new_instance.get_file_format_path(
+                    extension=ext,
+                    full=True
+                )
+                if os.path.exists(dst):
+                    return False
+        return True
+
     def move_file_from(self, orig):
         for ext, available in orig.available_formats.items():
             if available:
