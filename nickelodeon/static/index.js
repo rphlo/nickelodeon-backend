@@ -279,8 +279,8 @@ var onSearchInputChange = function(){
 var playNextSong = function(){
     stopSounds();
     if(queue.length > 0){
-        queue[0].load();
-        unqueueSong(0);
+        var song = unqueueSong(0);
+        song.load();
     }else{
         loadRandomSong();
     }
@@ -411,6 +411,7 @@ var togglePause = function(){
 };
 
 var unqueueSong = function(index){
-    queue.splice(index, 1);
+    var songs = queue.splice(index, 1);
     displayQueue();
+    return songs[0];
 };

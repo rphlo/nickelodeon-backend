@@ -1,7 +1,7 @@
 self.addEventListener('install', function(e){
  var timeStamp = Date.now();
  e.waitUntil(
-   caches.open('humppakone').then(function(cache){
+   caches.open('humppakone_v2018022201').then(function(cache){
      return cache.addAll([
        '/',
        'index.html?ts='+timeStamp,
