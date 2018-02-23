@@ -76,7 +76,7 @@ var Song = function(id, path, filename){
     this.load = function(autoPlay){
         autoPlay = (typeof autoPlay !== 'undefined') ?  autoPlay : true;
         if(!hardcore && this.filename.startsWith('rphl/Happy Hardcore/')){
-            playNextSong();
+            playNextSong(autoPlay);
             return;
         }
         console.log('Playing '+this.filename);
@@ -277,13 +277,14 @@ var onSearchInputChange = function(){
     searchSongs(query);
 };
 
-var playNextSong = function(){
+var playNextSong = function(autoPlay){
+    autoPlay = (typeof autoPlay !== 'undefined') ?  autoPlay : true;
     stopSounds();
     if(queue.length > 0){
         var song = unqueueSong(0);
-        song.load();
+        song.load(autoPlay);
     }else{
-        loadRandomSong();
+        loadRandomSong(autoPlay);
     }
 };
 
