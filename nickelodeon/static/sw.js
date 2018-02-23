@@ -1,7 +1,8 @@
+var VERSION_NAME = 'humppakone_v2018022302'
 self.addEventListener('install', function(e){
  var timeStamp = Date.now();
  e.waitUntil(
-   caches.open('humppakone_v2018022201').then(function(cache){
+   caches.open(VERSION_NAME).then(function(cache){
      return cache.addAll([
        '/',
        'index.html?ts='+timeStamp,
@@ -20,7 +21,7 @@ self.addEventListener('activate', function(event){
 
 self.addEventListener('fetch', function(event){
   event.respondWith(
-    caches.match(event.request, {ignoreSearch: true}).then(function(response){
+    caches.match(event.request, {ignoreSearch: true, cacheName: VERSION_NAME}).then(function(response){
       return response || fetch(event.request);
     })
   );
