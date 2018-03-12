@@ -236,9 +236,16 @@ var logout = function(){
     });
     $('#password').val('');
     displaySearchResults([]);
-    queue = [];
     displayQueue();
     $('#searchInput').val('');
+    $('#seekBar > .progressbarbar').css('width', '100%');
+    currentSong = null;
+    queue = [];
+    prefered_format = 'mp3';
+    hardcore = false;
+    auth_token = null;
+    xhr_search = null;
+    search_results = [];
     askLogin();
 };
 
@@ -391,6 +398,7 @@ var stopSounds = function(){
     while(soundManager.soundIDs.length>0){
         soundManager.destroySound(soundManager.soundIDs[0]);
     }
+    $('#playPauseButton > i').removeClass('fa-pause').addClass('fa-play');
 };
 
 var toggleHardcore = function(){
