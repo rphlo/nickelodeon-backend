@@ -94,3 +94,9 @@ button {
 #searchInput {
     position: relative;
 }
+#login{
+    display:none;
+}
+#jukebox{
+    display:none;
+}

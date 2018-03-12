@@ -18,6 +18,7 @@ $.ajaxSetup({ cache: false });
 // --
 
 $(document).ready(function(){
+    $('#loading').hide();
     auth_token = localStorage.getItem("auth_token");
     if(auth_token){
         startJukebox();
