@@ -13,7 +13,7 @@ for scheme in INSTALL_SCHEMES.values():
 
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-install_reqs = parse_requirements('requirements.pip')
+install_reqs = parse_requirements('requirements.txt', session=False)
 requirements = [str(ir.req) for ir in install_reqs]
 
 packages, data_files = [], []
@@ -50,4 +50,5 @@ setup(
       'Programming Language :: Python :: 3',
     ],
     install_requires=requirements,
+    test_suite = 'runtests.runtests',
 )
