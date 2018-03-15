@@ -14,6 +14,5 @@ class TokenAuthSupportQueryString(TokenAuthentication):
             return self.authenticate_credentials(
                 request.query_params.get('auth_token').encode("utf-8")
             )
-        else:
-            return super(TokenAuthSupportQueryString,
-                         self).authenticate(request)
+        return super(TokenAuthSupportQueryString, self).authenticate(request)
+    
