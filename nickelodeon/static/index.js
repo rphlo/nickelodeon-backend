@@ -6,6 +6,7 @@ var hardcore = false;
 var auth_token = null;
 var xhr_search = null;
 var search_results = [];
+var searchTimeout = null;
 
 // IE fixup --
 if (!String.prototype.startsWith) {
@@ -246,6 +247,7 @@ var logout = function(){
     auth_token = null;
     xhr_search = null;
     search_results = [];
+    searchTimeout = null;
     askLogin();
 };
 
@@ -270,7 +272,7 @@ var onLogin = function(){
             password: password
         },
         dataType: 'json',
-        method: 'POST',
+        method: 'POST'
     }).done(function(e){
         auth_token = e.token;
         localStorage.setItem("auth_token", auth_token);
@@ -282,7 +284,10 @@ var onLogin = function(){
 
 var onSearchInputChange = function(){
     var query = $('#searchInput').val();
-    searchSongs(query);
+    if(searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    searchTimeout = setTimeout(function(){searchSongs(query)}, 500);
 };
 
 var playNextSong = function(autoPlay){
