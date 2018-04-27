@@ -200,6 +200,10 @@ var editSong = function(song){
             displayCurrentSong();
             displayQueue();
             displaySearchResults();
+        }).fail(function(e){
+            if(e.status == 401){
+                askLogin();
+            }
         });
     }
 };
@@ -331,7 +335,11 @@ var promptYoutubeURL = function(){
                 // TODO: track import process
                 console.log('Sent intent to download video '+video_id);
             }
-        );
+        ).fail(function(e){
+            if(e.status == 401){
+                askLogin();
+            }
+        });
     } else {
         alert('Invalid Youtube URL');
     }
