@@ -126,6 +126,8 @@ REST_KNOX = {
   'TOKEN_TTL': timedelta(days=7),
 }
 
+AUTHENTICATION_BACKENDS = ('nickelodeon.backends.CaseInsensitiveModelBackend', )
+
 try:
     from .local_settings import *
 except ImportError:
