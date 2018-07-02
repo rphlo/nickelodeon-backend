@@ -84,6 +84,7 @@ var Song = function(id, path, filename){
         console.log('Playing '+this.filename);
         currentSong = this;
         displayCurrentSong();
+        stopSounds();
         var mySound = soundManager.createSound({
             url: this.path + '.' + prefered_format+'?auth_token='+auth_token,
             type: 'audio/mpeg',
