@@ -313,8 +313,8 @@ var promptYoutubeURL = function(){
     }
     var yt_video_id_re = [
         {pos: 1, re: /^([a-zA-Z0-9_\-]{11})$/},
-        {pos: 4, re: /^(https?:\/\/)?(www\.|m\.)?youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_\-]{11})(&.*)?$/},
-        {pos: 2, re: /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_\-]{11})(\?.*)?$/}
+        {pos: 4, re: /^(https?:\/\/)?(www\.|m\.)?youtube\.com\/watch\?(.*&)?v=([a-zA-Z0-9_\-]{11})(&.*)?#?$/},
+        {pos: 2, re: /^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_\-]{11})(\?.*)?#?$/}
     ];
     var video_id = null;
     video_id = yt_video_id_re.map(function(re){
@@ -325,7 +325,7 @@ var promptYoutubeURL = function(){
     if(video_id){
         $.ajax(
             {
-                url: '/api/youtube-dl/'+video_id,
+                url: '/api/youtube-dl/' + video_id,
                 type: 'POST',
                 headers: {
                   Authorization: 'Token ' + auth_token
@@ -334,11 +334,13 @@ var promptYoutubeURL = function(){
         ).done(
             function(response){
                 // TODO: track import process
-                console.log('Sent intent to download video '+video_id);
+                console.log('Sent intent to download video ' + video_id);
             }
         ).fail(function(e){
             if(e.status == 401){
                 askLogin();
+            } else {
+                alert('Youtube download ' + video_id + ' did not go through...');
             }
         });
     } else {
