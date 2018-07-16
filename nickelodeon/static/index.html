@@ -30,16 +30,16 @@
   <form id="login_form" onsubmit="onLogin();return false;">
     <div id="usernameInputWrapper"><input type="text" id="username" placeholder="Username" /></div>
     <div id="passwordInputWrapper"><input type="password" id="password" placeholder="Password"/></div>
-    <div><button type="submit" id="login_btn">Login</button></div>
+    <div><button type="submit" id="login_btn"><i class="fa fa-sign-in fa-fw"></i> Login</button></div>
   </form>
 </div>
 <div id="jukebox">
 <div class="icon_menu">
-  <a href="#" id="playPauseButton" onclick="togglePause();return false;"><i class="fa fa-play"></i></a>
-  <a href="#" onclick="playNextSong();return false;"><i class="fa fa-forward"></i></a>
-  <a href="#" onclick="promptYoutubeURL();return false;"><i class="fa fa-youtube"></i></a>
-  <a href="#" onclick="toggleHardcore();return false;" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a>
-  <a href="#" onclick="logout();return false;" id="logoutBtn"><i class="fa fa-sign-out"></i></a>
+  <a href="#" id="playPauseButton" onclick="togglePause();return false;" title="Play/Pause"><i class="fa fa-play"></i></a>
+  <a href="#" onclick="playNextSong();return false;" title="Next"><i class="fa fa-forward"></i></a>
+  <a href="#" onclick="promptYoutubeURL();return false;" title="Download From Youtube"><i class="fa fa-youtube"></i></a>
+  <a href="#" onclick="toggleHardcore();return false;" title="Toggle Hardcore Mode" id="hardcoreSwitch"><i class="fa fa-heart-o"></i></a>
+  <a href="#" onclick="logout();return false;" title="Sign out" id="logoutBtn"><i class="fa fa-sign-out"></i></a>
 </div>
 <div>Now Playing: <span id="currentTitle">-</span></div>
 <div>Queue</div>

@@ -81,13 +81,21 @@ button {
     background-color: #333;
     border: none;
     color: #ccc;
-    padding: 5px 15px;
+    padding: 5px 15px 5px 10px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     cursor: pointer;
     font-size: calc(.5em + 1vw);
+    font-weight: 600;
     text-shadow: 1px 1px #000000;
+    border-radius: 5px;
+    border-width: 0 1px 1px 0;
+    border-color: #000;
+    border-style: solid;
+}
+#login_btn {
+    margin:20px 0 0;
 }
 #usernameInputWrapper:before {
     font-family: FontAwesome;
@@ -95,6 +103,9 @@ button {
     padding-right: 0.5vw;
     position: relative;
     font-size: calc(0.7em + 1vw);
+    width: 1.2em;
+    text-align: center;
+    display: inline-block;
 }
 #username {
     position: relative;
@@ -105,6 +116,9 @@ button {
     padding-right: 0.5vw;
     position: relative;
     font-size: calc(0.7em + 1vw);
+    width: 1.2em;
+    text-align: center;
+    display: inline-block;
 }
 #password {
     position: relative;

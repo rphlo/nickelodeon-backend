@@ -1,4 +1,4 @@
-var VERSION_NAME = 'humppakone_v2018071600';
+var VERSION_NAME = 'humppakone_v2018071601';
 self.addEventListener('install', function(e){
  var timeStamp = Date.now();
  e.waitUntil(
