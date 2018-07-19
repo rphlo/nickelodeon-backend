@@ -34,8 +34,8 @@ class ApiTestCase(APITestCase):
         self.create_mp3()
 
     def create_mp3(self):
-        mp3_base64 = '''/+MYxAAAAANIAAAAAExBTUUzLjk4LjIAAAAAAAAAAAAAAAAAAAAAA
-                        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'''
+        mp3_base64 = '''/+MYxAAAAANIAAAAAExBTUUzLjk4LjIAAAAAAAAAAAAAAAAAAAAAA\
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'''
         with  open(os.path.join(PATH_TEMP, 'foo.mp3'), 'wb') as fh:
             fh.write(base64.b64decode(mp3_base64))
         self.song = MP3Song.objects.create(
