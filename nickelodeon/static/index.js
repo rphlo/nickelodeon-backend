@@ -353,11 +353,29 @@ var queueSong = function(song){
     displayQueue();
 };
 
+var printTime = function(t) {
+    t = Math.round(t / 1000);
+    var h = Math.round(t / 3600);
+    var m = Math.round((t % 3600) / 60);
+    var s = t % 60;
+    return [
+        ('0' + h).slice(-2),
+        ('0' + m).slice(-2),
+        ('0' + s).slice(-2)
+    ].join(':');
+};
+
+var printTimeProgress = function() {
+    var sound_id = soundManager.soundIDs[0];
+    var sound = soundManager.getSoundById(sound_id);
+    return printTime(sound.position) + '/' + printTime(sound.durationEstimate);
+};
+
 var scrollProgressBar = function(){
     var sound_id = soundManager.soundIDs[0];
     var sound = soundManager.getSoundById(sound_id);
     var perc = sound.position/sound.durationEstimate*100;
-    $('#seekBar > .progressbarbar').css('width', perc+'%');
+    $('#seekBar > .progressbarbar').css('width', perc+'%').attr('title', printTimeProgress());
 };
 
 var searchSongs = function(query){

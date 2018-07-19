@@ -37,7 +37,7 @@ video {
     width: auto;
     height: auto;
     z-index: -100;
-    background: rgb(0,0,0, 0.1);
+    background: rgba(0, 0, 0, 0.1);
 }
 .icon_menu {
     font-size: calc(1em + 5vh);
@@ -46,11 +46,9 @@ a {
     text-decoration: none;
     color: #ccc;
 }
-
-::placeholder { /* Most modern browsers support this now. */
+::placeholder {
    color: #ccc;
 }
-
 input[type="text"], input[type="password"] {
     background-color: transparent;
     color: #ccc;
