@@ -123,7 +123,7 @@ CELERY_TIMEZONE = 'UTC'
 
 from datetime import timedelta
 REST_KNOX = {
-  'TOKEN_TTL': timedelta(days=7),
+  'TOKEN_TTL': timedelta(days=1),
 }
 
 AUTHENTICATION_BACKENDS = ('nickelodeon.backends.CaseInsensitiveModelBackend', )
