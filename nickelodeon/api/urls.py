@@ -4,13 +4,16 @@ from nickelodeon.api import views
 from knox import views as knox_views
 
 urlpatterns = [
-    url(r'^auth/login/?$',
+    url(r'^$',
+        views.api_root,
+        name='api_root'),
+    url(r'^login/?$',
         view=views.LoginView.as_view(),
         name='knox_login'),
-    url(r'^auth/logout/?$',
+    url(r'^logout/?$',
         view=knox_views.LogoutView.as_view(),
         name='knox_logout'),
-    url(r'^auth/logoutall/?$',
+    url(r'^logoutall/?$',
         view=knox_views.LogoutAllView.as_view(),
         name='knox_logoutall'),
     url(r'^songs/?$',
@@ -26,7 +29,7 @@ urlpatterns = [
         r'(\.(?P<extension>(mp3|aac)))?$',
         view=views.download_song,
         name='song_download'),
-    url(r'^youtube-dl/(?P<video_id>[a-zA-Z0-9_-]{11})/?$',
+    url(r'^youtube-dl/?$',
         view=views.youtube_grab,
         name='youtube_grab')
 ]

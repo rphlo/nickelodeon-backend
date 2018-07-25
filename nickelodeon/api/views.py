@@ -13,9 +13,12 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import parsers, generics, renderers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.decorators import api_view, permission_classes, \
-    renderer_classes
-from rest_framework.exceptions import NotFound
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+    renderer_classes,
+)
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BaseRenderer
@@ -58,6 +61,15 @@ def x_accel_redirect(request, path, filename='',
         filename.replace('\\', '_').replace('"', '\\"')
     )
     return response
+
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        'songs': reverse('user-list', request=request, format=format),
+        'snippets': reverse('snippet-list', request=request, format=format)
+    })
+
 
 
 @api_view(['GET'])
@@ -122,10 +134,16 @@ class TextSearchApiView(generics.ListAPIView):
         qs = qs.order_by('filename')
         return qs
 
+@api_view(['GET'])
+def api_root(request):
+    return Response('')
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
-def youtube_grab(request, video_id):
+def youtube_grab(request):
+    video_id = request.POST.get('v', '')
+    if not re.match(r'[a-zA-Z0-9_-]{11}', video_id):
+        raise ValidationError('Invalid v parameter')
     task = fetch_youtube_video.s(video_id).delay()
     return Response({'task_id': str(task.task_id)})
 

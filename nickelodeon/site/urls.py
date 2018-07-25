@@ -18,8 +18,5 @@ from django.contrib.staticfiles.views import serve
 from django.views.generic import RedirectView
 
 urlpatterns = [
-    url(r'^api/', include('nickelodeon.api.urls')),
-    url(r'^(?!/static/.*)(?P<path>.*\..*)$',
-        RedirectView.as_view(url='/static/%(path)s', permanent=False)),
-    url(r'^$', serve, kwargs={'path': 'index.html'}),
+    url(r'^', include('nickelodeon.api.urls')),
 ]
