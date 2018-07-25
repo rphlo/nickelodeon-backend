@@ -6,4 +6,4 @@
 
 ## Clients
 + [nickelodeon-web](https://github.com/rphlo/nickelodeon-web) Progresive Web App written with jQuery, using soundmanager2. Hosted on https://www.humppakone.com
-+ [humppa-soi](https://github.com/rphlo/humppa-soi) CLI client written in Python3, using curl and mpg321
++ [humppa-soi](https://github.com/rphlo/humppa-soi) CLI client written in Python3, using mpv
