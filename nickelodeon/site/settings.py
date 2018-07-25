@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'knox',
     'nickelodeon',
@@ -120,6 +121,8 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 from datetime import timedelta
 REST_KNOX = {
