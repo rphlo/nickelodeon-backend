@@ -31,5 +31,8 @@ urlpatterns = [
         name='song_download'),
     url(r'^youtube-dl/?$',
         view=views.youtube_grab,
-        name='youtube_grab')
+        name='youtube_grab'),
+    url(r'^task/(?P<task_id>[a-f0-9-]{36})',
+        view=views.task_status,
+        name='task_status'),
 ]

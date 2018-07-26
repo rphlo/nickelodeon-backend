@@ -1,5 +1,6 @@
 import datetime
 import os
+from subprocess import call
 
 from celery import shared_task, current_task
 import pafy
@@ -17,10 +18,10 @@ from nickelodeon.utils import (
 
 @shared_task()
 def fetch_youtube_video(video_id=''):
-    def update_dl_progress(*progress_stats):
+    def update_dl_progress(progress_stats):
         current_task.update_state(state='PROGRESS',
                                   meta={'description': 'downloading',
-                                        'current': progress_stats[2] * 100,
+                                        'current': progress_stats * 100,
                                         'total': 100,
                                         'step': 1,
                                         'step_total': 2})
@@ -64,7 +65,7 @@ def fetch_youtube_video(video_id=''):
                                                  'audiostream'})
         return ('Could not find proper audio stream '
                 'for Youtube video {}').format(video_id)
-    download_path = os.path.join("/tmp/", safe_title+".m4a")
+    download_path = os.path.join("/tmp/", video_id + ".m4a")
     tmp_paths = {}
     for ext, lib in AVAILABLE_FORMATS.items():
         if ext in extension_converted:
@@ -74,11 +75,22 @@ def fetch_youtube_video(video_id=''):
         settings.NICKELODEON_MUSIC_ROOT,
         'rphl', 'Assorted', 'by_date', now.strftime('%Y/%m')
     )
-    audio_stream.download(
-        download_path,
-        callback=update_dl_progress,
-        quiet=True
+    #audio_stream.download(
+    #    download_path,
+    #    callback=update_dl_progress,
+    #    quiet=True
+    #)
+    update_dl_progress(0)
+    status = call(
+        'youtube-dl --quiet -x --audio-format m4a -o {} '
+        'https://www.youtube.com/watch?v={}'
+            .format(download_path, video_id),
+        shell=True
     )
+    if status != 0:
+        return
+    update_dl_progress(1)
+
     convert_audio(
         download_path,
         tmp_paths.get('aac'),

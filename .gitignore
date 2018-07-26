@@ -15,3 +15,5 @@ env/
 htmlcov/
 docs/_build/
 nickelodeon/site/local_settings.py
+static/
+media/

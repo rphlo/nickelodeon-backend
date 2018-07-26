@@ -22,11 +22,13 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BaseRenderer
+from rest_framework.response import Response
+
+from celery.result import AsyncResult
 
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video
-from rest_framework.response import Response
 
 
 class MP3Renderer(BaseRenderer):
@@ -137,6 +139,13 @@ class TextSearchApiView(generics.ListAPIView):
 @api_view(['GET'])
 def api_root(request):
     return Response('')
+
+
+@api_view(['GET'])
+def task_status(request, task_id):
+    res = AsyncResult(task_id)
+    status = res.info
+    return Response(status)
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
