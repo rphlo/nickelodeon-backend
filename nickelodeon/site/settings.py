@@ -128,6 +128,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 from datetime import timedelta
 REST_KNOX = {
   'TOKEN_TTL': timedelta(days=1),
+  'AUTO_REFRESH': True
 }
 
 AUTHENTICATION_BACKENDS = ('nickelodeon.backends.CaseInsensitiveModelBackend', )
