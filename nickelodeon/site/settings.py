@@ -10,26 +10,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
+from datetime import timedelta
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'iy3_(l70qc(nxjk@f)t*o-*mptbk94yyae&e-&qrf@g0&5f1^1'
+SECRET_KEY = '<replace-this-in-production>'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTHENTICATION_BACKENDS = ('nickelodeon.backends.CaseInsensitiveModelBackend', )
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,10 +51,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'nickelodeon.site.urls'
 
+STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
+STATIC_URL = '/static/'
+q
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates', ],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -72,10 +72,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nickelodeon.site.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -83,39 +81,24 @@ DATABASES = {
     }
 }
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
-
-STATIC_URL = '/static/'
-
-STATIC_ROOT = os.path.join(BASE_DIR, '..', '..', 'static')
-
-NICKELODEON_MUSIC_ROOT = os.path.join(BASE_DIR, '..', '..', 'media')
-
+# Django Rest Framework Config
 REST_FRAMEWORK = {
-    # other settings...
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'nickelodeon.api.auth.TokenAuthSupportQueryString',
     ),
     'DEFAULT_PERMISSION_CLASSES': [],
 }
 
-# CELERY STUFF
+# Celery
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
@@ -123,15 +106,17 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
+# Django CORS Headers
 CORS_ORIGIN_ALLOW_ALL = True
 
-from datetime import timedelta
+# Django Rest Knox
 REST_KNOX = {
   'TOKEN_TTL': timedelta(days=1),
   'AUTO_REFRESH': True
 }
 
-AUTHENTICATION_BACKENDS = ('nickelodeon.backends.CaseInsensitiveModelBackend', )
+# Nickelodeon
+NICKELODEON_MUSIC_ROOT = os.path.join(BASE_DIR, '..', 'media')
 
 try:
     from .local_settings import *
