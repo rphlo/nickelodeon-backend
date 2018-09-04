@@ -53,7 +53,7 @@ ROOT_URLCONF = 'nickelodeon.site.urls'
 
 STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATIC_URL = '/static/'
-q
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -112,7 +112,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Django Rest Knox
 REST_KNOX = {
   'TOKEN_TTL': timedelta(days=1),
-  'AUTO_REFRESH': True
+  'AUTO_REFRESH': True,
 }
 
 # Nickelodeon

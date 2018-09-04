@@ -38,7 +38,7 @@ class MP3Song(models.Model):
 
     @models.permalink
     def get_download_url(self):
-        return "song_download", (), {"pk": self.pk}
+        return 'song_download', (), {'pk': self.pk, 'extension': 'mp3'}
 
     @property
     def title(self):

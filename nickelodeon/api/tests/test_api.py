@@ -75,7 +75,10 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'''
                                data={'username': self.username,
                                      'password': self.password})
         auth_token = res.data.get('token')
-        download_url = reverse('song_download', kwargs={'pk': self.song.id})
+        download_url = reverse(
+            'song_download',
+            kwargs={'pk': self.song.id, 'extension': 'mp3'}
+        )
         res = self.client.get(download_url, data={'auth_token': auth_token})
         self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
         self.assertEquals(res.get('X-Accel-Redirect'), '/internal/foo.mp3')
@@ -88,9 +91,6 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'''
             'url': ('http://testserver' +
                     reverse('song_detail',
                             kwargs={'pk': self.song.id})),
-            'download_url': ('http://testserver' +
-                             reverse('song_download',
-                                     kwargs={'pk': self.song.id})),
             'id': self.song.id
         }
         self.assertEquals(res.data, expected)

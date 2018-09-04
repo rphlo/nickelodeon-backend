@@ -66,22 +66,11 @@ def x_accel_redirect(request, path, filename='',
 
 
 @api_view(['GET'])
-def api_root(request, format=None):
-    return Response({
-        'songs': reverse('user-list', request=request, format=format),
-        'snippets': reverse('snippet-list', request=request, format=format)
-    })
-
-
-
-@api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 @renderer_classes((MP3Renderer, ))
-def download_song(request, pk, extension=None):
+def download_song(request, pk, extension):
     song = get_object_or_404(MP3Song, pk=pk)
     file_path = song.filename
-    if extension is None:
-        extension = 'mp3'
     mime = 'audio/mpeg' if extension == 'mp3' else 'audio/x-m4a'
     file_path = u'{}.{}'.format(file_path, extension)
     file_path = u'/internal/{}'.format(file_path)
@@ -136,16 +125,24 @@ class TextSearchApiView(generics.ListAPIView):
         qs = qs.order_by('filename')
         return qs
 
+
 @api_view(['GET'])
 def api_root(request):
     return Response('')
 
 
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def tasks_list(request):
+    return Response('Not implemented', status=501)
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def task_status(request, task_id):
     res = AsyncResult(task_id)
-    status = res.info
-    return Response(status)
+    return Response(res.info)
+
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
@@ -169,16 +166,22 @@ class LoginView(GenericAPIView):
     serializer_class = AuthTokenSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token = AuthToken.objects.create(user)
-        user_logged_in.send(sender=user.__class__,
-                            request=request,
-                            user=user)
+        user_logged_in.send(
+            sender=user.__class__,
+            request=request,
+            user=user
+        )
         return Response({
-            'user': UserSerializer(user,
-                                   context=self.get_serializer_context()).data,
+            'user': UserSerializer(
+                user,
+                context=self.get_serializer_context()
+            ).data,
             'token': token
         })
