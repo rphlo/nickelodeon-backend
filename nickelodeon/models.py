@@ -7,6 +7,7 @@ import sys
 from django.conf import settings
 from django.core.files.move import file_move_safe
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import ugettext as _
 
 from nickelodeon.utils import clean_empty_folder, random_key
@@ -32,13 +33,14 @@ class MP3Song(models.Model):
     def has_mp3(self):
         return self.has_extension('mp3')
 
-    @models.permalink
     def get_absolute_url(self):
-        return "song_detail", (), {"pk": self.pk}
+        return reverse("song_detail", kwargs={"pk": self.pk})
 
-    @models.permalink
     def get_download_url(self):
-        return 'song_download', (), {'pk': self.pk, 'extension': 'mp3'}
+        return reverse(
+            'song_download',
+            kwargs={'pk': self.pk, 'extension': 'mp3'}
+        )
 
     @property
     def title(self):
