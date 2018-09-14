@@ -11,35 +11,21 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
-from rest_framework import parsers, generics, renderers
+from rest_framework import parsers, generics, renderers, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import (
     api_view,
     permission_classes,
-    renderer_classes,
 )
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.renderers import BaseRenderer
 from rest_framework.response import Response
-
 from celery.result import AsyncResult
 
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video
-
-
-class MP3Renderer(BaseRenderer):
-    """ Renderer for MP3 binary content. """
-    media_type = 'audio/mpeg'
-    format = 'mp3'
-    charset = None
-    render_style = 'binary'
-
-    def render(self, data, media_type=None, renderer_context=None):
-        return data
 
 
 def x_accel_redirect(request, path, filename='',
@@ -49,12 +35,12 @@ def x_accel_redirect(request, path, filename='',
         import os.path
         path = re.sub(r'^/internal', settings.NICKELODEON_MUSIC_ROOT, path)
         if not os.path.exists(path):
-            return HttpResponse(status=404)
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
         wrapper = FileWrapper(open(path, 'rb'))
         response = HttpResponse(wrapper)
         response['Content-Length'] = os.path.getsize(path)
     else:
-        response = HttpResponse('', status=206)
+        response = HttpResponse('', status=status.HTTP_206_PARTIAL_CONTENT)
         response['X-Accel-Redirect'] = urllib.parse.quote(path.encode('utf-8'))
         response['X-Accel-Buffering'] = 'no'
         response['Accept-Ranges'] = 'bytes'
@@ -67,7 +53,6 @@ def x_accel_redirect(request, path, filename='',
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
-@renderer_classes((MP3Renderer, ))
 def download_song(request, pk, extension=None):
     if extension is None:
         extension = 'mp3'
@@ -136,7 +121,7 @@ def api_root(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def tasks_list(request):
-    return Response('Not implemented', status=501)
+    return Response('Not implemented', status=status.HTTP_501_NOT_IMPLEMENTED)
 
 
 @api_view(['GET'])
