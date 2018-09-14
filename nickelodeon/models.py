@@ -19,6 +19,7 @@ class MP3Song(models.Model):
                                 max_length=255,
                                 unique=True,
                                 db_index=True)
+    aac = models.BooleanField(default=False)
 
     def has_extension(self, extension):
         file_path = self.get_file_format_path(extension) \

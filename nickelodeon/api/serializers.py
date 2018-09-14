@@ -42,4 +42,4 @@ class MP3SongSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MP3Song
-        fields = ('id', 'url', 'filename', 'download_url')
+        fields = ('id', 'url', 'filename', 'download_url', 'aac')

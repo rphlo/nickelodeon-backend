@@ -109,7 +109,10 @@ def fetch_youtube_video(video_id=''):
         dst_folder,
         final_filename
     )[len(settings.NICKELODEON_MUSIC_ROOT)+offset:]
-    song, dummy_created = MP3Song.objects.get_or_create(filename=song_filename)
+    song, dummy_created = MP3Song.objects.get_or_create(
+        filename=song_filename,
+        aac=('aac' in extension_converted)
+    )
     return {'pk': song.pk}
 
 

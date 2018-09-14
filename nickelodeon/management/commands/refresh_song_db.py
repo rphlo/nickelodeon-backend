@@ -115,11 +115,15 @@ class Command(BaseCommand):
             )
             self.stdout.flush()
 
+    def has_aac(self, filename):
+        return os.path.exists(os.path.join(self.folder_root, filename+'.aac'))
+
     def bulk_create(self):
         bulk = []
         for song_file in self.songs_to_add:
             bulk.append(MP3Song(
-                filename=song_file
+                filename=song_file,
+                aac=self.has_aac(song_file)
             ))
         MP3Song.objects.bulk_create(bulk)
 

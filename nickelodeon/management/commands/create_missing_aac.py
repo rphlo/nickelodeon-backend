@@ -1,4 +1,3 @@
-import os.path
 import re
 
 from django.core.management.base import BaseCommand
@@ -10,9 +9,6 @@ try:
     from scandir import walk
 except ImportError:
     from os import walk
-
-
-MP3_FILE_EXT_RE = re.compile(r'(.+)\.mp3$', re.IGNORECASE)
 
 
 class Command(BaseCommand):
@@ -33,6 +29,8 @@ class Command(BaseCommand):
                 output_file_aac=aac_path,
                 callback=self.print_conversion_progress
             )
+            song.aac = True
+            song.save()
             self.stdout.write('Done')
 
     def print_conversion_progress(self, perc):
