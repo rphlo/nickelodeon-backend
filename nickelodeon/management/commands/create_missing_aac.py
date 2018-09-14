@@ -1,14 +1,7 @@
-import re
-
 from django.core.management.base import BaseCommand
 
 from nickelodeon.models import MP3Song
 from nickelodeon.utils import convert_audio
-
-try:
-    from scandir import walk
-except ImportError:
-    from os import walk
 
 
 class Command(BaseCommand):
