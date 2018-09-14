@@ -88,7 +88,7 @@ def fetch_youtube_video(video_id=''):
         shell=True
     )
     if status != 0:
-        return
+        return('Youtube-DL returned error code %d' % status)
     update_dl_progress(1)
 
     convert_audio(
@@ -111,6 +111,7 @@ def fetch_youtube_video(video_id=''):
     )[len(settings.NICKELODEON_MUSIC_ROOT)+offset:]
     song, dummy_created = MP3Song.objects.get_or_create(filename=song_filename)
     return {'pk': song.pk}
+
 
 def move_files_to_destination(dst_folder, safe_title, extensions, tmp_paths):
     if not os.path.isdir(dst_folder):
