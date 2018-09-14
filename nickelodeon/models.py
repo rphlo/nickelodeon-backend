@@ -39,7 +39,7 @@ class MP3Song(models.Model):
     def get_download_url(self):
         return reverse(
             'song_download',
-            kwargs={'pk': self.pk, 'extension': 'mp3'}
+            kwargs={'pk': self.pk}
         )
 
     @property

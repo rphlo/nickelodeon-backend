@@ -19,4 +19,8 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     url(r'^', include('nickelodeon.api.urls')),
+    url(
+        r'^drf-auth/',
+        include('rest_framework.urls', namespace='rest_framework')
+    ),
 ]

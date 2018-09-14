@@ -23,6 +23,7 @@ class RelativeURLField(serializers.ReadOnlyField):
 
 class MP3SongSerializer(serializers.ModelSerializer):
     url = RelativeURLField(source='get_absolute_url')
+    download_url = RelativeURLField(source='get_download_url')
     filename = serializers.CharField(
         required=False,
         validators=[validate_filename]
@@ -41,4 +42,4 @@ class MP3SongSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MP3Song
-        fields = ('id', 'url', 'filename')
+        fields = ('id', 'url', 'filename', 'download_url')

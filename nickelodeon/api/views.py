@@ -68,7 +68,9 @@ def x_accel_redirect(request, path, filename='',
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 @renderer_classes((MP3Renderer, ))
-def download_song(request, pk, extension):
+def download_song(request, pk, extension=None):
+    if extension is None:
+        extension = 'mp3'
     song = get_object_or_404(MP3Song, pk=pk)
     file_path = song.filename
     mime = 'audio/mpeg' if extension == 'mp3' else 'audio/x-m4a'

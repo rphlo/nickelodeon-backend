@@ -88,9 +88,14 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'''
         self.assertEquals(res.status_code, status.HTTP_200_OK)
         expected = {
             'filename': 'foo',
-            'url': ('http://testserver' +
-                    reverse('song_detail',
-                            kwargs={'pk': self.song.id})),
+            'url': (
+                'http://testserver' +
+                reverse('song_detail', kwargs={'pk': self.song.id})
+            ),
+            'download_url': (
+                'http://testserver' +
+                reverse('song_download', kwargs={'pk': self.song.id})
+            ),
             'id': self.song.id
         }
         self.assertEquals(res.data, expected)
