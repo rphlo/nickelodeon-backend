@@ -6,7 +6,7 @@ from nickelodeon.models import MP3Song
 
 
 class Command(BaseCommand):
-    help = 'Create the missing aac files of the songs in the library'
+    help = 'Set the aac field on all MP3Songs'
     counter = 0
     has_aac_ids = set()
     has_not_aac_ids = set()
