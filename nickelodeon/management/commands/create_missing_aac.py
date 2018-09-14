@@ -1,3 +1,5 @@
+import os
+
 from django.core.management.base import BaseCommand
 
 from nickelodeon.models import MP3Song
@@ -10,7 +12,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         songs = MP3Song.objects.all()
         for song in songs:
-            self.handle_song(song)
+            try:
+                self.handle_song(song)
+            except KeyboardInterrupt:
+                aac_path = song.get_file_format_path('aac')
+                os.remove(aac_path)
+                break
 
     def handle_song(self, song):
         if not song.has_aac and song.has_mp3:
