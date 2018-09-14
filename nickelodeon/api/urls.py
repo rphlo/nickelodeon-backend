@@ -34,10 +34,10 @@ urlpatterns = [
     url(r'^youtube-dl/?$',
         view=views.youtube_grab,
         name='youtube_grab'),
-    url(r'^tasks/',
+    url(r'^tasks/?$',
         view=views.tasks_list,
         name='task_status'),
-    url(r'^tasks/(?P<task_id>[a-f0-9-]{36})',
+    url(r'^tasks/(?P<task_id>[a-f0-9-]{36})/?$',
         view=views.task_status,
         name='task_status'),
 ]

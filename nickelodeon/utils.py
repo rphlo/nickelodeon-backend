@@ -135,9 +135,8 @@ def convert_audio(input_file, output_file_aac=None, output_file_mp3=None,
     if output_file_aac is not None:
         command += [
             '-ar', '44100', '-ac', '2',
-            '-b:a', '32k',
-            '-c:a', 'libfdk_aac', '-level', '10', '-profile:a', 'aac_he_v2',
-            '-movflags', '+faststart', '-cutoff', '20000',
+            '-b:a', '64k', '-c:a', 'aac',
+            '-movflags', '+faststart',
             '-f', 'mp4', output_file_aac,
         ]
     task = FFMPEGTask(command, callback)

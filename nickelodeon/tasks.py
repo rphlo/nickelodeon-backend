@@ -36,7 +36,7 @@ def fetch_youtube_video(video_id=''):
 
     extension_converted = []
     for ext, lib in AVAILABLE_FORMATS.items():
-        if ffmpeg_has_lib(lib):
+        if ffmpeg_has_lib(lib) or ext == 'aac':
             extension_converted.append(ext)
     if not extension_converted:
         return 'ffmpeg can not do the necesary file conversions'

@@ -134,9 +134,9 @@ def task_status(request, task_id):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def youtube_grab(request):
-    video_id = request.POST.get('v', '')
+    video_id = request.data.get('v', '')
     if not re.match(r'[a-zA-Z0-9_-]{11}', video_id):
-        raise ValidationError('Invalid v parameter')
+        raise ValidationError('Invalid v parameter %s' % video_id)
     task = fetch_youtube_video.s(video_id).delay()
     return Response({'task_id': str(task.task_id)})
 

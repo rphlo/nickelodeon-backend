@@ -55,7 +55,7 @@ class MP3Song(models.Model):
         file_path = u"%s.%s" % (self.filename, extension)
         if full:
             file_path = os.path.join(settings.NICKELODEON_MUSIC_ROOT, file_path)
-        return file_path
+        return os.path.abspath(file_path)
 
     def _move_file_ext_from(self, orig, ext):
         src = orig.get_file_format_path(extension=ext, full=True)
