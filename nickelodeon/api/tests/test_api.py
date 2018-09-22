@@ -96,7 +96,8 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'''
                 'http://testserver' +
                 reverse('song_download', kwargs={'pk': self.song.id})
             ),
-            'id': self.song.id
+            'id': self.song.id,
+            'aac': False
         }
         self.assertEquals(res.data, expected)
         song_url = reverse('song_detail', kwargs={'pk': self.song.id})
