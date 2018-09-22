@@ -65,11 +65,11 @@ def fetch_youtube_video(video_id=''):
                                                  'audiostream'})
         return ('Could not find proper audio stream '
                 'for Youtube video {}').format(video_id)
-    download_path = os.path.join("/tmp/", video_id + ".m4a")
+    download_path = os.path.join('/tmp', video_id + '.m4a')
     tmp_paths = {}
     for ext, lib in AVAILABLE_FORMATS.items():
         if ext in extension_converted:
-            tmp_paths[ext] = os.path.join("/tmp/", safe_title + '.' + ext)
+            tmp_paths[ext] = os.path.join('/tmp', safe_title + '.' + ext)
     now = datetime.datetime.now()
     dst_folder = os.path.join(
         settings.NICKELODEON_MUSIC_ROOT,

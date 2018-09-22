@@ -8,7 +8,7 @@ import subprocess
 
 
 AVAILABLE_FORMATS = {'mp3': 'libmp3lame', 'aac': 'libfdk-aac'}
-FFMPEG_DURATION_PREFIX = 'Duration '
+FFMPEG_DURATION_PREFIX = 'Duration: '
 FFMPEG_PROGRESS_PREFIX = 'time='
 VALID_TIME_STR_CHARS = '0123456789:.'
 
@@ -87,7 +87,7 @@ class FFMPEGTask(object):
             FFMPEG_DURATION_PREFIX,
             self.duration_prefix_chr_found,
         )
-        if self.duration_prefix_chr_found == -1:
+        if self.duration_prefix_chr_found == -1 or len(self.duration) > 0:
             # Prefix has been found
             # Read data until comma
             if out in VALID_TIME_STR_CHARS:
@@ -101,7 +101,7 @@ class FFMPEGTask(object):
             FFMPEG_PROGRESS_PREFIX,
             self.progress_prefix_chr_found
         )
-        if self.progress_prefix_chr_found == -1:
+        if self.progress_prefix_chr_found == -1 or len(self.progress) > 0:
             if out in VALID_TIME_STR_CHARS:
                 self.progress += out
             else:
@@ -142,3 +142,12 @@ def convert_audio(input_file, output_file_aac=None, output_file_mp3=None,
     task = FFMPEGTask(command, callback)
     task.run()
     return
+
+
+if __name__ == '__main__':
+    convert_audio(
+        '/tmp/test_input.mp3',
+        '/tmp/test_aac_out.aac',
+        '/tmp/test_mp3_out.mp3',
+        lambda x: print(x)
+    )
