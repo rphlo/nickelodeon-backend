@@ -29,6 +29,7 @@ class MP3SongSerializer(serializers.ModelSerializer):
         validators=[validate_filename]
     )
     id = serializers.ReadOnlyField()
+    aac = serializers.ReadOnlyField()
 
     def update(self, instance, validated_data):
         if not instance.is_filename_available(validated_data['filename']):
