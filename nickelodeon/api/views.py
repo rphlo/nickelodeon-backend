@@ -47,7 +47,7 @@ def x_accel_redirect(request, path, filename='',
     response['Content-Type'] = mime
     response['Content-Disposition'] = 'attachment; filename="{}"'.format(
         filename.replace('\\', '_').replace('"', '\\"')
-    )
+    ).encode('utf-8')
     return response
 
 
