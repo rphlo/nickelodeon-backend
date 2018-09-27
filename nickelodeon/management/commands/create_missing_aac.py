@@ -34,4 +34,4 @@ class Command(BaseCommand):
             self.stdout.write('Done')
 
     def print_conversion_progress(self, perc):
-        self.stdout('\r{}%'.format(perc), ending='')
+        self.stdout.write('\r{}%'.format(perc), ending='')
