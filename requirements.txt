@@ -4,6 +4,5 @@ django-cors-headers>=1.0.0
 youtube-dl
 pafy
 celery[redis]
-#django-rest-knox>=3.2.1
-git+git://github.com/James1345/django-rest-knox@d528d25600acac27c81110e36cea4ba1105466fa
+django-rest-knox>=3.2.1
 raven
