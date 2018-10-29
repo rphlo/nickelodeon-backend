@@ -1,6 +1,4 @@
-from django.utils import timezone
 from knox.auth import TokenAuthentication
-from knox.settings import knox_settings
 
 
 class TokenAuthSupportQueryString(TokenAuthentication):

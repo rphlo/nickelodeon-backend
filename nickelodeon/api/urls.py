@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.conf.urls import url
 
 from nickelodeon.api import views
 from knox import views as knox_views
