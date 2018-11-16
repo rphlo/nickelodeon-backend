@@ -3,7 +3,9 @@ import os
 from subprocess import call
 
 from celery import shared_task, current_task
+import logging
 import pafy
+from celery.exceptions import Ignore
 
 from django.conf import settings
 from django.core.files.move import file_move_safe
@@ -15,6 +17,7 @@ from nickelodeon.utils import (
     AVAILABLE_FORMATS
 )
 
+logger = logging.getLogger(__name__)
 
 @shared_task()
 def fetch_youtube_video(video_id=''):
@@ -39,14 +42,20 @@ def fetch_youtube_video(video_id=''):
         if ffmpeg_has_lib(lib) or ext == 'aac':
             extension_converted.append(ext)
     if not extension_converted:
-        return 'ffmpeg can not do the necesary file conversions'
+        current_task.update_state(
+            state='FAILED',
+            meta={'error': 'FFMPEG not properly configured'}
+        )
+        logger.error('ffmpeg can not do the necesary file conversions')
+        raise Ignore()
     try:
         video = pafy.new(video_id)
     except (ValueError, IOError):
         current_task.update_state(state='FAILED',
                                   meta={'error': 'Could not retrieve '
                                                  'YouTube video'})
-        return 'Could not retrieve YouTube video {}'.format(video_id)
+        logger.error('Could not retrieve YouTube video %s', video_id)
+        raise Ignore()
     title = video.title
     safe_title = title.replace("<", "")\
                       .replace(">", "")\
@@ -63,8 +72,11 @@ def fetch_youtube_video(video_id=''):
                                   meta={'error': 'Could not retrieve '
                                                  'YouTube video '
                                                  'audiostream'})
-        return ('Could not find proper audio stream '
-                'for Youtube video {}').format(video_id)
+        logger.error(
+            'Could not find proper audio stream '
+            'for Youtube video %s', video_id
+        )
+        raise Ignore()
     download_path = os.path.join('/tmp', video_id + '.m4a')
     tmp_paths = {}
     for ext, lib in AVAILABLE_FORMATS.items():
@@ -88,7 +100,15 @@ def fetch_youtube_video(video_id=''):
         shell=True
     )
     if status != 0:
-        return('Youtube-DL returned error code %d' % status)
+        current_task.update_state(
+            state='FAILED',
+            meta={'error': 'Youtube-DL returned an error'}
+        )
+        logger.error(
+            'Youtube-DL returned with an error code '
+            'for video %s', video_id
+        )
+        raise Ignore()
     update_dl_progress(1)
 
     convert_audio(
@@ -113,7 +133,7 @@ def fetch_youtube_video(video_id=''):
         filename=song_filename,
         aac=('aac' in extension_converted)
     )
-    return {'pk': song.pk}
+    return {'pk': song.pk, 'youtube_id': video_id}
 
 
 def move_files_to_destination(dst_folder, safe_title, extensions, tmp_paths):
