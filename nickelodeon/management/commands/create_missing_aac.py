@@ -29,9 +29,10 @@ class Command(BaseCommand):
                 output_file_aac=aac_path,
                 callback=self.print_conversion_progress
             )
+            self.stdout.write('\nDone')
+        if not song.aac:
             song.aac = True
             song.save()
-            self.stdout.write('\nDone')
 
     def print_conversion_progress(self, perc):
         self.stdout.write('\r{}%'.format(round(100*perc, 1)), ending='')
