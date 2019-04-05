@@ -21,7 +21,9 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 from celery.result import AsyncResult
+from celery.task.control import inspect
 
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
@@ -124,7 +126,8 @@ def api_root(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def tasks_list(request):
-    return Response('Not implemented', status=status.HTTP_501_NOT_IMPLEMENTED)
+    i = inspect()
+    return Response(i.active())
 
 
 @api_view(['GET'])
