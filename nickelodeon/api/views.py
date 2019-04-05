@@ -28,6 +28,9 @@ from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video
 
 
+MAX_SONGS_LISTED = 999
+
+
 def x_accel_redirect(request, path, filename='',
                      mime='application/force-download'):
     if settings.DEBUG:
@@ -109,7 +112,7 @@ class TextSearchApiView(generics.ListAPIView):
             qs = qs.filter(query)
         else:
             return qs.none()
-        qs = qs.order_by('filename')
+        qs = qs.order_by('filename')[:MAX_SONGS_LISTED]
         return qs
 
 
