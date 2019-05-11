@@ -19,12 +19,13 @@ from rest_framework.decorators import (
 )
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from celery.result import AsyncResult
 from celery.task.control import inspect
 
+from nickelodeon.api.permissions import IsStaffOrReadOnly
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video
@@ -86,7 +87,7 @@ class RandomSongView(generics.RetrieveAPIView):
 class SongView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MP3SongSerializer
     queryset = MP3Song.objects.all()
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsStaffOrReadOnly,)
 
     def perform_destroy(self, instance):
         instance.remove_file()
@@ -124,21 +125,21 @@ def api_root(request):
 
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+@permission_classes((IsAdminUser, ))
 def tasks_list(request):
     i = inspect()
     return Response(i.active())
 
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+@permission_classes((IsAdminUser, ))
 def task_status(request, task_id):
     res = AsyncResult(task_id)
     return Response(res.info)
 
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated, ))
+@permission_classes((IsAdminUser, ))
 def youtube_grab(request):
     video_id = request.data.get('v', '')
     if not re.match(r'[a-zA-Z0-9_-]{11}', video_id):
@@ -176,5 +177,6 @@ class LoginView(GenericAPIView):
                 user,
                 context=self.get_serializer_context()
             ).data,
-            'token': token
+            'token': token,
+            'is_staff': user.is_staff
         })
