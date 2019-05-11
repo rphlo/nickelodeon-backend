@@ -30,6 +30,8 @@ class ApiTestCase(APITestCase):
             self.email,
             self.password,
         )
+        self.user.is_staff = True
+        self.user.save()
         self.client = APIClient()
         self.create_mp3()
 
