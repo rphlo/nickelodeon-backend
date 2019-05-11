@@ -24,10 +24,17 @@ class ApiTestCase(APITestCase):
     def setUp(self):
         self.username = 'alice'
         self.email = 'alice@aol.com'
+        self.username2 = 'bob'
+        self.email2 = 'bob@aol.com'
         self.password = 'passw0rd!'
         self.user = User.objects.create_user(
             self.username,
             self.email,
+            self.password,
+        )
+        self.user2 = User.objects.create_user(
+            self.username2,
+            self.email2,
             self.password,
         )
         self.user.is_staff = True
@@ -121,6 +128,59 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'''
         self.assertEquals(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertFalse(os.path.exists(os.path.join(PATH_TEMP, 'bar.mp3')))
         self.create_mp3()
+        search_url = reverse('song_list')
+        res = self.client.get(search_url, data={'q': 'foo'})
+        self.assertEquals(res.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(res.data), 1)
+        res = self.client.get(search_url, data={'q': ''})
+        self.assertEquals(res.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(res.data), 0)
+        logout_url = reverse('knox_logout')
+        res = self.client.post(logout_url)
+        self.assertEquals(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    @override_settings(NICKELODEON_MUSIC_ROOT=PATH_TEMP)
+    def test_api_not_staff(self):
+        login_url = reverse('knox_login')
+        res = self.client.post(login_url,
+                               data={'username': self.username2,
+                                     'password': self.password})
+        auth_token = res.data.get('token')
+        download_url = reverse(
+            'song_download',
+            kwargs={'pk': self.song.id, 'extension': 'mp3'}
+        )
+        res = self.client.get(download_url, data={'auth_token': auth_token})
+        self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
+        self.assertEquals(res.get('X-Accel-Redirect'), '/internal/foo.mp3')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + auth_token)
+        random_song_url = reverse('song_random')
+        res = self.client.get(random_song_url)
+        self.assertEquals(res.status_code, status.HTTP_200_OK)
+        expected = {
+            'filename': 'foo',
+            'url': (
+                'http://testserver' +
+                reverse('song_detail', kwargs={'pk': self.song.id})
+            ),
+            'download_url': (
+                'http://testserver' +
+                reverse('song_download', kwargs={'pk': self.song.id})
+            ),
+            'id': self.song.id,
+            'aac': False
+        }
+        self.assertEquals(res.data, expected)
+        song_url = reverse('song_detail', kwargs={'pk': self.song.id})
+        res=self.client.get(song_url)
+        self.assertEquals(res.data, expected)
+        res = self.client.put(song_url, data={'filename': 'bar'})
+        self.assertEquals(res.status_code, status.HTTP_403_FORBIDDEN)
+        res = self.client.get(download_url)
+        self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
+        self.assertEquals(res.get('X-Accel-Redirect'), '/internal/foo.mp3')
+        res = self.client.delete(song_url)
+        self.assertEquals(res.status_code, status.HTTP_403_FORBIDDEN)
         search_url = reverse('song_list')
         res = self.client.get(search_url, data={'q': 'foo'})
         self.assertEquals(res.status_code, status.HTTP_200_OK)
