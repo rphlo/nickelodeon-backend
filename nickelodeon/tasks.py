@@ -2,6 +2,7 @@ import datetime
 import os
 from subprocess import call
 
+import youtube_dl
 from celery import shared_task, current_task
 import logging
 import pafy
@@ -93,22 +94,15 @@ def fetch_youtube_video(video_id=''):
     #    quiet=True
     #)
     update_dl_progress(0)
-    status = call(
-        'youtube-dl --quiet -x --audio-format m4a -o {} '
-        'https://www.youtube.com/watch?v={}'
-            .format(download_path, video_id),
-        shell=True
-    )
-    if status != 0:
-        current_task.update_state(
-            state='FAILED',
-            meta={'error': 'Youtube-DL returned an error'}
-        )
-        logger.error(
-            'Youtube-DL returned with an error code '
-            'for video %s', video_id
-        )
-        raise Ignore()
+    ydl_opts = {
+        'format': 'm4a',
+        'quiet': True,
+        'outtmpl': '/tmp/%(id)s.m4a',
+        'ignoreerrors': True,
+    }
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([video_id])
+
     update_dl_progress(1)
 
     convert_audio(
