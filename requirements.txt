@@ -1,8 +1,8 @@
-Django>=2.1,<2.2
-djangorestframework>=3.7,<3.8
+Django>=2.2,<2.3
+djangorestframework>=3.9,<3.10
 django-cors-headers>=1.0.0
 youtube-dl
 pafy
 celery[redis]
-django-rest-knox<4.0.0
+django-rest-knox>=3.2.1,<4.0.0
 raven
