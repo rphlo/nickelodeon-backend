@@ -1,15 +1,23 @@
+import datetime
+import os.path
 import re
 import urllib
 
+from django.contrib.auth.decorators import login_required
+from django.views.generic import View
+from knox.auth import TokenAuthentication
 from knox.models import AuthToken
 from knox.serializers import UserSerializer
 from random import randint
 
+
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
+from django.core.exceptions import ImproperlyConfigured
+from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 
 from rest_framework import parsers, generics, renderers, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
@@ -24,7 +32,11 @@ from rest_framework.response import Response
 
 from celery.result import AsyncResult
 from celery.task.control import inspect
+from rest_framework.views import APIView
 
+from resumable.files import ResumableFile
+
+from nickelodeon.api.forms import ResumableMp3UploadForm
 from nickelodeon.api.permissions import IsStaffOrReadOnly
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
@@ -180,3 +192,76 @@ class LoginView(GenericAPIView):
             'token': token,
             'is_staff': user.is_staff
         })
+
+
+class ResumableUploadView(APIView):
+    permission_classes = (IsStaffOrReadOnly,)
+
+    def get(self, request, *args, **kwargs):
+        """
+        Checks if chunk has already been sent.
+        """
+
+        if not request.GET.get('resumableFilename'):
+            return render(
+                request,
+                'upload.html',
+                {'form': ResumableMp3UploadForm()}
+            )
+        r = ResumableFile(self.storage, request.GET)
+        if not (r.chunk_exists or r.is_complete):
+            return HttpResponse('chunk not found', status=404)
+        return HttpResponse('chunk already exists')
+
+    def post(self, request, *args, **kwargs):
+        """
+        Saves chunks then checks if the file is complete.
+        """
+        chunk = request.FILES.get('file')
+        r = ResumableFile(self.storage, request.POST)
+        k = request.POST.get('resumableFilename')
+        if r.filename[-4:] != '.mp3':
+            raise HttpResponse('Only MP3 files are allowed', status=400)
+        if r.chunk_exists:
+            return HttpResponse('chunk already exists')
+        r.process_chunk(chunk)
+        if r.is_complete:
+            self.process_file(r.filename, r)
+            r.delete_chunks()
+        return HttpResponse()
+
+    def process_file(self, filename, file):
+        """
+        Process the complete file.
+        """
+        now = datetime.datetime.now()
+        dest = os.path.join(
+            settings.NICKELODEON_MUSIC_ROOT,
+            'rphl', 'Assorted', 'by_date', now.strftime('%Y/%m')
+        )
+        storage = FileSystemStorage(location=dest)
+        final_filename = storage.save(filename, file)
+        offset = 0 if settings.NICKELODEON_MUSIC_ROOT[-1] == '/' else 1
+        final_path = os.path.join(
+            dest,
+            final_filename[:-4]
+        )[len(settings.NICKELODEON_MUSIC_ROOT)+offset:]
+        mp3 = MP3Song.objects.create(
+            filename=final_path,
+            aac=False,
+        )
+        # TODO CREATE AAC CONVERSION TASK
+        return True
+
+    @property
+    def chunks_dir(self):
+        chunks_dir = getattr(settings, 'FILE_UPLOAD_TEMP_DIR', None)
+        if not chunks_dir:
+            raise ImproperlyConfigured(
+                'You must set settings.FILE_UPLOAD_TEMP_DIR'
+            )
+        return chunks_dir
+
+    @property
+    def storage(self):
+        return FileSystemStorage(location=self.chunks_dir)

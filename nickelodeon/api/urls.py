@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.contrib.admin.views.decorators import staff_member_required
 
 from nickelodeon.api import views
 from knox import views as knox_views
@@ -34,6 +35,9 @@ urlpatterns = [
     url(r'^youtube-dl/?$',
         view=views.youtube_grab,
         name='youtube_grab'),
+    url(r'^mp3-upload/?',
+        views.ResumableUploadView.as_view(),
+        name='mp3-upload'),
     url(r'^tasks/?$',
         view=views.tasks_list,
         name='task_status'),

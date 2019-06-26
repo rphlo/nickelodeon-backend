@@ -1,0 +1,29 @@
+{% load staticfiles %}<!DOCTYPE html>
+<html>
+    <body>
+        <form method="post" action="">
+            <fieldset>
+                {% csrf_token %}
+                {{ form.as_p }}
+            </fieldset>
+        </form>
+        <script type="text/javascript" src="{% static 'resumable/js/resumable.js' %}"></script>
+        <script type="text/javascript" src="{% static 'resumable/js/django-resumable.js' %}"></script>
+        <script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function () {
+    "use strict";
+    var dj;
+    if (new Resumable().support) {
+        var urlParams = new URLSearchParams(window.location.search);
+        dj = new DjangoResumable({
+          resumableOptions: {
+            headers: {
+              Authorization: 'Token ' + urlParams.get('auth_token')
+            }
+          }
+        });
+    }
+});
+        </script>
+    </body>
+</html>

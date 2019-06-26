@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'knox',
     'nickelodeon',
     'raven.contrib.django.raven_compat',
+    'resumable',
 ]
 
 MIDDLEWARE = [
@@ -119,6 +120,8 @@ REST_KNOX = {
 
 # Nickelodeon
 NICKELODEON_MUSIC_ROOT = os.path.join(BASE_DIR, '..', 'media')
+
+FILE_UPLOAD_TEMP_DIR = os.path.join(BASE_DIR, '..', 'tmp')
 
 try:
     from .local_settings import *
