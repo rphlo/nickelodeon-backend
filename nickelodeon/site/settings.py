@@ -123,6 +123,9 @@ NICKELODEON_MUSIC_ROOT = os.path.join(BASE_DIR, '..', 'media')
 
 FILE_UPLOAD_TEMP_DIR = os.path.join(BASE_DIR, '..', 'tmp')
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 try:
     from .local_settings import *
 except ImportError:
