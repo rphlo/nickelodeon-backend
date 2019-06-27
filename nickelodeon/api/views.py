@@ -40,7 +40,7 @@ from nickelodeon.api.forms import ResumableMp3UploadForm
 from nickelodeon.api.permissions import IsStaffOrReadOnly
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
-from nickelodeon.tasks import fetch_youtube_video
+from nickelodeon.tasks import fetch_youtube_video, create_aac
 
 
 MAX_SONGS_LISTED = 999
@@ -250,7 +250,7 @@ class ResumableUploadView(APIView):
             filename=final_path,
             aac=False,
         )
-        # TODO CREATE AAC CONVERSION TASK
+        create_aac.s(mp3.id).delay()
         return True
 
     @property

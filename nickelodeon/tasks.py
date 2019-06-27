@@ -20,6 +20,26 @@ from nickelodeon.utils import (
 
 logger = logging.getLogger(__name__)
 
+
+@shared_task()
+def create_aac(mp3_id=''):
+    song = None
+    try:
+        song = MP3Song.objects.get(id=mp3_id)
+    except MP3Song.DoesNotExist:
+        return
+    if not song.has_aac and song.has_mp3:
+        mp3_path = song.get_file_format_path('mp3')
+        aac_path = song.get_file_format_path('aac')
+        convert_audio(
+            mp3_path,
+            output_file_aac=aac_path,
+        )
+    if not song.aac:
+        song.aac = True
+        song.save()
+    return {'done': 'ok'}
+
 @shared_task()
 def fetch_youtube_video(video_id=''):
     def update_dl_progress(progress_stats):
