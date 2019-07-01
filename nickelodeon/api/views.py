@@ -240,6 +240,7 @@ class ResumableUploadView(APIView):
             'rphl', 'Assorted', 'by_date', now.strftime('%Y/%m')
         )
         storage = FileSystemStorage(location=dest)
+        filename = filename[filename.find('_') + 1:]
         final_filename = storage.save(filename, file)
         offset = 0 if settings.NICKELODEON_MUSIC_ROOT[-1] == '/' else 1
         final_path = os.path.join(
