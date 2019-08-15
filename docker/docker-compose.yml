@@ -5,6 +5,7 @@ services:
     container_name: ny01
     ports:
       - "8000:8000"
+      - "4443:4443"
     volumes:
       - ../:/app/
       - ../nginx:/etc/nginx/conf.d

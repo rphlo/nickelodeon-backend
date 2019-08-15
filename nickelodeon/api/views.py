@@ -16,7 +16,7 @@ from django.contrib.auth.signals import user_logged_in
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from rest_framework import parsers, generics, renderers, status
@@ -85,8 +85,16 @@ def serve_from_s3(request, path, filename='',
             'Key': path
         }
     )
-    return HttpResponseRedirect(url)
-
+    url = re.sub(r'^https://s3.wasabisys.com', '/wasabi', url)
+    response = HttpResponse('', status=status.HTTP_206_PARTIAL_CONTENT)
+    response['X-Accel-Redirect'] = urllib.parse.quote(url.encode('utf-8'))
+    response['X-Accel-Buffering'] = 'no'
+    response['Accept-Ranges'] = 'bytes'
+    response['Content-Type'] = mime
+    response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+        filename.replace('\\', '_').replace('"', '\\"')
+    ).encode('utf-8')
+    return response
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
