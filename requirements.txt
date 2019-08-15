@@ -7,3 +7,4 @@ celery[redis]
 django-rest-knox>=3.2.1,<4.0.0
 raven
 django-resumable
+boto3

@@ -1,3 +1,4 @@
+import boto3
 import datetime
 import os.path
 import re
@@ -10,13 +11,12 @@ from knox.models import AuthToken
 from knox.serializers import UserSerializer
 from random import randint
 
-
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
 from rest_framework import parsers, generics, renderers, status
@@ -69,6 +69,25 @@ def x_accel_redirect(request, path, filename='',
     return response
 
 
+def serve_from_s3(request, path, filename='',
+                  mime='application/force-download'):
+    s3 = boto3.client(
+        's3',
+        endpoint_url=settings.S3_ENDPOINT_URL,
+        aws_access_key_id=settings.S3_ACCESS_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY,
+    )
+    path = re.sub(r'^/internal/', '', path)
+    url = s3.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={
+            'Bucket': settings.S3_BUCKET,
+            'Key': path
+        }
+    )
+    return HttpResponseRedirect(url)
+
+
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def download_song(request, pk, extension=None):
@@ -80,7 +99,7 @@ def download_song(request, pk, extension=None):
     file_path = u'{}.{}'.format(file_path, extension)
     file_path = u'/internal/{}'.format(file_path)
     filename = song.title + '.' + extension
-    return x_accel_redirect(request, file_path, filename=filename, mime=mime)
+    return serve_from_s3(request, file_path, filename=filename, mime=mime)
 
 
 class RandomSongView(generics.RetrieveAPIView):
