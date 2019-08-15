@@ -10,7 +10,13 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 
-from nickelodeon.utils import clean_empty_folder, random_key
+from nickelodeon.utils import (
+    clean_empty_folder,
+    random_key,
+    s3_move_object,
+    s3_object_exists,
+    s3_object_delete,
+)
 
 
 class MP3Song(models.Model):
@@ -24,7 +30,7 @@ class MP3Song(models.Model):
     def has_extension(self, extension):
         file_path = self.get_file_format_path(extension) \
             .encode(sys.getfilesystemencoding())
-        return os.path.exists(file_path)
+        return s3_object_exists(file_path)
 
     @property
     def has_aac(self):
@@ -52,30 +58,24 @@ class MP3Song(models.Model):
     def available_formats(self):
         return {'mp3': self.has_mp3, 'aac': self.has_aac}
 
-    def get_file_format_path(self, extension='mp3', full=True):
+    def get_file_format_path(self, extension='mp3'):
         file_path = u"%s.%s" % (self.filename, extension)
-        if full:
-            file_path = os.path.join(settings.NICKELODEON_MUSIC_ROOT, file_path)
-        return os.path.abspath(file_path)
+        return os.path.normpath(file_path)
 
     def _move_file_ext_from(self, orig, ext):
-        src = orig.get_file_format_path(extension=ext, full=True)
-        dst = self.get_file_format_path(extension=ext, full=True)
-        dst_folder = os.path.dirname(dst)
-        if not os.path.isdir(dst_folder):
-            os.makedirs(dst_folder)
-        file_move_safe(src, dst)
-        clean_empty_folder(os.path.dirname(src))
+        src = orig.get_file_format_path(extension=ext)
+        dst = self.get_file_format_path(extension=ext)
+        s3_move_object(src, dst)
+
 
     def is_filename_available(self, filename):
         new_instance = MP3Song(filename=filename)
         for ext, available in self.available_formats.items():
             if available:
                 dst = new_instance.get_file_format_path(
-                    extension=ext,
-                    full=True
+                    extension=ext
                 )
-                if os.path.exists(dst):
+                if s3_object_exists(dst):
                     return False
         return True
 
@@ -88,5 +88,5 @@ class MP3Song(models.Model):
         for ext in ['mp3', 'aac']:
             file_path = self.get_file_format_path(ext) \
                 .encode(sys.getfilesystemencoding())
-            if os.path.exists(file_path):
-                os.remove(file_path)
+            if s3_object_exists(file_path):
+                s3_object_delete(file_path)

@@ -41,6 +41,7 @@ from nickelodeon.api.permissions import IsStaffOrReadOnly
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video, create_aac
+from nickelodeon.utils import get_s3_client
 
 
 MAX_SONGS_LISTED = 999
@@ -71,12 +72,7 @@ def x_accel_redirect(request, path, filename='',
 
 def serve_from_s3(request, path, filename='',
                   mime='application/force-download'):
-    s3 = boto3.client(
-        's3',
-        endpoint_url=settings.S3_ENDPOINT_URL,
-        aws_access_key_id=settings.S3_ACCESS_KEY,
-        aws_secret_access_key=settings.S3_SECRET_KEY,
-    )
+    s3 = get_s3_client()
     path = re.sub(r'^/internal/', '', path)
     url = s3.generate_presigned_url(
         ClientMethod='get_object',

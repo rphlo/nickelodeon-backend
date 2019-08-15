@@ -1,4 +1,6 @@
 import base64
+import boto3
+import botocore
 import io
 import os
 import random
@@ -6,11 +8,65 @@ import re
 import struct
 import subprocess
 
+from django.conf import settings
+
 
 AVAILABLE_FORMATS = {'mp3': 'libmp3lame', 'aac': 'libfdk-aac'}
 FFMPEG_DURATION_PREFIX = 'Duration: '
 FFMPEG_PROGRESS_PREFIX = 'time='
 VALID_TIME_STR_CHARS = '0123456789:.'
+
+
+def get_s3_client():
+    return boto3.client(
+        's3',
+        endpoint_url=settings.S3_ENDPOINT_URL,
+        aws_access_key_id=settings.S3_ACCESS_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY,
+    )
+
+def bytes_to_str(b):
+    if isinstance(b, str):
+        return b
+    return b.decode('utf-8')
+
+
+def get_s3_resource():
+    return boto3.resource(
+        's3',
+        endpoint_url=settings.S3_ENDPOINT_URL,
+        aws_access_key_id=settings.S3_ACCESS_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY,
+    )
+
+
+def s3_object_exists(key):
+    key = bytes_to_str(key)
+    s3 = get_s3_resource()
+    try:
+        s3.Bucket(settings.S3_BUCKET).Object(key).load()
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == "404":
+            return False
+        else:
+            # Something else has gone wrong.
+            raise
+    return True
+
+
+def s3_object_delete(key):
+    key = bytes_to_str(key)
+    s3 = get_s3_resource()
+    s3.Bucket(settings.S3_BUCKET).Object(key).delete()
+
+
+def s3_move_object(src, dest):
+    src = bytes_to_str(src)
+    dest = bytes_to_str(dest)
+    s3 = get_s3_resource()
+    s3.Bucket(settings.S3_BUCKET).Object(dest) \
+        .copy_from(CopySource=os.path.join(settings.S3_BUCKET, src))
+    s3.Bucket(settings.S3_BUCKET).Object(src).delete()
 
 
 def clean_empty_folder(folder):
