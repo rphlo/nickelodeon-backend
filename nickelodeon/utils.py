@@ -69,6 +69,22 @@ def s3_move_object(src, dest):
     s3.Bucket(settings.S3_BUCKET).Object(src).delete()
 
 
+def s3_upload(src, key):
+    s3 = get_s3_resource()
+    s3.meta.client.upload_file(src, settings.S3_BUCKET, key)
+
+
+def s3_object_url(key):
+    s3 = get_s3_client()
+    return s3.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={
+            'Bucket': settings.S3_BUCKET,
+            'Key': key
+        }
+    )
+
+
 def clean_empty_folder(folder):
     while not os.listdir(folder):
         os.rmdir(folder)

@@ -1,5 +1,6 @@
 import datetime
 import os
+import tempfile
 from subprocess import call
 
 import youtube_dl
@@ -15,7 +16,10 @@ from nickelodeon.models import MP3Song
 from nickelodeon.utils import (
     convert_audio,
     ffmpeg_has_lib,
-    AVAILABLE_FORMATS
+    AVAILABLE_FORMATS,
+    s3_upload,
+    s3_object_exists,
+    s3_object_url
 )
 
 logger = logging.getLogger(__name__)
@@ -31,10 +35,14 @@ def create_aac(mp3_id=''):
     if not song.has_aac and song.has_mp3:
         mp3_path = song.get_file_format_path('mp3')
         aac_path = song.get_file_format_path('aac')
+        mp3_url = s3_object_url(mp3_path)
+        with tempfile.NamedTemporaryFile() as aac_file:
+            aac_tmp_path = aac_file.name
         convert_audio(
-            mp3_path,
-            output_file_aac=aac_path,
+            mp3_url,
+            output_file_aac=aac_tmp_path,
         )
+        s3_upload(aac_tmp_path, aac_path)
     if not song.aac:
         song.aac = True
         song.save()
@@ -98,14 +106,15 @@ def fetch_youtube_video(video_id=''):
             'for Youtube video %s', video_id
         )
         raise Ignore()
-    download_path = os.path.join('/tmp', video_id + '.m4a')
+    with tempfile.NamedTemporaryFile() as download_file:
+        download_path = download_file.name
     tmp_paths = {}
     for ext, lib in AVAILABLE_FORMATS.items():
         if ext in extension_converted:
-            tmp_paths[ext] = os.path.join('/tmp', safe_title + '.' + ext)
+            with tempfile.NamedTemporaryFile() as tmp_file:
+                tmp_paths[ext] = tmp_file.name
     now = datetime.datetime.now()
     dst_folder = os.path.join(
-        settings.NICKELODEON_MUSIC_ROOT,
         'rphl', 'Assorted', 'by_date', now.strftime('%Y/%m')
     )
     #audio_stream.download(
@@ -115,10 +124,10 @@ def fetch_youtube_video(video_id=''):
     #)
     update_dl_progress(0)
     ydl_opts = {
-        'format': 'm4a',
+        'format': 'bestaudio',
         'quiet': True,
-        'outtmpl': '/tmp/%(id)s.m4a',
-        'ignoreerrors': True,
+        'outtmpl': download_path,
+        'ignoreerrors': False,
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download([video_id])
@@ -131,6 +140,7 @@ def fetch_youtube_video(video_id=''):
         tmp_paths.get('mp3'),
         callback=update_conversion_progress
     )
+
     os.remove(download_path)
     final_filename = move_files_to_destination(
         dst_folder,
@@ -138,11 +148,10 @@ def fetch_youtube_video(video_id=''):
         extension_converted,
         tmp_paths
     )
-    offset = 0 if settings.NICKELODEON_MUSIC_ROOT[-1] == '/' else 1
     song_filename = os.path.join(
         dst_folder,
         final_filename
-    )[len(settings.NICKELODEON_MUSIC_ROOT)+offset:]
+    )
     song, dummy_created = MP3Song.objects.get_or_create(
         filename=song_filename,
         aac=('aac' in extension_converted)
@@ -151,8 +160,6 @@ def fetch_youtube_video(video_id=''):
 
 
 def move_files_to_destination(dst_folder, safe_title, extensions, tmp_paths):
-    if not os.path.isdir(dst_folder):
-        os.makedirs(dst_folder)
     filename = safe_title
     attempt = 0
     while True:
@@ -163,7 +170,7 @@ def move_files_to_destination(dst_folder, safe_title, extensions, tmp_paths):
             else:
                 filename = '{} ({}).{}'.format(safe_title, attempt, ext)
             final_path = os.path.join(dst_folder, filename)
-            if ext in extensions and os.path.exists(final_path):
+            if ext in extensions and s3_object_exists(final_path):
                 file_exist = True
                 break
         if not file_exist:
@@ -176,5 +183,5 @@ def move_files_to_destination(dst_folder, safe_title, extensions, tmp_paths):
             else:
                 filename = '{} ({})'.format(safe_title, attempt)
             final_path = os.path.join(dst_folder, filename + '.' + ext)
-            file_move_safe(tmp_paths[ext], final_path)
+            s3_upload(tmp_paths[ext], final_path)
     return filename
