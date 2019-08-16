@@ -41,8 +41,8 @@ from nickelodeon.api.permissions import IsStaffOrReadOnly
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video, create_aac
-from nickelodeon.utils import get_s3_client
-
+from nickelodeon.utils import s3_object_url
+from nickelodeon.tasks import move_files_to_destination
 
 MAX_SONGS_LISTED = 999
 
@@ -72,15 +72,8 @@ def x_accel_redirect(request, path, filename='',
 
 def serve_from_s3(request, path, filename='',
                   mime='application/force-download'):
-    s3 = get_s3_client()
     path = re.sub(r'^/internal/', '', path)
-    url = s3.generate_presigned_url(
-        ClientMethod='get_object',
-        Params={
-            'Bucket': settings.S3_BUCKET,
-            'Key': path
-        }
-    )
+    url = s3_object_url(path)
     url = re.sub(r'^https://s3.wasabisys.com', '/wasabi', url)
     response = HttpResponse('', status=status.HTTP_206_PARTIAL_CONTENT)
     response['X-Accel-Redirect'] = urllib.parse.quote(url.encode('utf-8'))
@@ -257,19 +250,23 @@ class ResumableUploadView(APIView):
         """
         Process the complete file.
         """
+        if not self.storage.exists(file.filename):
+           self.storage.save(file.filename, file)
         now = datetime.datetime.now()
         dest = os.path.join(
-            settings.NICKELODEON_MUSIC_ROOT,
             'rphl', 'Assorted', 'by_date', now.strftime('%Y/%m')
         )
-        storage = FileSystemStorage(location=dest)
         filename = filename[filename.find('_') + 1:]
-        final_filename = storage.save(filename, file)
-        offset = 0 if settings.NICKELODEON_MUSIC_ROOT[-1] == '/' else 1
+        final_filename = move_files_to_destination(
+            dest,
+            filename[:-4],
+            ['mp3'],
+            {'mp3': os.path.abspath(os.path.join(self.chunks_dir, file.filename))}
+        )
         final_path = os.path.join(
             dest,
-            final_filename[:-4]
-        )[len(settings.NICKELODEON_MUSIC_ROOT)+offset:]
+            final_filename
+        )
         mp3 = MP3Song.objects.create(
             filename=final_path,
             aac=False,
