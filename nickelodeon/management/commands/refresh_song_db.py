@@ -5,20 +5,17 @@ import re
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.contrib.auth.models import User
 
 from nickelodeon.models import MP3Song
-
-try:
-    from scandir import walk
-except ImportError:
-    from os import walk
+from nickelodeon.utils import get_s3_client, s3_object_exists
 
 
 MP3_FILE_EXT_RE = re.compile(r'(.+)\.mp3$', re.IGNORECASE)
 
 
 class Command(BaseCommand):
-    args = '[folder]'
+    args = '[folders]'
     help = 'Scan the media folder and update the database of music files'
 
     songs_to_find = set()
@@ -26,40 +23,59 @@ class Command(BaseCommand):
     songs_to_add = set()
     t0 = t1 = last_flush = songs_count = 0
     encoding = 'UTF-8'
-    folder_root = None
+    root = None
+    owner = None
 
-    def parse_args(self, args, options):
-        self.encoding = sys.getfilesystemencoding()
-        self.folder_root = settings.NICKELODEON_MUSIC_ROOT
-        if not os.path.exists(self.folder_root):
-            raise CommandError(
-                u'Specified folder "{}" does not exist'.format(
-                    self.folder_root
-                )
-            )
+    def add_arguments(self, parser):
+        parser.add_argument('folders', nargs='+', type=str)
 
-    def handle(self, *args, **options):
-        self.parse_args(args, options)
+    def handle_folder(self, root):
+        self.root = root + '/'
         self.t0 = self.last_flush = time.time()
         self.songs_count = 0
         self.songs_to_add = []
         self.stdout.write(
             u'Scanning directory {} for music'.format(
-                self.folder_root
+                self.root
             )
         )
         self.t1 = self.last_flush = time.time()
         for filename in self.scan_directory():
             self.process_music_file(filename)
+        self.t1 = self.last_flush = time.time()
         self.print_scan_status(True)
+        current_song_qs = MP3Song.objects.all()
+        prefix = self.root
+        owner_username = self.root[:self.root.find('/')]
+        self.owner = User.objects.get(username=owner_username)
+        current_song_qs = current_song_qs.filter(
+            owner=self.owner
+        )
+        prefix = prefix[len(owner_username)+1:]
+        if prefix:
+            current_song_qs = current_song_qs.filter(
+                filename__startswith=prefix
+            )
+        current_songs = set(
+            current_song_qs.values_list('filename', 'owner__username')
+        )
+        current_songs = set([
+            s[1] + '/' + s[0] for s in current_songs
+        ])
         self.songs_to_add = set(self.songs_to_add)
-        current_songs = set(MP3Song.objects.all().values_list('filename',
-                                                              flat=True))
         self.songs_to_remove = [song for song in current_songs
                                 if song not in self.songs_to_add]
         self.songs_to_add = [song for song in self.songs_to_add
                              if song not in current_songs]
         self.finalize()
+        
+    def handle(self, *args, **options):
+        folders = options['folders']
+        if not folders:
+            folders = ['']
+        for folder in folders:
+            self.handle_folder(folder)
+        
 
     def finalize(self):
         nb_songs_to_add = len(self.songs_to_add)
@@ -81,24 +97,29 @@ class Command(BaseCommand):
         )
 
     def scan_directory(self):
-        for root, dirs, files in walk(self.folder_root):
-            for filename in files:
-                media_path = os.path.join(
-                    root[len(self.folder_root):],
-                    filename
-                )
-                yield media_path
+        s3 = get_s3_client()
+        kwargs = {'Bucket': settings.S3_BUCKET, 'Prefix': self.root}
+        while True:
+            resp = s3.list_objects_v2(**kwargs)
+            for obj in resp['Contents']:
+                key = obj['Key']
+                if key.endswith('.mp3'):
+                    yield key
+            try:
+                kwargs['ContinuationToken'] = resp['NextContinuationToken']
+            except KeyError:
+                break
 
     def process_music_file(self, media_path):
         if not MP3_FILE_EXT_RE.search(media_path):
             return
         if len(media_path) > 255:
-            self.stderr.write(u'Media path too long, '
-                              u'255 characters maximum. %s' % media_path)
+            self.stderr.write(
+                u'Media path too long, '
+                u'255 characters maximum. %s' % media_path
+            )
             return
         new_song = media_path[:-4]
-        if new_song.startswith('/'):
-            new_song = new_song[1:]
         self.songs_to_add.append(new_song)
         self.songs_count += 1
         self.print_scan_status()
@@ -116,16 +137,21 @@ class Command(BaseCommand):
             self.stdout.flush()
 
     def has_aac(self, filename):
-        return os.path.exists(os.path.join(self.folder_root, filename+'.aac'))
+        key = os.path.join(self.root, filename + '.aac')
+        return s3_object_exists(key)
 
     def bulk_create(self):
         bulk = []
         for song_file in self.songs_to_add:
             bulk.append(MP3Song(
-                filename=song_file,
-                aac=self.has_aac(song_file)
+                filename=song_file[len(self.owner.username)+1:],
+                aac=self.has_aac(song_file),
+                owner=self.owner
             ))
         MP3Song.objects.bulk_create(bulk)
 
     def bulk_remove(self):
-        MP3Song.objects.filter(filename__in=self.songs_to_remove).delete()
+        files = []
+        for song_file in self.songs_to_remove:
+            files = song_file[len(self.owner.username)+1:]
+        MP3Song.objects.filter(owner=self.owner, filename__in=set(files)).delete()
