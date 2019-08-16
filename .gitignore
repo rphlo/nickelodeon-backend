@@ -11,9 +11,11 @@ MANIFEST
 *.save
 *.save.*
 *.idea
+*.vscode
 env/
 htmlcov/
 docs/_build/
 nickelodeon/site/local_settings.py
 static/
 media/
+tmp/

@@ -1,15 +1,12 @@
-import boto3
 import datetime
 import os.path
 import re
 import urllib
+from random import randint
 
-from django.contrib.auth.decorators import login_required
-from django.views.generic import View
 from knox.auth import TokenAuthentication
 from knox.models import AuthToken
 from knox.serializers import UserSerializer
-from random import randint
 
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
@@ -29,15 +26,14 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from celery.result import AsyncResult
 from celery.task.control import inspect
-from rest_framework.views import APIView
 
 from resumable.files import ResumableFile
 
 from nickelodeon.api.forms import ResumableMp3UploadForm
-from nickelodeon.api.permissions import IsStaffOrReadOnly
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video, create_aac
@@ -94,7 +90,10 @@ def download_song(request, pk, extension=None):
     file_path = song.filename
     mime = 'audio/mpeg' if extension == 'mp3' else 'audio/x-m4a'
     file_path = u'{}.{}'.format(file_path, extension)
-    file_path = u'/internal/{}'.format(file_path)
+    file_path = u'/internal/{}/{}'.format(
+        song.owner.username,
+        file_path
+    )
     filename = song.title + '.' + extension
     return serve_from_s3(request, file_path, filename=filename, mime=mime)
 
@@ -103,6 +102,9 @@ class RandomSongView(generics.RetrieveAPIView):
     serializer_class = MP3SongSerializer
     queryset = MP3Song.objects.all()
     permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
 
     def get_object(self):
         count = self.get_queryset().count()
@@ -115,7 +117,10 @@ class RandomSongView(generics.RetrieveAPIView):
 class SongView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MP3SongSerializer
     queryset = MP3Song.objects.all()
-    permission_classes = (IsStaffOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
 
     def perform_destroy(self, instance):
         instance.remove_file()
@@ -134,6 +139,7 @@ class TextSearchApiView(generics.ListAPIView):
 
     def get_queryset(self):
         qs = super(TextSearchApiView, self).get_queryset()
+        qs = qs.filter(owner=self.request.user)
         search_text = self.request.query_params.get('q', '').strip()
         if search_text:
             search_terms = search_text.split(' ')
@@ -160,19 +166,19 @@ def tasks_list(request):
 
 
 @api_view(['GET'])
-@permission_classes((IsAdminUser, ))
+@permission_classes((IsAuthenticated, ))
 def task_status(request, task_id):
     res = AsyncResult(task_id)
     return Response(res.info)
 
 
 @api_view(['POST'])
-@permission_classes((IsAdminUser, ))
+@permission_classes((IsAuthenticated, ))
 def youtube_grab(request):
     video_id = request.data.get('v', '')
     if not re.match(r'[a-zA-Z0-9_-]{11}', video_id):
         raise ValidationError('Invalid v parameter %s' % video_id)
-    task = fetch_youtube_video.s(video_id).delay()
+    task = fetch_youtube_video.s(request.user.id, video_id).delay()
     return Response({'task_id': str(task.task_id)})
 
 
@@ -206,12 +212,12 @@ class LoginView(GenericAPIView):
                 context=self.get_serializer_context()
             ).data,
             'token': token,
-            'is_staff': user.is_staff
+            'is_staff': True
         })
 
 
 class ResumableUploadView(APIView):
-    permission_classes = (IsStaffOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         """
@@ -224,8 +230,8 @@ class ResumableUploadView(APIView):
                 'upload.html',
                 {'form': ResumableMp3UploadForm()}
             )
-        r = ResumableFile(self.storage, request.GET)
-        if not (r.chunk_exists or r.is_complete):
+        rf = ResumableFile(self.storage, request.GET)
+        if not (rf.chunk_exists or rf.is_complete):
             return HttpResponse('chunk not found', status=404)
         return HttpResponse('chunk already exists')
 
@@ -234,42 +240,46 @@ class ResumableUploadView(APIView):
         Saves chunks then checks if the file is complete.
         """
         chunk = request.FILES.get('file')
-        r = ResumableFile(self.storage, request.POST)
-        k = request.POST.get('resumableFilename')
-        if r.filename[-4:] != '.mp3':
-            raise HttpResponse('Only MP3 files are allowed', status=400)
-        if r.chunk_exists:
+        rf = ResumableFile(self.storage, request.POST)
+        if rf.filename[-4:] != '.mp3':
+            return HttpResponse('Only MP3 files are allowed', status=400)
+        if rf.chunk_exists:
             return HttpResponse('chunk already exists')
-        r.process_chunk(chunk)
-        if r.is_complete:
-            self.process_file(r.filename, r)
-            r.delete_chunks()
+        rf.process_chunk(chunk)
+        if rf.is_complete:
+            self.process_file(request.user, rf.filename, rf)
+            rf.delete_chunks()
         return HttpResponse()
 
-    def process_file(self, filename, file):
+    def process_file(self, user, filename, rfile):
         """
         Process the complete file.
         """
-        if not self.storage.exists(file.filename):
-           self.storage.save(file.filename, file)
+        username = user.username
+        if not self.storage.exists(rfile.filename):
+            self.storage.save(rfile.filename, rfile)
         now = datetime.datetime.now()
         dest = os.path.join(
-            'rphl', 'Assorted', 'by_date', now.strftime('%Y/%m')
+            username, 'Assorted', 'by_date', now.strftime('%Y/%m')
         )
         filename = filename[filename.find('_') + 1:]
+        mp3_path = os.path.abspath(
+            os.path.join(self.chunks_dir, rfile.filename)
+        )
         final_filename = move_files_to_destination(
             dest,
             filename[:-4],
             ['mp3'],
-            {'mp3': os.path.abspath(os.path.join(self.chunks_dir, file.filename))}
+            {'mp3': mp3_path}
         )
         final_path = os.path.join(
             dest,
             final_filename
         )
         mp3 = MP3Song.objects.create(
-            filename=final_path,
+            filename=final_path[len(username)+1:],
             aac=False,
+            owner=user
         )
         create_aac.s(mp3.id).delay()
         return True

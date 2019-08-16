@@ -11,7 +11,7 @@ from celery.exceptions import Ignore
 
 from django.conf import settings
 from django.core.files.move import file_move_safe
-
+from django.contrib.auth.models import User
 from nickelodeon.models import MP3Song
 from nickelodeon.utils import (
     convert_audio,
@@ -49,7 +49,17 @@ def create_aac(mp3_id=''):
     return {'done': 'ok'}
 
 @shared_task()
-def fetch_youtube_video(video_id=''):
+def fetch_youtube_video(user_id='', video_id=''):
+    try:
+        user = User.objects.get(id=user_id)
+        username = user.username
+    except User.DoesNotExist:
+        current_task.update_state(
+            state='FAILED',
+            meta={'error': 'User does not exists'}
+        )
+        logger.error('User does not exists')
+        raise Ignore()
     def update_dl_progress(progress_stats):
         current_task.update_state(state='PROGRESS',
                                   meta={'description': 'downloading',
@@ -115,7 +125,7 @@ def fetch_youtube_video(video_id=''):
                 tmp_paths[ext] = tmp_file.name
     now = datetime.datetime.now()
     dst_folder = os.path.join(
-        'rphl', 'Assorted', 'by_date', now.strftime('%Y/%m')
+        username, 'Assorted', 'by_date', now.strftime('%Y/%m')
     )
     #audio_stream.download(
     #    download_path,
@@ -153,8 +163,9 @@ def fetch_youtube_video(video_id=''):
         final_filename
     )
     song, dummy_created = MP3Song.objects.get_or_create(
-        filename=song_filename,
-        aac=('aac' in extension_converted)
+        filename=song_filename[len(username)+1:],
+        aac=('aac' in extension_converted),
+        owner=user
     )
     return {'pk': song.pk, 'youtube_id': video_id}
 

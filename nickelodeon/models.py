@@ -26,7 +26,10 @@ class MP3Song(models.Model):
                                 unique=True,
                                 db_index=True)
     aac = models.BooleanField(default=False)
-
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
     def has_extension(self, extension):
         file_path = self.get_file_format_path(extension) \
             .encode(sys.getfilesystemencoding())
@@ -59,7 +62,11 @@ class MP3Song(models.Model):
         return {'mp3': self.has_mp3, 'aac': self.has_aac}
 
     def get_file_format_path(self, extension='mp3'):
-        file_path = u"%s.%s" % (self.filename, extension)
+        file_path = u"{}/{}.{}".format(
+            self.owner.username,
+            self.filename,
+            extension
+        )
         return os.path.normpath(file_path)
 
     def _move_file_ext_from(self, orig, ext):
