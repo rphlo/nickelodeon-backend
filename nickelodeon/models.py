@@ -30,6 +30,7 @@ class MP3Song(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
+
     def has_extension(self, extension):
         file_path = self.get_file_format_path(extension) \
             .encode(sys.getfilesystemencoding())
