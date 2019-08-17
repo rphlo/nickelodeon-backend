@@ -7,14 +7,25 @@ import random
 import re
 import struct
 import subprocess
+from PIL import Image
 
 from django.conf import settings
+
+import retricon
 
 
 AVAILABLE_FORMATS = {'mp3': 'libmp3lame', 'aac': 'libfdk-aac'}
 FFMPEG_DURATION_PREFIX = 'Duration: '
 FFMPEG_PROGRESS_PREFIX = 'time='
 VALID_TIME_STR_CHARS = '0123456789:.'
+
+
+def print_vinyl(val):
+    pic = retricon.retricon(val, image_padding=3, width=500, bg_color='eef0ee')
+    white_vinyl = Image.open('nickelodeon/img/vinyl_blank.jpg')
+    mask = Image.open('nickelodeon/img/vinyl_mask.png')
+    vinyl_out = Image.composite(white_vinyl, pic, mask)
+    return vinyl_out
 
 
 def get_s3_client():

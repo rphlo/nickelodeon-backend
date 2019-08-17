@@ -16,7 +16,7 @@ RUN set -ex \
             linux-headers \
             pcre-dev \
             build-base python-dev py-pip \
-            libffi-dev openssl-dev python3-dev \
+            libffi-dev openssl-dev python3-dev jpeg-dev zlib-dev \
     && pyvenv /venv \
     && /venv/bin/pip install -U pip \
     && LIBRARY_PATH=/lib:/usr/lib /bin/sh -c "/venv/bin/pip install --no-cache-dir -r /requirements.txt" \

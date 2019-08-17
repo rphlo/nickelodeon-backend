@@ -37,7 +37,7 @@ from nickelodeon.api.forms import ResumableMp3UploadForm
 from nickelodeon.api.serializers import MP3SongSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video, create_aac
-from nickelodeon.utils import s3_object_url
+from nickelodeon.utils import s3_object_url, print_vinyl
 from nickelodeon.tasks import move_files_to_destination
 
 MAX_SONGS_LISTED = 999
@@ -96,6 +96,20 @@ def download_song(request, pk, extension=None):
     )
     filename = song.title + '.' + extension
     return serve_from_s3(request, file_path, filename=filename, mime=mime)
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def download_cover(request, pk):
+    song = get_object_or_404(MP3Song, pk=pk)
+    file_path = u'{}/{}'.format(
+        song.owner.username,
+        song.filename
+    )
+    image = print_vinyl(file_path)
+    response = HttpResponse(content_type="image/jpg")
+    image.save(response, "png")
+    return response
 
 
 class RandomSongView(generics.RetrieveAPIView):
