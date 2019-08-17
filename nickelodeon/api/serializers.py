@@ -1,4 +1,7 @@
 import re
+
+from django.contrib.auth.models import User
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -32,11 +35,14 @@ class MP3SongSerializer(serializers.ModelSerializer):
     aac = serializers.ReadOnlyField()
 
     def update(self, instance, validated_data):
-        if not instance.is_filename_available(validated_data['filename']):
+        if not instance.is_filename_available(validated_data['filename'], instance.owner):
             raise ValidationError('Filename already used')
-        original_instance = MP3Song(filename=instance.filename)
-        saved_instance = super(MP3SongSerializer, self).update(instance,
-                                                               validated_data)
+        original_instance = MP3Song(
+            filename=instance.filename,
+            owner=instance.owner
+        )
+        saved_instance = super(MP3SongSerializer, self) \
+            .update(instance, validated_data)
         if validated_data['filename'] != original_instance.filename:
             saved_instance.move_file_from(original_instance)
         return saved_instance

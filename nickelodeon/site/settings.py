@@ -126,6 +126,11 @@ FILE_UPLOAD_TEMP_DIR = os.path.join(BASE_DIR, '..', 'tmp')
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+S3_ENDPOINT_URL = 'http://minio:9000'
+S3_BUCKET = 'humppa-music'
+S3_ACCESS_KEY = 'minio'
+S3_SECRET_KEY = 'minio123'
+
 try:
     from .local_settings import *
 except ImportError:

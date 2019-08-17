@@ -75,9 +75,8 @@ class MP3Song(models.Model):
         dst = self.get_file_format_path(extension=ext)
         s3_move_object(src, dst)
 
-
-    def is_filename_available(self, filename):
-        new_instance = MP3Song(filename=filename)
+    def is_filename_available(self, filename, owner):
+        new_instance = MP3Song(filename=filename, owner=owner)
         for ext, available in self.available_formats.items():
             if available:
                 dst = new_instance.get_file_format_path(

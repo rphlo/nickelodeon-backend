@@ -1,5 +1,15 @@
 version: '2'  
 services:
+  minio:
+    image: minio/minio:latest
+    volumes:
+      - ../media:/data
+    expose:
+      - "9000"
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /data
   nginx:
     image: nginx:latest
     container_name: ny01
@@ -11,6 +21,8 @@ services:
       - ../nginx:/etc/nginx/conf.d
     depends_on:
       - web
+    links:
+      - minio
   web:
     stop_signal: SIGINT
     build:
@@ -24,6 +36,7 @@ services:
     user: ${USERID}:${GROUPID}
     links:
       - redis
+      - minio
   redis:
     image: redis:latest
     container_name: ry01

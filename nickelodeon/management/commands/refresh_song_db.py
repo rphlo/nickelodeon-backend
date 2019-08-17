@@ -28,7 +28,7 @@ class Command(BaseCommand):
     owner = None
 
     def add_arguments(self, parser):
-        parser.add_argument('folders', nargs='+', type=str)
+        parser.add_argument('folders', nargs='*', type=str)
 
     def handle_folder(self, root):
         self.root = root + '/'
@@ -73,7 +73,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         folders = options['folders']
         if not folders:
-            folders = ['']
+            folders = User.objects.all() \
+                .values_list('username', flat=True)
         for folder in folders:
             self.handle_folder(folder)
         
@@ -101,7 +102,7 @@ class Command(BaseCommand):
         kwargs = {'Bucket': settings.S3_BUCKET, 'Prefix': self.root}
         while True:
             resp = s3.list_objects_v2(**kwargs)
-            for obj in resp['Contents']:
+            for obj in resp.get('Contents', []):
                 key = obj['Key']
                 if key.endswith('.mp3'):
                     yield key
