@@ -14,9 +14,11 @@ RUN set -ex \
             libc-dev \
             musl-dev \
             linux-headers \
+            postgresql-dev \
             pcre-dev \
             build-base python-dev py-pip \
-            libffi-dev openssl-dev python3-dev jpeg-dev zlib-dev \
+            libffi-dev \
+            jpeg-dev zlib-dev \
     && pyvenv /venv \
     && /venv/bin/pip install -U pip \
     && LIBRARY_PATH=/lib:/usr/lib /bin/sh -c "/venv/bin/pip install --no-cache-dir -r /requirements.txt" \
@@ -29,6 +31,7 @@ RUN set -ex \
     )" \
     && apk add --virtual .python-rundeps $runDeps \
     && apk del .build-deps \
+    && apk add --no-cache --virtual .psql postgresql-client \
     && apk add libmagic ffmpeg sqlite-libs
 
 # Copy your application code to the container (make sure you create a .dockerignore file if any large files or directories should be excluded)

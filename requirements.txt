@@ -9,3 +9,5 @@ raven
 django-resumable
 boto3
 retricon
+uwsgi
+psycopg2-binary
