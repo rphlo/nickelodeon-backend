@@ -21,6 +21,7 @@ class Command(BaseCommand):
     songs_to_find = set()
     songs_to_remove = set()
     songs_to_add = set()
+    aac_list = []
     t0 = t1 = last_flush = songs_count = 0
     encoding = 'UTF-8'
     root = None
@@ -76,7 +77,6 @@ class Command(BaseCommand):
         for folder in folders:
             self.handle_folder(folder)
         
-
     def finalize(self):
         nb_songs_to_add = len(self.songs_to_add)
         nb_songs_to_remove = len(self.songs_to_remove)
@@ -105,6 +105,8 @@ class Command(BaseCommand):
                 key = obj['Key']
                 if key.endswith('.mp3'):
                     yield key
+                if key.endswith('.aac'):
+                    self.aac_list.append(key[:-4])
             try:
                 kwargs['ContinuationToken'] = resp['NextContinuationToken']
             except KeyError:
@@ -137,11 +139,11 @@ class Command(BaseCommand):
             self.stdout.flush()
 
     def has_aac(self, filename):
-        key = os.path.join(self.root, filename + '.aac')
-        return s3_object_exists(key)
+        return filename in self.aac_list
 
     def bulk_create(self):
         bulk = []
+        self.aac_list = set(self.aac_list)
         for song_file in self.songs_to_add:
             bulk.append(MP3Song(
                 filename=song_file[len(self.owner.username)+1:],
@@ -152,6 +154,10 @@ class Command(BaseCommand):
 
     def bulk_remove(self):
         files = []
+        username_len = len(self.owner.username)+1
         for song_file in self.songs_to_remove:
-            files = song_file[len(self.owner.username)+1:]
-        MP3Song.objects.filter(owner=self.owner, filename__in=set(files)).delete()
+            files.append(song_file[username_len:])
+        MP3Song.objects.filter(
+            owner_id=self.owner.id,
+            filename__in=set(files)
+        ).delete()
