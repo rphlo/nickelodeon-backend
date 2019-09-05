@@ -40,6 +40,7 @@ from nickelodeon.tasks import fetch_youtube_video, create_aac
 from nickelodeon.utils import s3_object_url, print_vinyl
 from nickelodeon.tasks import move_files_to_destination
 
+
 MAX_SONGS_LISTED = 999
 
 
@@ -87,6 +88,8 @@ def download_song(request, pk, extension=None):
     if extension is None:
         extension = 'mp3'
     song = get_object_or_404(MP3Song, pk=pk)
+    if song.owner != request.user:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     file_path = song.filename
     mime = 'audio/mpeg' if extension == 'mp3' else 'audio/x-m4a'
     file_path = u'{}.{}'.format(file_path, extension)
@@ -102,13 +105,15 @@ def download_song(request, pk, extension=None):
 @permission_classes((IsAuthenticated, ))
 def download_cover(request, pk):
     song = get_object_or_404(MP3Song, pk=pk)
+    if song.owner != request.user:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     file_path = u'{}/{}'.format(
         song.owner.username,
         song.filename
     )
     image = print_vinyl(file_path)
     response = HttpResponse(content_type="image/jpg")
-    image.save(response, "png")
+    image.save(response, 'png')
     return response
 
 
