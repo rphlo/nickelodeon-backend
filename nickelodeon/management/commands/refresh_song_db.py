@@ -35,6 +35,7 @@ class Command(BaseCommand):
         self.t0 = self.last_flush = time.time()
         self.songs_count = 0
         self.songs_to_add = []
+        self.acc_list = []
         self.stdout.write(
             u'Scanning directory {} for music'.format(
                 self.root
@@ -69,7 +70,7 @@ class Command(BaseCommand):
         self.songs_to_add = [song for song in self.songs_to_add
                              if song not in current_songs]
         self.finalize()
-        
+
     def handle(self, *args, **options):
         folders = options['folders']
         if not folders:
@@ -77,7 +78,7 @@ class Command(BaseCommand):
                 .values_list('username', flat=True)
         for folder in folders:
             self.handle_folder(folder)
-        
+
     def finalize(self):
         nb_songs_to_add = len(self.songs_to_add)
         nb_songs_to_remove = len(self.songs_to_remove)
@@ -140,11 +141,11 @@ class Command(BaseCommand):
             self.stdout.flush()
 
     def has_aac(self, filename):
-        return filename in self.aac_list
+        return filename in self.aac_set
 
     def bulk_create(self):
         bulk = []
-        self.aac_list = set(self.aac_list)
+        self.acc_set = set(self.aac_list)
         for song_file in self.songs_to_add:
             bulk.append(MP3Song(
                 filename=song_file[len(self.owner.username)+1:],
