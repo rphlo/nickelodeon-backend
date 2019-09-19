@@ -21,6 +21,7 @@ class Command(BaseCommand):
     songs_to_find = set()
     songs_to_remove = set()
     songs_to_add = set()
+    aac_set = set()
     aac_list = []
     t0 = t1 = last_flush = songs_count = 0
     encoding = 'UTF-8'
@@ -35,7 +36,6 @@ class Command(BaseCommand):
         self.t0 = self.last_flush = time.time()
         self.songs_count = 0
         self.songs_to_add = []
-        self.acc_list = []
         self.stdout.write(
             u'Scanning directory {} for music'.format(
                 self.root
@@ -145,7 +145,7 @@ class Command(BaseCommand):
 
     def bulk_create(self):
         bulk = []
-        self.acc_set = set(self.aac_list)
+        self.aac_set = set(self.aac_list)
         for song_file in self.songs_to_add:
             bulk.append(MP3Song(
                 filename=song_file[len(self.owner.username)+1:],
