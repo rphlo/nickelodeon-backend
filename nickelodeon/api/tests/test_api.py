@@ -89,6 +89,39 @@ class ApiTestCase(APITestCase):
             ['Unable to log in with provided credentials.']
         )
 
+    def test_password_change(self):
+        view_url = reverse('account_change_password')
+        self.client.login(username=self.username, password=self.password)
+        res = self.client.put(
+            view_url,
+            data={
+                'old_password': self.password,
+                'new_password': "abc_123",
+                'confirm_password': "abc_12",
+            }
+        )
+        self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
+        res = self.client.put(
+            view_url,
+            data={
+                'old_password': "wrong password",
+                'new_password': "abc_123",
+                'confirm_password': "abc_123",
+            }
+        )
+        self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
+        res = self.client.put(
+            view_url,
+            data={
+                'old_password': self.password,
+                'new_password': "abc_123",
+                'confirm_password': "abc_123",
+            }
+        )
+        self.assertEquals(res.status_code, status.HTTP_200_OK)
+        self.client.logout()
+        self.user.set_password(self.password)
+
     def test_api(self):
         login_url = reverse('knox_login')
         res = self.client.post(

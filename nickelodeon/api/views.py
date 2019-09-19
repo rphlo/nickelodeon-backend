@@ -9,6 +9,7 @@ from knox.models import AuthToken
 from knox.serializers import UserSerializer
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.auth.signals import user_logged_in
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
@@ -34,7 +35,7 @@ from celery.task.control import inspect
 from resumable.files import ResumableFile
 
 from nickelodeon.api.forms import ResumableMp3UploadForm
-from nickelodeon.api.serializers import MP3SongSerializer
+from nickelodeon.api.serializers import MP3SongSerializer, ChangePasswordSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video, create_aac
 from nickelodeon.utils import s3_object_url, print_vinyl
@@ -131,6 +132,22 @@ class RandomSongView(generics.RetrieveAPIView):
             raise NotFound
         random_index = randint(0, count - 1)
         return self.get_queryset()[random_index]
+
+
+class PasswordChangeView(APIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            prev_pwd = serializer.validated_data.get('old_password', '')
+            if not prev_pwd or not request.user.check_password(prev_pwd):
+                raise ValidationError('Password incorrect'+prev_pwd)
+            new_password = serializer.create(serializer.validated_data)
+            request.user.set_password(new_password)
+            return Response('Password changed')
+        return Response('Password change failed', status=400)
 
 
 class SongView(generics.RetrieveUpdateDestroyAPIView):

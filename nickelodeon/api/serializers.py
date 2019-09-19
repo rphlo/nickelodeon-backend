@@ -50,3 +50,39 @@ class MP3SongSerializer(serializers.ModelSerializer):
     class Meta:
         model = MP3Song
         fields = ('id', 'url', 'filename', 'download_url', 'aac')
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(
+        style={
+            'input_type': 'password',
+            'placeholder': 'Old Password'
+        }
+    )
+    new_password = serializers.CharField(
+        style={
+            'input_type': 'password',
+            'placeholder': 'New Password'
+        }
+    )
+    confirm_password = serializers.CharField(
+        style={
+            'input_type': 'password',
+            'placeholder': 'Confirm New Password'
+        }
+    )
+
+    def validate_new_password(self, value):
+        # TODO: Check password strength
+        return value
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError(
+                'Confirmation of new password did not match'
+            )
+        return data
+
+    def create(self, validated_data):
+        return validated_data.get('new_password')
+
