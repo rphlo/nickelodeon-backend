@@ -120,7 +120,10 @@ class ApiTestCase(APITestCase):
         )
         self.assertEquals(res.status_code, status.HTTP_200_OK)
         self.client.logout()
+        self.assertTrue(self.client.login(username=self.username, password='abc_123'))
+        self.client.logout()
         self.user.set_password(self.password)
+        self.user.save()
 
     def test_api(self):
         login_url = reverse('knox_login')
