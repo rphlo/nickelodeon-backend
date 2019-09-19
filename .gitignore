@@ -19,3 +19,6 @@ nickelodeon/site/local_settings.py
 static/
 media/
 tmp/
+bin/
+log/
+logs/
