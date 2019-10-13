@@ -17,7 +17,6 @@ class Command(BaseCommand):
                 self.handle_song(song)
             except KeyboardInterrupt:
                 aac_path = song.get_file_format_path('aac')
-                os.remove(aac_path)
                 break
 
     def handle_song(self, song):

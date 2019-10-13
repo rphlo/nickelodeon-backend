@@ -31,6 +31,7 @@ class MP3SongSerializer(serializers.ModelSerializer):
         required=False,
         validators=[validate_filename]
     )
+    owner = serializers.ReadOnlyField(source='owner__username')
     id = serializers.ReadOnlyField()
     aac = serializers.ReadOnlyField()
 
@@ -49,7 +50,7 @@ class MP3SongSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MP3Song
-        fields = ('id', 'url', 'filename', 'download_url', 'aac')
+        fields = ('id', 'url', 'filename', 'download_url', 'aac', 'owner')
 
 
 class ChangePasswordSerializer(serializers.Serializer):

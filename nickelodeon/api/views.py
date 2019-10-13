@@ -19,13 +19,15 @@ from django.shortcuts import get_object_or_404, render
 
 from rest_framework import parsers, generics, renderers, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
+
 from rest_framework.decorators import (
     api_view,
     permission_classes,
 )
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, SAFE_METHODS
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -89,8 +91,8 @@ def download_song(request, pk, extension=None):
     if extension is None:
         extension = 'mp3'
     song = get_object_or_404(MP3Song, pk=pk)
-    if song.owner != request.user:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+    #if song.owner != request.user:
+    #    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     file_path = song.filename
     mime = 'audio/mpeg' if extension == 'mp3' else 'audio/x-m4a'
     file_path = u'{}.{}'.format(file_path, extension)
@@ -106,14 +108,14 @@ def download_song(request, pk, extension=None):
 @permission_classes((IsAuthenticated, ))
 def download_cover(request, pk):
     song = get_object_or_404(MP3Song, pk=pk)
-    if song.owner != request.user:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+    #if song.owner != request.user:
+    #    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     file_path = u'{}/{}'.format(
         song.owner.username,
         song.filename
     )
     image = print_vinyl(file_path)
-    response = HttpResponse(content_type="image/jpg")
+    response = HttpResponse(content_type="image/jpeg")
     image.save(response, 'png')
     return response
 
@@ -123,8 +125,8 @@ class RandomSongView(generics.RetrieveAPIView):
     queryset = MP3Song.objects.all()
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        return super().get_queryset().filter(owner=self.request.user)
+    #def get_queryset(self):
+    #    return super().get_queryset().filter(owner=self.request.user)
 
     def get_object(self):
         count = self.get_queryset().count()
@@ -157,7 +159,9 @@ class SongView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return super().get_queryset().filter(owner=self.request.user)
+        if self.request.method not in SAFE_METHODS:
+            return super().get_queryset().filter(owner=self.request.user)
+        return super().get_queryset()
 
     def perform_destroy(self, instance):
         instance.remove_file()
@@ -176,7 +180,7 @@ class TextSearchApiView(generics.ListAPIView):
 
     def get_queryset(self):
         qs = super(TextSearchApiView, self).get_queryset()
-        qs = qs.filter(owner=self.request.user)
+        # qs = qs.filter(owner=self.request.user)
         search_text = self.request.query_params.get('q', '').strip()
         if search_text:
             search_terms = search_text.split(' ')
