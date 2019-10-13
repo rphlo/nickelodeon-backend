@@ -59,6 +59,10 @@ class MP3Song(models.Model):
         return m.group('title')
 
     @property
+    def owner_username(self):
+        return self.owner.username
+
+    @property
     def available_formats(self):
         return {'mp3': self.has_mp3, 'aac': self.has_aac}
 

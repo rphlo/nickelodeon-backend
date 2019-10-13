@@ -31,7 +31,7 @@ class MP3SongSerializer(serializers.ModelSerializer):
         required=False,
         validators=[validate_filename]
     )
-    owner = serializers.ReadOnlyField(source='owner__username')
+    owner = serializers.ReadOnlyField(source='owner_username')
     id = serializers.ReadOnlyField()
     aac = serializers.ReadOnlyField()
 
