@@ -21,10 +21,11 @@ from nickelodeon.utils import (
 
 class MP3Song(models.Model):
     id = models.CharField(default=random_key, max_length=12, primary_key=True)
-    filename = models.CharField(verbose_name=_('file name'),
-                                max_length=255,
-                                unique=True,
-                                db_index=True)
+    filename = models.CharField(
+        verbose_name=_('file name'),
+        max_length=255,
+        db_index=True
+    )
     aac = models.BooleanField(default=False)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -101,3 +102,7 @@ class MP3Song(models.Model):
                 .encode(sys.getfilesystemencoding())
             if s3_object_exists(file_path):
                 s3_object_delete(file_path)
+
+    class Meta:
+        unique_together = ['owner', 'filename']
+
