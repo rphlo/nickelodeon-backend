@@ -90,7 +90,7 @@ def serve_from_s3(request, path, filename='',
 def download_song(request, pk, extension=None):
     if extension is None:
         extension = 'mp3'
-    song = get_object_or_404(MP3Song, pk=pk)
+    song = get_object_or_404(MP3Song.objects.select_related('owner'), pk=pk)
     #if song.owner != request.user:
     #    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     file_path = song.filename
@@ -107,7 +107,7 @@ def download_song(request, pk, extension=None):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def download_cover(request, pk):
-    song = get_object_or_404(MP3Song, pk=pk)
+    song = get_object_or_404(MP3Song.objects.select_related('owner'), pk=pk)
     #if song.owner != request.user:
     #    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     file_path = u'{}/{}'.format(
@@ -122,7 +122,7 @@ def download_cover(request, pk):
 
 class RandomSongView(generics.RetrieveAPIView):
     serializer_class = MP3SongSerializer
-    queryset = MP3Song.objects.all()
+    queryset = MP3Song.objects.select_related('owner').all()
     permission_classes = (IsAuthenticated,)
 
     #def get_queryset(self):
@@ -155,7 +155,7 @@ class PasswordChangeView(APIView):
 
 class SongView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MP3SongSerializer
-    queryset = MP3Song.objects.all()
+    queryset = MP3Song.objects.select_related('owner').all()
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
@@ -174,7 +174,7 @@ class TextSearchApiView(generics.ListAPIView):
 
     q -- Search terms (Default: '')
     """
-    queryset = MP3Song.objects.all()
+    queryset = MP3Song.objects.select_related('owner').all()
     serializer_class = MP3SongSerializer
     permission_classes = (IsAuthenticated,)
 
