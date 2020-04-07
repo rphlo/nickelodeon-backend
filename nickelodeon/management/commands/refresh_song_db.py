@@ -100,19 +100,25 @@ class Command(BaseCommand):
 
     def scan_directory(self):
         s3 = get_s3_client()
-        kwargs = {'Bucket': settings.S3_BUCKET, 'Prefix': self.root}
-        while True:
-            resp = s3.list_objects_v2(**kwargs)
-            for obj in resp.get('Contents', []):
+        # Should use v2 but wasabi fails to list all files with it
+        # paginator = s3.get_paginator('list_objects_v2')
+        paginator = s3.get_paginator('list_objects')
+        kwargs = {
+          'Bucket': settings.S3_BUCKET,
+          'Prefix': self.root,
+        }
+        for page in paginator.paginate(**kwargs):
+            try:
+                contents = page["Contents"]
+            except KeyError:
+                break
+
+            for obj in contents:
                 key = obj['Key']
                 if key.endswith('.mp3'):
                     yield key
                 if key.endswith('.aac'):
                     self.aac_list.append(key[:-4])
-            try:
-                kwargs['ContinuationToken'] = resp['NextContinuationToken']
-            except KeyError:
-                break
 
     def process_music_file(self, media_path):
         if not MP3_FILE_EXT_RE.search(media_path):

@@ -24,7 +24,6 @@ class MP3Song(models.Model):
     filename = models.CharField(
         verbose_name=_('file name'),
         max_length=255,
-        db_index=True
     )
     aac = models.BooleanField(default=False)
     owner = models.ForeignKey(
