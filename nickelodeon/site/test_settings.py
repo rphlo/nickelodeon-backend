@@ -15,3 +15,5 @@ DATABASES = {
         'PORT': '',
     }
 }
+
+S3_ENDPOINT_URL = 'https://s3.wasabisys.com'
