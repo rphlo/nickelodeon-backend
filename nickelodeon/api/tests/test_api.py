@@ -2,6 +2,8 @@ import base64
 import os.path
 import tempfile
 import unittest
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import management
 from django.test import override_settings
@@ -141,10 +143,7 @@ class ApiTestCase(APITestCase):
         )
         res = self.client.get(download_url, data={'auth_token': auth_token})
         self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
-        self.assertEquals(
-            res.get('X-Accel-Redirect')[:34],
-            '/wasabi/humppa-music/alice/foo.mp3'
-        )
+        self.assertTrue(res.get('X-Accel-Redirect').startswith('/wasabi/{}/{}/foo.mp3'.format(settings.S3_BUCKET, self.username)))
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + auth_token)
         random_song_url = reverse('song_random')
         res = self.client.get(random_song_url)
@@ -160,7 +159,8 @@ class ApiTestCase(APITestCase):
                 reverse('song_download', kwargs={'pk': self.song.id})
             ),
             'id': self.song.id,
-            'aac': False
+            'aac': False,
+            'owner': self.username,
         }
         self.assertEquals(res.data, expected)
         song_url = reverse('song_detail', kwargs={'pk': self.song.id})
@@ -170,19 +170,17 @@ class ApiTestCase(APITestCase):
         self.assertEquals(res.status_code, status.HTTP_200_OK)
         expected['filename'] = 'bar'
         self.assertEquals(res.data, expected)
+        # self.assertTrue(os.path.exists(os.path.join(PATH_TEMP, 'bar.mp3'))) # Not valid as S3 storage does not work in testing
         res = self.client.get(download_url)
         self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
-        self.assertEquals(
-            res.get('X-Accel-Redirect')[:34],
-            '/wasabi/humppa-music/alice/bar.mp3'
-        )
+        self.assertTrue(res.get('X-Accel-Redirect').startswith('/wasabi/{}/{}/bar.mp3'.format(settings.S3_BUCKET, self.username)))
         res = self.client.delete(song_url)
         self.assertEquals(res.status_code, status.HTTP_204_NO_CONTENT)
         res = self.client.get(random_song_url)
         self.assertEquals(res.status_code, status.HTTP_404_NOT_FOUND)
         res = self.client.get(song_url)
         self.assertEquals(res.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertFalse(os.path.exists(os.path.join(PATH_TEMP, 'bar.mp3')))
+        # self.assertFalse(os.path.exists(os.path.join(PATH_TEMP, 'bar.mp3'))) # Not valid as S3 storage does not work in testing
         self.create_mp3()
         search_url = reverse('song_list')
         res = self.client.get(search_url, data={'q': 'foo'})
@@ -194,5 +192,3 @@ class ApiTestCase(APITestCase):
         logout_url = reverse('knox_logout')
         res = self.client.post(logout_url)
         self.assertEquals(res.status_code, status.HTTP_204_NO_CONTENT)
-    
-

@@ -3,7 +3,7 @@ djangorestframework>=3.9,<3.10
 django-cors-headers>=1.0.0
 youtube-dl
 pafy
-celery[redis]
+celery[redis]==4.4.6
 django-rest-knox>=3.2.1,<4.0.0
 raven
 django-resumable
