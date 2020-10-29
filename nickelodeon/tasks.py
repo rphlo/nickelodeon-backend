@@ -3,7 +3,7 @@ import os
 import tempfile
 from subprocess import call
 
-import youtube_dl
+import youtube_dlc
 from celery import shared_task, current_task
 import logging
 import pafy
@@ -139,7 +139,7 @@ def fetch_youtube_video(user_id='', video_id=''):
         'outtmpl': download_path,
         'ignoreerrors': False,
     }
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    with youtube_dlc.YoutubeDL(ydl_opts) as ydl:
         ydl.download([video_id])
 
     update_dl_progress(1)
