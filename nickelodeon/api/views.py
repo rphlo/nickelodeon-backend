@@ -73,7 +73,7 @@ def serve_from_s3(request, path, filename='',
                   mime='application/force-download'):
     path = re.sub(r'^/internal/', '', path)
     url = s3_object_url(path)
-    url = '/wasabi{}'.format(url[len(settings.AWS_S3_ENDPOINT_URL):])
+    url = '/wasabi{}'.format(url[len(settings.S3_ENDPOINT_URL):])
 
     response_status = status.HTTP_200_OK
     if request.method == 'GET':
