@@ -34,7 +34,6 @@ from rest_framework.views import APIView
 from celery.result import AsyncResult
 from celery.task.control import inspect
 
-
 from nickelodeon.api.forms import ResumableMp3UploadForm
 from nickelodeon.api.serializers import MP3SongSerializer, ChangePasswordSerializer
 from nickelodeon.models import MP3Song
@@ -70,20 +69,27 @@ def x_accel_redirect(request, path, filename='',
     return response
 
 
-def serve_from_s3(request, path, filename='',
+def serve_from_s3(bucket, request, path, filename='',
                   mime='application/force-download'):
     path = re.sub(r'^/internal/', '', path)
-    url = s3_object_url(path)
-    url = '/wasabi{}'.format(url[len(settings.S3_ENDPOINT_URL):])
-    response = HttpResponse('', status=status.HTTP_206_PARTIAL_CONTENT)
-    response['X-Accel-Redirect'] = urllib.parse.quote(url.encode('utf-8'))
-    response['X-Accel-Buffering'] = 'no'
+    url = s3_object_url(path, bucket)
+    url = '/s3{}'.format(url[len(settings.AWS_S3_ENDPOINT_URL):])
+
+    response_status = status.HTTP_200_OK
+    if request.method == 'GET':
+        response_status = status.HTTP_206_PARTIAL_CONTENT
+
+    response = HttpResponse('', status=response_status)
+    if request.method == 'GET':
+        response['X-Accel-Redirect'] = urllib.parse.quote(url.encode('utf-8'))
+        response['X-Accel-Buffering'] = 'no'
     response['Accept-Ranges'] = 'bytes'
     response['Content-Type'] = mime
     response['Content-Disposition'] = 'attachment; filename="{}"'.format(
         filename.replace('\\', '_').replace('"', '\\"')
     ).encode('utf-8')
     return response
+
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
