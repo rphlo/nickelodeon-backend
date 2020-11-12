@@ -6,7 +6,6 @@ from subprocess import call
 import youtube_dlc
 from celery import shared_task, current_task
 import logging
-import pafy
 from celery.exceptions import Ignore
 
 from django.conf import settings
@@ -87,37 +86,7 @@ def fetch_youtube_video(user_id='', video_id=''):
         )
         logger.error('ffmpeg can not do the necesary file conversions')
         raise Ignore()
-    try:
-        video = pafy.new(video_id)
-    except (ValueError, IOError):
-        current_task.update_state(state='FAILED',
-                                  meta={'error': 'Could not retrieve '
-                                                 'YouTube video'})
-        logger.error('Could not retrieve YouTube video %s', video_id)
-        raise Ignore()
-    title = video.title
-    safe_title = title.replace("<", "")\
-                      .replace(">", "")\
-                      .replace(":", "")\
-                      .replace("\\", "")\
-                      .replace("/", "")\
-                      .replace('"', "")\
-                      .replace("|", "")\
-                      .replace("?", "")\
-                      .replace("*", "")
-    audio_stream = video.getbestaudio(preftype='m4a', ftypestrict=True)
-    if audio_stream is None:
-        current_task.update_state(state='FAILED',
-                                  meta={'error': 'Could not retrieve '
-                                                 'YouTube video '
-                                                 'audiostream'})
-        logger.error(
-            'Could not find proper audio stream '
-            'for Youtube video %s', video_id
-        )
-        raise Ignore()
-    with tempfile.NamedTemporaryFile() as download_file:
-        download_path = download_file.name
+        
     tmp_paths = {}
     for ext, lib in AVAILABLE_FORMATS.items():
         if ext in extension_converted:
@@ -134,24 +103,44 @@ def fetch_youtube_video(user_id='', video_id=''):
     #)
     update_dl_progress(0)
     ydl_opts = {
-        'format': 'bestaudio',
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
         'quiet': True,
-        'outtmpl': download_path,
         'ignoreerrors': False,
+        'outtmpl': download_path,
     }
     with youtube_dlc.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([video_id])
-
+        try:
+            info_dict = ydl.extract_info(video_id, download=False)
+            title = info_dict.get('title', None)
+            safe_title = title.replace("<", "")\
+                            .replace(">", "")\
+                            .replace(":", "")\
+                            .replace("\\", "")\
+                            .replace("/", "")\
+                            .replace('"', "")\
+                            .replace("|", "")\
+                            .replace("?", "")\
+                            .replace("*", "")
+            ydl.download([video_id])
+        except Exception:
+            current_task.update_state(
+                state='FAILED',
+                meta={'error': 'Could not retrieve YouTube video audiostream'}
+            )
+            raise Ignore()
     update_dl_progress(1)
-
     convert_audio(
         download_path,
         tmp_paths.get('aac'),
-        tmp_paths.get('mp3'),
         callback=update_conversion_progress
     )
 
-    os.remove(download_path)
+    tmp_path['mp3'] = download_path
     final_filename = move_files_to_destination(
         dst_folder,
         safe_title,
