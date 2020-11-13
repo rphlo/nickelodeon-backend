@@ -127,7 +127,7 @@ def fetch_youtube_video(user_id='', video_id=''):
                             .replace("?", "")\
                             .replace("*", "")
             ydl.download([video_id])
-        except Exception:
+        except:
             current_task.update_state(
                 state='FAILED',
                 meta={'error': 'Could not retrieve YouTube video audiostream'}
