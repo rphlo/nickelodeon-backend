@@ -1,0 +1,28 @@
+jobs:
+  build:
+    executor: python/default
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - python/install-packages:
+          pip-dependency-file: dev_requirements.txt
+          pkg-manager: pip
+      - python/install-packages:
+          args: coveralls
+          pkg-manager: pip
+          pypi-cache: false
+      - run:
+          command: |
+            coverage run --source=nickelodeon manage.py test --settings=nickelodeon.site.test_settings
+          name: Test
+      - run:
+          command: coveralls
+          name: Coveralls
+orbs:
+  python: circleci/python@1.2.1
+version: 2.1
+workflows:
+  main:
+    jobs:
+      - build
