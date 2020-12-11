@@ -86,7 +86,10 @@ def fetch_youtube_video(user_id='', video_id=''):
         )
         logger.error('ffmpeg can not do the necesary file conversions')
         raise Ignore()
-        
+
+    with tempfile.NamedTemporaryFile() as download_file:
+        download_path = download_file.name
+
     tmp_paths = {}
     for ext, lib in AVAILABLE_FORMATS.items():
         if ext in extension_converted:
@@ -96,11 +99,7 @@ def fetch_youtube_video(user_id='', video_id=''):
     dst_folder = os.path.join(
         username, 'Assorted', 'by_date', now.strftime('%Y/%m')
     )
-    #audio_stream.download(
-    #    download_path,
-    #    callback=update_dl_progress,
-    #    quiet=True
-    #)
+
     update_dl_progress(0)
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -140,7 +139,7 @@ def fetch_youtube_video(user_id='', video_id=''):
         callback=update_conversion_progress
     )
 
-    tmp_path['mp3'] = download_path
+    tmp_paths['mp3'] = download_path
     final_filename = move_files_to_destination(
         dst_folder,
         safe_title,
