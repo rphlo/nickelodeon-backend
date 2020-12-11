@@ -133,13 +133,12 @@ def fetch_youtube_video(user_id='', video_id=''):
             )
             raise Ignore()
     update_dl_progress(1)
+    tmp_paths['mp3'] = download_path + ".mp3"
     convert_audio(
-        download_path,
+        tmp_paths['mp3'],
         tmp_paths.get('aac'),
         callback=update_conversion_progress
     )
-
-    tmp_paths['mp3'] = download_path + ".mp3"
     final_filename = move_files_to_destination(
         dst_folder,
         safe_title,
