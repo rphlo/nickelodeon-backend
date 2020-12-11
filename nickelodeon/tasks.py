@@ -110,7 +110,7 @@ def fetch_youtube_video(user_id='', video_id=''):
         }],
         'quiet': True,
         'ignoreerrors': False,
-        'outtmpl': download_path,
+        'outtmpl': download_path + ".%(ext)s",
     }
     with youtube_dlc.YoutubeDL(ydl_opts) as ydl:
         try:
@@ -126,10 +126,10 @@ def fetch_youtube_video(user_id='', video_id=''):
                             .replace("?", "")\
                             .replace("*", "")
             ydl.download([video_id])
-        except:
+        except Exception as e:
             current_task.update_state(
                 state='FAILED',
-                meta={'error': 'Could not retrieve YouTube video audiostream'}
+                meta={'error': 'Could not retrieve YouTube video audiostream (%s, %r)' % (str(e), e.args)}
             )
             raise Ignore()
     update_dl_progress(1)
@@ -139,7 +139,7 @@ def fetch_youtube_video(user_id='', video_id=''):
         callback=update_conversion_progress
     )
 
-    tmp_paths['mp3'] = download_path
+    tmp_paths['mp3'] = download_path + ".mp3"
     final_filename = move_files_to_destination(
         dst_folder,
         safe_title,
