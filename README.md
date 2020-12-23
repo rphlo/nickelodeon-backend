@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/rphlo/django-nickelodeon.svg?branch=master)](https://travis-ci.org/rphlo/django-nickelodeon)
+[![rphlo](https://circleci.com/gh/rphlo/django-nickelodeon.svg?style=shield)](https://circleci.com/gh/rphlo/django-nickelodeon)
 # django-nickelodeon
 ## Music streaming server (A django project)
 
