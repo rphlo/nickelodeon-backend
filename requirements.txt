@@ -1,5 +1,5 @@
-Django>=2.2,<2.3
-djangorestframework>=3.9,<3.10
+Django
+djangorestframework
 django-cors-headers>=1.0.0
 youtube-dlc
 celery[redis]==4.4.6
