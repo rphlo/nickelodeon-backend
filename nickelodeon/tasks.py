@@ -3,7 +3,7 @@ import os
 import tempfile
 from subprocess import call
 
-import youtube_dlc
+import youtube_dl
 from celery import shared_task, current_task
 import logging
 from celery.exceptions import Ignore
@@ -112,7 +112,7 @@ def fetch_youtube_video(user_id='', video_id=''):
         'ignoreerrors': False,
         'outtmpl': download_path + ".%(ext)s",
     }
-    with youtube_dlc.YoutubeDL(ydl_opts) as ydl:
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         try:
             info_dict = ydl.extract_info(video_id, download=False)
             title = info_dict.get('title', None)

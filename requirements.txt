@@ -1,7 +1,7 @@
 Django
 djangorestframework
 django-cors-headers>=1.0.0
-youtube-dlc
+youtube-dl
 celery[redis]==4.4.6
 django-rest-knox>=3.2.1,<4.0.0
 raven
