@@ -288,7 +288,8 @@ class ResumableUploadView(APIView):
         """
         chunk = request.FILES.get('file')
         rf = ResumableFile(self.storage, request.POST)
-        if rf.filename[-4:] != '.mp3':
+        ext = rf.filename[rf.filename.rfind('.'):]
+        if ext.lower() != '.mp3':
             return HttpResponse('Only MP3 files are allowed', status=400)
         if rf.chunk_exists:
             return HttpResponse('chunk already exists')
