@@ -259,7 +259,8 @@ class LoginView(GenericAPIView):
                 context=self.get_serializer_context()
             ).data,
             'token': token,
-            'is_staff': True
+            'is_staff': True,
+            'is_superuser': user.is_superuser,
         })
 
 
