@@ -165,8 +165,8 @@ class SongView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        if self.request.method not in SAFE_METHODS:
-            return super().get_queryset().filter(owner=self.request.user)
+        if self.request.method not in SAFE_METHODS and not self.request.user.is_superuser:
+                return super().get_queryset().filter(owner=self.request.user)
         return super().get_queryset()
 
     def perform_destroy(self, instance):
