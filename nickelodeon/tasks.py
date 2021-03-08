@@ -154,7 +154,11 @@ def fetch_youtube_video(user_id='', video_id=''):
         aac=('aac' in extension_converted),
         owner=user
     )
-    return {'pk': song.pk, 'youtube_id': video_id}
+    return {
+        'pk': song.pk,
+        'youtube_id': video_id,
+        'filename': song_filename[len(username)+1:]
+    }
 
 
 def move_files_to_destination(dst_folder, safe_title, extensions, tmp_paths):
