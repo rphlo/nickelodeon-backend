@@ -189,9 +189,12 @@ class TextSearchApiView(generics.ListAPIView):
         # qs = qs.filter(owner=self.request.user)
         search_text = self.request.query_params.get('q', '').strip()
         if search_text:
+            quoted_terms = re.findall(r'\"(.+?)\"', search_text)
+            if quoted_terms:
+                search_text = re.sub(r'\"(.+?)\"', '', search_text)
             search_terms = search_text.split(' ')
             query = Q()
-            for search_term in search_terms:
+            for search_term in search_terms + quoted_terms:
                 query &= Q(filename__icontains=search_term)
             qs = qs.filter(query)
         else:
