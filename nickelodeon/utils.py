@@ -3,7 +3,7 @@ import boto3
 import botocore
 import io
 import os
-import random
+import secrets
 import re
 import struct
 import subprocess
@@ -103,7 +103,7 @@ def clean_empty_folder(folder):
 
 
 def random_key():
-    rand_bytes = bytes(struct.pack('Q', random.getrandbits(64)))
+    rand_bytes = bytes(struct.pack('Q', secrets.randbits(64)))
     b64 = base64.b64encode(rand_bytes).decode('utf-8')
     b64 = b64[:11]
     b64 = b64.replace('+', '-')
