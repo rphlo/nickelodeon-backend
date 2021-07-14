@@ -195,7 +195,7 @@ class TextSearchApiView(generics.ListAPIView):
             search_terms = search_text.split(' ')
             query = Q()
             for search_term in search_terms + quoted_terms:
-                query &= Q(filename__icontains=search_term)
+                query &= Q(filename__unaccent__icontains=search_term)
             qs = qs.filter(query)
         else:
             return qs.none()
