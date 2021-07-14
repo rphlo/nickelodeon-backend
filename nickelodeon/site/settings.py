@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
     'django.contrib.sessions',
+    'django.contrib.postgres',
     'corsheaders',
     'rest_framework',
     'knox',
