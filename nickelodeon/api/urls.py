@@ -17,7 +17,7 @@ urlpatterns = [
     url(r'^logoutall/?$',
         view=knox_views.LogoutAllView.as_view(),
         name='knox_logoutall'),
-    url(r'^account/change_password?$',
+    url(r'^account/change_password/?$',
         view=views.PasswordChangeView.as_view(),
         name='account_change_password'),
     url(r'^songs/?$',
