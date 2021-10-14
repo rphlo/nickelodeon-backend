@@ -14,6 +14,7 @@ from django.contrib.auth.signals import user_logged_in
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -134,6 +135,7 @@ class RandomSongView(generics.RetrieveAPIView):
     #def get_queryset(self):
     #    return super().get_queryset().filter(owner=self.request.user)
 
+    @transaction.atomic
     def get_object(self):
         count = self.get_queryset().count()
         if count == 0:
