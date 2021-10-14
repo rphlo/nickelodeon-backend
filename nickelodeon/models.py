@@ -2,16 +2,13 @@ from __future__ import unicode_literals
 
 import os
 import re
-import sys
 
 from django.conf import settings
-from django.core.files.move import file_move_safe
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 
 from nickelodeon.utils import (
-    clean_empty_folder,
     random_key,
     s3_move_object,
     s3_object_exists,
@@ -33,7 +30,7 @@ class MP3Song(models.Model):
 
     def has_extension(self, extension):
         file_path = self.get_file_format_path(extension) \
-            .encode(sys.getfilesystemencoding())
+            .encode('utf-8')
         return s3_object_exists(file_path)
 
     @property
@@ -98,7 +95,7 @@ class MP3Song(models.Model):
     def remove_file(self):
         for ext in ['mp3', 'aac']:
             file_path = self.get_file_format_path(ext) \
-                .encode(sys.getfilesystemencoding())
+                .encode('utf-8')
             if s3_object_exists(file_path):
                 s3_object_delete(file_path)
 
