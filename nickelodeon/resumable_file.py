@@ -1,7 +1,6 @@
 
 from resumable.files import ResumableFile as OrigResumableFile
-from django.utils.text import slugify
-
+import unicodedata
 class ResumableFile(OrigResumableFile):
     def chunk_names(self):
         """Iterates over all stored chunks and yields their names."""
@@ -19,5 +18,5 @@ class ResumableFile(OrigResumableFile):
             raise Exception('Invalid filename')
         return "%s_%s" % (
             self.kwargs.get('resumableTotalSize'),
-            slugify(filename)
+            unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore').decode('ascii')
         )
