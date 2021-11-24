@@ -307,7 +307,7 @@ class ResumableUploadView(APIView):
             return HttpResponse('chunk already exists')
         rf.process_chunk(chunk)
         if rf.is_complete:
-            self.process_file(request.user, rf.filename, rf)
+            self.process_file(request.user, request.POST.get('resumableFilename'), rf)
             rf.delete_chunks()
         return HttpResponse()
 
@@ -322,7 +322,6 @@ class ResumableUploadView(APIView):
         dest = os.path.join(
             username, 'Assorted', 'by_date', now.strftime('%Y/%m')
         )
-        filename = filename[filename.find('_') + 1:]
         mp3_path = os.path.abspath(
             os.path.join(self.chunks_dir, rfile.filename)
         )
