@@ -1,6 +1,6 @@
 
 from resumable.files import ResumableFile as OrigResumableFile
-from django.utils import slugify
+from django.utils.text import slugify
 
 class ResumableFile(OrigResumableFile):
     def chunk_names(self):
