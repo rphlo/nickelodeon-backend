@@ -104,7 +104,7 @@ def download_song(request, pk, extension=None):
     mime = 'audio/mpeg' if extension == 'mp3' else 'audio/x-m4a'
     file_path = u'{}.{}'.format(file_path, extension)
     file_path = u'/internal/{}/{}'.format(
-        song.owner.username,
+        song.owner.settings.storage_prefix,
         file_path
     )
     filename = song.title + '.' + extension
@@ -118,7 +118,7 @@ def download_cover(request, pk):
     #if song.owner != request.user:
     #    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     file_path = u'{}/{}'.format(
-        song.owner.username,
+        song.owner.settings.storage_prefix,
         song.filename
     )
     image = print_vinyl(file_path)
@@ -315,12 +315,12 @@ class ResumableUploadView(APIView):
         """
         Process the complete file.
         """
-        username = user.username
+        root_folder = user.settings.storage_prefix
         if not self.storage.exists(rfile.filename):
             self.storage.save(rfile.filename, rfile)
         now = datetime.datetime.now()
         dest = os.path.join(
-            username, 'Assorted', 'by_date', now.strftime('%Y/%m')
+            root_folder, 'Assorted', 'by_date', now.strftime('%Y/%m')
         )
         mp3_path = os.path.abspath(
             os.path.join(self.chunks_dir, rfile.filename)
@@ -336,7 +336,7 @@ class ResumableUploadView(APIView):
             final_filename
         )
         mp3 = MP3Song.objects.create(
-            filename=final_path[len(username)+1:],
+            filename=final_path[len(root_folder)+1:],
             aac=False,
             owner=user
         )

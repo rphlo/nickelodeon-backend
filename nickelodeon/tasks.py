@@ -51,7 +51,7 @@ def create_aac(mp3_id=''):
 def fetch_youtube_video(user_id='', video_id=''):
     try:
         user = User.objects.get(id=user_id)
-        username = user.username
+        root_folder = user.settings.storage_prefix
     except User.DoesNotExist:
         current_task.update_state(
             state='FAILED',
@@ -97,7 +97,7 @@ def fetch_youtube_video(user_id='', video_id=''):
                 tmp_paths[ext] = tmp_file.name
     now = datetime.datetime.now()
     dst_folder = os.path.join(
-        username, 'Assorted', 'by_date', now.strftime('%Y/%m')
+        root_folder, 'Assorted', 'by_date', now.strftime('%Y/%m')
     )
 
     update_dl_progress(0)
@@ -150,14 +150,14 @@ def fetch_youtube_video(user_id='', video_id=''):
         final_filename
     )
     song, dummy_created = MP3Song.objects.get_or_create(
-        filename=song_filename[len(username)+1:],
+        filename=song_filename[len(root_folder)+1:],
         aac=('aac' in extension_converted),
         owner=user
     )
     return {
         'pk': song.pk,
         'youtube_id': video_id,
-        'filename': song_filename[len(username)+1:]
+        'filename': song_filename[len(root_folder)+1:]
     }
 
 

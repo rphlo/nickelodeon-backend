@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 
-from nickelodeon.models import MP3Song
+from nickelodeon.models import MP3Song, UserSettings
 from nickelodeon.utils import get_s3_client, s3_object_exists
 
 
@@ -48,12 +48,15 @@ class Command(BaseCommand):
         self.print_scan_status(True)
         current_song_qs = MP3Song.objects.all()
         prefix = self.root
-        owner_username = self.root[:self.root.find('/')]
-        self.owner = User.objects.get(username=owner_username)
+        root_folder = self.root[:self.root.find('/')]
+        try:
+            self.owner = UserSettings.objects.get_or_create(storage_prefix=root_folder).user
+        except UserSettings.DoesNotExist:
+            self.owner = User.objects.get(username=root_folder)
         current_song_qs = current_song_qs.filter(
             owner=self.owner
         )
-        prefix = prefix[len(owner_username)+1:]
+        prefix = prefix[len(root_folder)+1:]
         if prefix:
             current_song_qs = current_song_qs.filter(
                 filename__startswith=prefix
@@ -74,8 +77,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         folders = options['folders']
         if not folders:
-            folders = User.objects.all() \
-                .values_list('username', flat=True)
+            folders = [u.settings.storage_prefix for u in User.objects.all()]
         for folder in folders:
             self.handle_folder(folder)
 
@@ -154,7 +156,7 @@ class Command(BaseCommand):
         self.aac_set = set(self.aac_list)
         for song_file in self.songs_to_add:
             bulk.append(MP3Song(
-                filename=song_file[len(self.owner.username)+1:],
+                filename=song_file[len(self.owner.settings.storage_prefix)+1:],
                 aac=self.has_aac(song_file),
                 owner=self.owner
             ))
@@ -162,9 +164,9 @@ class Command(BaseCommand):
 
     def bulk_remove(self):
         files = []
-        username_len = len(self.owner.username)+1
+        root_folder_len = len(self.owner.settings.storage_prefix)+1
         for song_file in self.songs_to_remove:
-            files.append(song_file[username_len:])
+            files.append(song_file[root_folder_len:])
         MP3Song.objects.filter(
             owner_id=self.owner.id,
             filename__in=set(files)

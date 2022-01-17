@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import ugettext as _
+from django.contrib.auth.models import User
 
 from nickelodeon.utils import (
     random_key,
@@ -14,6 +15,21 @@ from nickelodeon.utils import (
     s3_object_exists,
     s3_object_delete,
 )
+
+
+class UserSettings(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
+    storage_prefix = models.CharField(max_length=32, default=random_key, unique=True)
+
+    class Meta:
+        verbose_name = 'user settings'
+        verbose_name_plural = 'user settings'
+
+
+User.settings = property(lambda u: UserSettings.objects.get_or_create(user=u, defaults={'storage_prefix': u.username})[0])
 
 
 class MP3Song(models.Model):
@@ -51,13 +67,12 @@ class MP3Song(models.Model):
         )
 
     @property
+    def owner_username(self):
+        return self.owner.username
+    @property
     def title(self):
         m = re.search(r'(?P<title>[^\/]+$)', self.filename)
         return m.group('title')
-
-    @property
-    def owner_username(self):
-        return self.owner.username
 
     @property
     def available_formats(self):
@@ -65,7 +80,7 @@ class MP3Song(models.Model):
 
     def get_file_format_path(self, extension='mp3'):
         file_path = u"{}/{}.{}".format(
-            self.owner.username,
+            self.owner.settings.storage_prefix,
             self.filename,
             extension
         )
