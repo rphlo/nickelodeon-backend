@@ -143,7 +143,7 @@ class ApiTestCase(APITestCase):
         )
         res = self.client.get(download_url, data={'auth_token': auth_token})
         self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
-        self.assertTrue(res.get('X-Accel-Redirect').startswith('/wasabi/{}/{}/foo.mp3'.format(settings.S3_BUCKET, self.username)))
+        self.assertTrue(res.get('X-Accel-Redirect').startswith(f'/wasabi/{settings.S3_BUCKET}/{self.user.settings.storage_prefix}/foo.mp3'))
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + auth_token)
         random_song_url = reverse('song_random')
         res = self.client.get(random_song_url)
@@ -173,7 +173,7 @@ class ApiTestCase(APITestCase):
         # self.assertTrue(os.path.exists(os.path.join(PATH_TEMP, 'bar.mp3'))) # Not valid as S3 storage does not work in testing
         res = self.client.get(download_url)
         self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
-        self.assertTrue(res.get('X-Accel-Redirect').startswith('/wasabi/{}/{}/bar.mp3'.format(settings.S3_BUCKET, self.username)))
+        self.assertTrue(res.get('X-Accel-Redirect').startswith(f'/wasabi/{settings.S3_BUCKET}/{self.user.settings.storage_prefix}/bar.mp3'))
         res = self.client.delete(song_url)
         self.assertEquals(res.status_code, status.HTTP_204_NO_CONTENT)
         res = self.client.get(random_song_url)
