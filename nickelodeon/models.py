@@ -5,6 +5,8 @@ import re
 
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
@@ -30,6 +32,12 @@ class UserSettings(models.Model):
 
 
 User.settings = property(lambda u: UserSettings.objects.get_or_create(user=u, defaults={'storage_prefix': u.username})[0])
+
+
+@receiver(post_save, sender=User, dispatch_uid="create_user_settings")
+def create_settings(sender, instance, created, **kwargs):
+    if created and not UserSettings.objects.filter(user=instance).exists():
+        UserSettings.objects.create(user=instance, storage_prefix=f'{instance.username}-{random_key()}')
 
 
 class MP3Song(models.Model):
