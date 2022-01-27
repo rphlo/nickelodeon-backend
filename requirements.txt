@@ -2,7 +2,7 @@ Django<4
 djangorestframework
 django-cors-headers>=1.0.0
 youtube-dl
-celery[redis]==4.4.6
+celery[redis]
 django-rest-knox>=3.2.1,<4.0.0
 raven
 django-resumable

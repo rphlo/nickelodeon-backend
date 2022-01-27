@@ -5,5 +5,5 @@ if [ "$1" = "pytest" ]; then
     /wait-for-it.sh --host=db --port=5432
     exec pytest "$@"
 else
-    exec /venv/bin/python /app/manage.py runserver 0.0.0.0:${RUNSERVER_PORT-8000} & /venv/bin/celery worker -A=nickelodeon.site -l info
+    exec /venv/bin/python /app/manage.py runserver 0.0.0.0:${RUNSERVER_PORT-8000} & /venv/bin/celery -A nickelodeon.site worker -l info
 fi

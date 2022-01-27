@@ -33,7 +33,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from celery.result import AsyncResult
-from celery.task.control import inspect
+from celery.app import control
 
 from nickelodeon.api.forms import ResumableMp3UploadForm
 from nickelodeon.api.serializers import MP3SongSerializer, ChangePasswordSerializer
@@ -219,7 +219,7 @@ def api_root(request):
 @api_view(['GET'])
 @permission_classes((IsAdminUser, ))
 def tasks_list(request):
-    i = inspect()
+    i = control.inspect()
     return Response(i.active())
 
 
