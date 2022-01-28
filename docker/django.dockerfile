@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye
+FROM python:3.10-bullseye
 
 # Copy in your requirements file
 ADD requirements.txt /requirements.txt

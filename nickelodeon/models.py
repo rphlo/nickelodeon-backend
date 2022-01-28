@@ -8,7 +8,6 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
-from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
 from nickelodeon.utils import (
@@ -43,7 +42,7 @@ def create_settings(sender, instance, created, **kwargs):
 class MP3Song(models.Model):
     id = models.CharField(default=random_key, max_length=12, primary_key=True)
     filename = models.CharField(
-        verbose_name=_('file name'),
+        verbose_name='file name',
         max_length=255,
     )
     aac = models.BooleanField(default=False)

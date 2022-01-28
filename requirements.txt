@@ -1,11 +1,11 @@
-Django<4
+Django<5
 djangorestframework
 django-cors-headers>=1.0.0
 youtube-dl
 celery[redis]
-django-rest-knox>=3.2.1,<4.0.0
+django-rest-knox @ git+https://github.com/James1345/django-rest-knox.git@8447cd00358b1a3f76862278711abd2cdcb8837a#egg=django_rest_knox
 raven
-django-resumable
+django-resumable @ git+https://github.com/rphlo/django-resumable
 boto3
 retricon
 uwsgi

@@ -1,7 +1,6 @@
-from django.conf.urls import url, include
+from django.urls import path, include
 
 urlpatterns = [
-    url(r'^drf-auth/', include('rest_framework.urls',
-                               namespace='rest_framework')),
-    url(r'^', include('nickelodeon.api.urls')),
+    path('drf-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('', include('nickelodeon.api.urls')),
 ]
