@@ -35,13 +35,14 @@ from rest_framework.views import APIView
 from celery.result import AsyncResult
 from celery.app import control
 
+from resumable.files import ResumableFile
+
 from nickelodeon.api.forms import ResumableMp3UploadForm
 from nickelodeon.api.serializers import MP3SongSerializer, ChangePasswordSerializer
 from nickelodeon.models import MP3Song
 from nickelodeon.tasks import fetch_youtube_video, create_aac
 from nickelodeon.utils import s3_object_url, print_vinyl
 from nickelodeon.tasks import move_files_to_destination
-from nickelodeon.resumable_file import ResumableFile
 
 
 MAX_SONGS_LISTED = 999

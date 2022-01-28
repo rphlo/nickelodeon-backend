@@ -1,14 +1,7 @@
 from django.conf import settings
 from django.forms import Form
-from django.urls import reverse
 
-from resumable.fields import ResumableFileField as OrigResumableFileField
-
-from nickelodeon.api.widgets import ResumableFileInput
-
-
-class ResumableFileField(OrigResumableFileField):
-    widget = ResumableFileInput
+from resumable.fields import ResumableFileField
 
 
 class ResumableMp3UploadForm(Form):

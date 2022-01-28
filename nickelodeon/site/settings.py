@@ -28,17 +28,18 @@ AUTHENTICATION_BACKENDS = ('nickelodeon.backends.CaseInsensitiveModelBackend', )
 
 # Application definition
 INSTALLED_APPS = [
+    'nickelodeon',
+    'corsheaders',
+    'rest_framework',
+    'knox',
+    'resumable',
+    'raven.contrib.django.raven_compat',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
     'django.contrib.sessions',
     'django.contrib.postgres',
-    'corsheaders',
-    'rest_framework',
-    'knox',
-    'nickelodeon',
-    'raven.contrib.django.raven_compat',
-    'resumable',
+
 ]
 
 MIDDLEWARE = [
