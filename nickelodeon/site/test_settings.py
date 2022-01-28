@@ -5,6 +5,11 @@ try:
 except ImportError:
     pass
 
+from tempfile import mkdtemp
+
+
+FILE_UPLOAD_TEMP_DIR = mkdtemp()
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
