@@ -8,6 +8,7 @@ jobs:
       - python/install-packages:
           pip-dependency-file: dev_requirements.txt
           pkg-manager: pip
+          args: '-U'
       - python/install-packages:
           args: coveralls
           pkg-manager: pip
