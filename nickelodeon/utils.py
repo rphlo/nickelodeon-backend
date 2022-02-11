@@ -34,6 +34,7 @@ def get_s3_client():
         endpoint_url=settings.S3_ENDPOINT_URL,
         aws_access_key_id=settings.S3_ACCESS_KEY,
         aws_secret_access_key=settings.S3_SECRET_KEY,
+	config=botocore.client.Config(signature_version='s3v4')
     )
 
 def bytes_to_str(b):
