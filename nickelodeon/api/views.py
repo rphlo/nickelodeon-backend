@@ -188,7 +188,12 @@ class TextSearchApiView(generics.ListAPIView):
 
     def get_queryset(self):
         qs = super(TextSearchApiView, self).get_queryset()
-        # qs = qs.filter(owner=self.request.user)
+        try:
+            only_own = bool(self.request.query_params.get('o', '').strip())
+        except Exception:
+            pass
+        if only_own:
+            qs = qs.filter(owner=self.request.user)
         search_text = self.request.query_params.get('q', '').strip()
         if search_text:
             quoted_terms = re.findall(r'\"(.+?)\"', search_text)
