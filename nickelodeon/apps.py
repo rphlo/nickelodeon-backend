@@ -4,5 +4,5 @@ from django.apps import AppConfig
 
 
 class NickelodeonConfig(AppConfig):
-    name = 'nickelodeon'
-    verbose_name = 'Nickelodeon'
+    name = "nickelodeon"
+    verbose_name = "Nickelodeon"

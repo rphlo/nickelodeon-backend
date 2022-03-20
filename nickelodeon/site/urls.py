@@ -1,6 +1,6 @@
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
-    path('drf-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('', include('nickelodeon.api.urls')),
+    path("drf-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path("", include("nickelodeon.api.urls")),
 ]

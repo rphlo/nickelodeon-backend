@@ -6,9 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('nickelodeon', '0004_auto_20200407_1656'),
+        ("nickelodeon", "0004_auto_20200407_1656"),
     ]
 
-    operations = [
-        UnaccentExtension()
-    ]
+    operations = [UnaccentExtension()]

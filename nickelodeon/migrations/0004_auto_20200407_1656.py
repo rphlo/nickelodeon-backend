@@ -8,17 +8,17 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('nickelodeon', '0003_mp3song_owner'),
+        ("nickelodeon", "0003_mp3song_owner"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='mp3song',
-            name='filename',
-            field=models.CharField(max_length=255, verbose_name='file name'),
+            model_name="mp3song",
+            name="filename",
+            field=models.CharField(max_length=255, verbose_name="file name"),
         ),
         migrations.AlterUniqueTogether(
-            name='mp3song',
-            unique_together={('owner', 'filename')},
+            name="mp3song",
+            unique_together={("owner", "filename")},
         ),
     ]

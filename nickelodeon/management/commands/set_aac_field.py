@@ -3,10 +3,8 @@ from django.core.management.base import BaseCommand
 from nickelodeon.models import MP3Song
 
 
-
-
 class Command(BaseCommand):
-    help = 'Set the aac field on all MP3Songs'
+    help = "Set the aac field on all MP3Songs"
     counter = 0
     has_aac_ids = set()
     has_not_aac_ids = set()
@@ -20,7 +18,7 @@ class Command(BaseCommand):
         MP3Song.objects.filter(id__in=self.has_aac_ids).update(aac=True)
         MP3Song.objects.filter(id__in=self.has_not_aac_ids).update(aac=False)
 
-        self.stdout.write('Updated %d songs' % self.counter)
+        self.stdout.write("Updated %d songs" % self.counter)
 
     def handle_song(self, song):
         if song.aac != song.has_aac:
