@@ -1,4 +1,5 @@
-[![rphlo](https://circleci.com/gh/rphlo/django-nickelodeon.svg?style=shield)](https://circleci.com/gh/rphlo/django-nickelodeon)
+[![rphlo](https://circleci.com/gh/rphlo/django-nickelodeon.svg?style=shield)](https://circleci.com/gh/rphlo/django-nickelodeon) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/rphlo/django-nickelodeon/master.svg)](https://results.pre-commit.ci/latest/github/rphlo/django-nickelodeon/master)
+
 # django-nickelodeon
 ## Music streaming server (A django project)
 
