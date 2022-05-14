@@ -29,7 +29,7 @@ from resumable.files import ResumableFile
 from nickelodeon.api.forms import ResumableMp3UploadForm
 from nickelodeon.api.serializers import ChangePasswordSerializer, MP3SongSerializer
 from nickelodeon.models import MP3Song
-from nickelodeon.tasks import create_aac, fetch_youtube_video, move_files_to_destination
+from nickelodeon.tasks import create_aac, fetch_youtube_video, move_files_to_destination, fetch_spotify_track
 from nickelodeon.utils import print_vinyl, s3_object_url
 
 MAX_SONGS_LISTED = 999
@@ -227,6 +227,16 @@ def youtube_grab(request):
     if not re.match(r"[a-zA-Z0-9_-]{11}", video_id):
         raise ValidationError("Invalid v parameter %s" % video_id)
     task = fetch_youtube_video.s(request.user.id, video_id).delay()
+    return Response({"task_id": str(task.task_id)})
+
+
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def spotify_grab(request):
+    track_id = request.data.get("s", "")
+    if not re.match(r"[0-9a-zA-Z]{22}", track_id):
+        raise ValidationError("Invalid s parameter %s" % track_id)
+    task = fetch_spotify_track.s(request.user.id, track_id).delay()
     return Response({"task_id": str(task.task_id)})
 
 

@@ -40,6 +40,7 @@ urlpatterns = [
         name="song_download",
     ),
     re_path(r"^youtube-dl/?$", view=views.youtube_grab, name="youtube_grab"),
+    re_path(r"^spotify-dl/?$", view=views.spotify_grab, name="spotify_grab"),
     re_path(r"^mp3-upload/?", views.ResumableUploadView.as_view(), name="mp3-upload"),
     re_path(r"^tasks/?$", view=views.tasks_list, name="task_status"),
     re_path(

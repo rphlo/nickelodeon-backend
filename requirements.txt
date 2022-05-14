@@ -9,4 +9,5 @@ django-resumable @ git+https://github.com/rphlo/django-resumable
 boto3
 retricon
 uwsgi
-psycopg2-binary
+psycopg2
+librespot
