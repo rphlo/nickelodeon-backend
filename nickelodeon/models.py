@@ -26,20 +26,17 @@ class UserSettings(models.Model):
         verbose_name = "user settings"
         verbose_name_plural = "user settings"
 
+    def save(self, *args, **kwargs):
+        if not self.storage_prefix:
+            self.storage_prefix=f"{self.username}-{random_key()}"
+        super().save(*args, **kwargs)
+
 
 User.settings = property(
     lambda u: UserSettings.objects.get_or_create(
         user=u, defaults={"storage_prefix": u.username}
     )[0]
 )
-
-
-@receiver(post_save, sender=User, dispatch_uid="create_user_settings")
-def create_settings(sender, instance, created, **kwargs):
-    if created and not UserSettings.objects.filter(user=instance).exists():
-        UserSettings.objects.create(
-            user=instance, storage_prefix=f"{instance.username}-{random_key()}"
-        )
 
 
 class MP3Song(models.Model):
