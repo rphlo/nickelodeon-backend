@@ -51,6 +51,15 @@ def get_s3_resource():
     )
 
 
+def s3_create_bucket(bucket_name):
+    s3_client = get_s3_client()
+    try:
+        s3_client.create_bucket(Bucket=bucket_name)
+    except (s3_client.exceptions.BucketAlreadyOwnedByYou, s3_client.exceptions.BucketAlreadyExists):
+        pass
+
+
+
 def s3_object_exists(key):
     key = bytes_to_str(key)
     s3 = get_s3_resource()

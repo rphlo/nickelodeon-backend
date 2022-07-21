@@ -10,6 +10,8 @@ from rest_framework.test import APIClient, APITestCase
 
 from nickelodeon.models import MP3Song
 
+from nickelodeon.utils import s3_object_exists, s3_upload, s3_create_bucket
+
 PATH_TEMP = tempfile.mkdtemp()
 
 
@@ -25,6 +27,7 @@ class ApiTestCase(APITestCase):
         )
         self.user.save()
         self.client = APIClient()
+        s3_create_bucket(settings.S3_BUCKET)
         self.create_mp3()
 
     def create_mp3(self):
@@ -32,8 +35,10 @@ class ApiTestCase(APITestCase):
             "/+MYxAAAAANIAAAAAExBTUUzLjk4LjIAAAAAAAAAAAAAAAAAAAAAA"
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         )
-        with open(os.path.join(PATH_TEMP, "foo.mp3"), "wb") as fh:
+        tmp_file_path = os.path.join(PATH_TEMP, "foo.mp3")
+        with open(tmp_file_path, "wb") as fh:
             fh.write(base64.b64decode(mp3_base64))
+        s3_upload(tmp_file_path, f"{self.user.settings.storage_prefix}/foo.mp3")
         self.song = MP3Song.objects.create(owner=self.user, filename="foo")
 
     def test_authorization(self):
@@ -140,11 +145,13 @@ class ApiTestCase(APITestCase):
         song_url = reverse("song_detail", kwargs={"pk": self.song.id})
         res = self.client.get(song_url)
         self.assertEquals(res.data, expected)
+        self.assertTrue(s3_object_exists(f"{self.user.settings.storage_prefix}/foo.mp3"))
         res = self.client.put(song_url, data={"filename": "bar"})
         self.assertEquals(res.status_code, status.HTTP_200_OK)
         expected["filename"] = "bar"
         self.assertEquals(res.data, expected)
-        # self.assertTrue(os.path.exists(os.path.join(PATH_TEMP, 'bar.mp3'))) # Not valid as S3 storage does not work in testing
+        self.assertTrue(s3_object_exists(f"{self.user.settings.storage_prefix}/bar.mp3"))
+        self.assertFalse(s3_object_exists(f"{self.user.settings.storage_prefix}/foo.mp3"))
         res = self.client.get(download_url)
         self.assertEquals(res.status_code, status.HTTP_206_PARTIAL_CONTENT)
         self.assertTrue(
@@ -158,7 +165,7 @@ class ApiTestCase(APITestCase):
         self.assertEquals(res.status_code, status.HTTP_404_NOT_FOUND)
         res = self.client.get(song_url)
         self.assertEquals(res.status_code, status.HTTP_404_NOT_FOUND)
-        # self.assertFalse(os.path.exists(os.path.join(PATH_TEMP, 'bar.mp3'))) # Not valid as S3 storage does not work in testing
+        self.assertFalse(s3_object_exists(f"{self.user.settings.storage_prefix}/bar.mp3"))
         self.create_mp3()
         search_url = reverse("song_list")
         res = self.client.get(search_url, data={"q": "foo"})
