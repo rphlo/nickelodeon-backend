@@ -6,8 +6,12 @@ import tempfile
 import youtube_dl
 from celery import current_task, shared_task
 from celery.exceptions import Ignore
-from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.auth.models import User
+from librespot.audio.decoders import AudioQuality, VorbisOnlyAudioQuality
+from librespot.core import Session as SpotSession
+from librespot.metadata import TrackId as SpotTrackId
+
 from nickelodeon.models import MP3Song
 from nickelodeon.utils import (
     AVAILABLE_FORMATS,
@@ -17,10 +21,6 @@ from nickelodeon.utils import (
     s3_object_url,
     s3_upload,
 )
-from librespot.audio.decoders import AudioQuality, VorbisOnlyAudioQuality
-from librespot.core import Session as SpotSession
-from librespot.metadata import TrackId as SpotTrackId
-
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +167,6 @@ def fetch_youtube_video(user_id="", video_id=""):
     }
 
 
-
 @shared_task()
 def fetch_spotify_track(user_id="", track_id=""):
     try:
@@ -240,9 +239,7 @@ def fetch_spotify_track(user_id="", track_id=""):
         if not session.is_valid():
             current_task.update_state(
                 state="FAILED",
-                meta={
-                    "error": "Could not login spotify"
-                },
+                meta={"error": "Could not login spotify"},
             )
             raise Ignore()
     strack_id = SpotTrackId.from_base62(track_id)
@@ -251,9 +248,7 @@ def fetch_spotify_track(user_id="", track_id=""):
     if not track:
         current_task.update_state(
             state="FAILED",
-            meta={
-                "error": "Could not find track"
-            },
+            meta={"error": "Could not find track"},
         )
         raise Ignore()
     title = f'{", ".join([a.name for a in track.artist])} - {track.name}'
@@ -269,23 +264,22 @@ def fetch_spotify_track(user_id="", track_id=""):
         .replace("*", "")
     )
     stream = session.content_feeder().load(
-        strack_id,
-        VorbisOnlyAudioQuality(AudioQuality.VERY_HIGH),
-        False,
-        None
+        strack_id, VorbisOnlyAudioQuality(AudioQuality.VERY_HIGH), False, None
     )
     end = stream.input_stream.stream().size()
-    with open(download_path + '.ogg', "wb") as fp:
+    with open(download_path + ".ogg", "wb") as fp:
         while True:
-            if (stream.input_stream.stream().pos() >=
-                    end):
+            if stream.input_stream.stream().pos() >= end:
                 break
             byte = stream.input_stream.stream().read()
             if byte:
                 fp.write(bytes(byte))
     update_dl_progress(1)
     convert_audio(
-        download_path + ".ogg", tmp_paths.get("aac"), tmp_paths.get("mp3"), callback=update_conversion_progress
+        download_path + ".ogg",
+        tmp_paths.get("aac"),
+        tmp_paths.get("mp3"),
+        callback=update_conversion_progress,
     )
     final_filename = move_files_to_destination(
         dst_folder, safe_title, extension_converted, tmp_paths
