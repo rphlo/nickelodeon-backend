@@ -28,7 +28,7 @@ class UserSettings(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.storage_prefix:
-            self.storage_prefix=f"{self.username}-{random_key()}"
+            self.storage_prefix = f"{self.username}-{random_key()}"
         super().save(*args, **kwargs)
 
 

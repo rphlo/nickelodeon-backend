@@ -29,7 +29,12 @@ from resumable.files import ResumableFile
 from nickelodeon.api.forms import ResumableMp3UploadForm
 from nickelodeon.api.serializers import ChangePasswordSerializer, MP3SongSerializer
 from nickelodeon.models import MP3Song
-from nickelodeon.tasks import create_aac, fetch_youtube_video, move_files_to_destination, fetch_spotify_track
+from nickelodeon.tasks import (
+    create_aac,
+    fetch_spotify_track,
+    fetch_youtube_video,
+    move_files_to_destination,
+)
 from nickelodeon.utils import print_vinyl, s3_object_url
 
 MAX_SONGS_LISTED = 999
