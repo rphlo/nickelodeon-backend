@@ -321,6 +321,7 @@ def move_files_to_destination(dst_folder, safe_title, extensions, tmp_paths):
             else:
                 filename = "{} ({})".format(safe_title, attempt)
             final_path = os.path.join(dst_folder, filename + "." + ext)
-            s3_upload(tmp_paths[ext], final_path)
+            with open(tmp_paths[ext], mode="rb") as f:
+                s3_upload(f, final_path)
             os.remove(tmp_paths[ext])
     return filename

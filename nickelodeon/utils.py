@@ -94,8 +94,8 @@ def s3_move_object(src, dest):
 
 
 def s3_upload(src, key):
-    s3 = get_s3_resource()
-    s3.meta.client.upload_file(src, settings.S3_BUCKET, key)
+    s3 = get_s3_client()
+    s3.upload_fileobj(src, settings.S3_BUCKET, key)
 
 
 def s3_object_url(key):

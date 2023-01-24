@@ -303,9 +303,10 @@ class ResumableUploadView(APIView):
         ext = rf.filename[rf.filename.rfind(".") :]
         if ext.lower() != ".mp3":
             return HttpResponse("Only MP3 files are allowed", status=400)
-        if rf.chunk_exists:
+        if rf.chunk_exists and not rf.is_complete:
             return HttpResponse("chunk already exists")
-        rf.process_chunk(chunk)
+        elif not rf.chunk_exists:
+            rf.process_chunk(chunk)
         if rf.is_complete:
             self.process_file(request.user, request.POST.get("resumableFilename"), rf)
             rf.delete_chunks()
