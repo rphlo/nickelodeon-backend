@@ -1,4 +1,5 @@
 import base64
+from io import BytesIO
 import os.path
 import tempfile
 
@@ -34,10 +35,8 @@ class ApiTestCase(APITestCase):
             "/+MYxAAAAANIAAAAAExBTUUzLjk4LjIAAAAAAAAAAAAAAAAAAAAAA"
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         )
-        tmp_file_path = os.path.join(PATH_TEMP, "foo.mp3")
-        with open(tmp_file_path, "wb") as fh:
-            fh.write(base64.b64decode(mp3_base64))
-        s3_upload(tmp_file_path, f"{self.user.settings.storage_prefix}/foo.mp3")
+        tmp_file = BytesIO(base64.b64decode(mp3_base64))
+        s3_upload(tmp_file, f"{self.user.settings.storage_prefix}/foo.mp3")
         self.song = MP3Song.objects.create(owner=self.user, filename="foo")
 
     def test_authorization(self):

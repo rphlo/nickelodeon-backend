@@ -1,4 +1,5 @@
 version: 2.1
+
 jobs:
   build-and-test:
     machine:
@@ -7,8 +8,8 @@ jobs:
     steps:
       - checkout
       - run: sudo apt update && sudo apt install -y libpq-dev
-      - run: pip3 install -U pip coveralls
-      - run: pip3 install -U -r dev_requirements.txt
+      - run: pip3 install -U -r requirements.txt
+      - run: pip3 install coveralls
       - run: mkdir -p media/humppa-music
       - run: docker run -d -v media:/data -p 9000:9000 minio/minio:edge server /data
       - run:
@@ -16,9 +17,8 @@ jobs:
             coverage run --source=nickelodeon manage.py test --settings=nickelodeon.site.test_settings
           name: Test
       - run:
-          command: coveralls
-          name: Coveralls
-
+          command: python3 -m coveralls
+          name: Upload coverage
 
 workflows:
   main:
