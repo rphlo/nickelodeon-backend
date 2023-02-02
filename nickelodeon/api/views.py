@@ -220,8 +220,11 @@ def tasks_list(request):
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def task_status(request, task_id):
-    res = AsyncResult(task_id)
-    return Response(res.info)
+    try:
+        res = AsyncResult(task_id)
+        return Response(res.info)
+    except Exception:
+        return Response({error: "Something went wrong"})
 
 
 @api_view(["POST"])
