@@ -223,7 +223,7 @@ def task_status(request, task_id):
     res = AsyncResult(task_id)
     try:
         data = json.dumps(res.info)
-        return Response(data)
+        return Response(res.info)
     except Exception:
         return Response({"error": "Something went wrong"})
 
