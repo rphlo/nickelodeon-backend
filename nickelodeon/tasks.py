@@ -51,6 +51,12 @@ def create_aac(mp3_id=""):
 
 @shared_task()
 def fetch_youtube_video(user_id="", video_id=""):
+    current_task.update_state(
+        state="PROGRESS",
+        meta={
+            "description": "initialized",
+        },
+    )
     try:
         user = User.objects.get(id=user_id)
         root_folder = user.settings.storage_prefix
@@ -169,6 +175,12 @@ def fetch_youtube_video(user_id="", video_id=""):
 
 @shared_task()
 def fetch_spotify_track(user_id="", track_id=""):
+    current_task.update_state(
+        state="PROGRESS",
+        meta={
+            "description": "initialized",
+        },
+    )
     try:
         user = User.objects.get(id=user_id)
         root_folder = user.settings.storage_prefix
