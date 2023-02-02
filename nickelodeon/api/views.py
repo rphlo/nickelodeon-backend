@@ -3,7 +3,7 @@ import os.path
 import re
 import urllib
 from random import randint
-
+import json
 from celery.app import control
 from celery.result import AsyncResult
 from django.conf import settings
