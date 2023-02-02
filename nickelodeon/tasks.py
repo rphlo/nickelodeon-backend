@@ -51,12 +51,14 @@ def create_aac(mp3_id=""):
 
 @shared_task()
 def fetch_youtube_video(user_id="", video_id=""):
+    safe_title = ""
     current_task.update_state(
         state="PROGRESS",
         meta={
             "description": "initialized",
         },
     )
+    
     try:
         user = User.objects.get(id=user_id)
         root_folder = user.settings.storage_prefix
@@ -76,6 +78,7 @@ def fetch_youtube_video(user_id="", video_id=""):
                 "total": 100,
                 "step": 1,
                 "step_total": 2,
+                "song_name": safe_title,
             },
         )
 
@@ -88,6 +91,7 @@ def fetch_youtube_video(user_id="", video_id=""):
                 "total": 100,
                 "step": 2,
                 "step_total": 2,
+                "song_name": safe_title,
             },
         )
 
@@ -142,6 +146,7 @@ def fetch_youtube_video(user_id="", video_id=""):
                 .replace("?", "")
                 .replace("*", "")
             )
+            update_dl_progress(0)
             ydl.download([video_id])
         except Exception as e:
             current_task.update_state(
@@ -181,6 +186,7 @@ def fetch_spotify_track(user_id="", track_id=""):
             "description": "initialized",
         },
     )
+    safe_title = ""
     try:
         user = User.objects.get(id=user_id)
         root_folder = user.settings.storage_prefix
@@ -200,6 +206,7 @@ def fetch_spotify_track(user_id="", track_id=""):
                 "total": 100,
                 "step": 1,
                 "step_total": 2,
+                "song_name": safe_title,
             },
         )
 
@@ -212,6 +219,7 @@ def fetch_spotify_track(user_id="", track_id=""):
                 "total": 100,
                 "step": 2,
                 "step_total": 2,
+                "song_name": safe_title,
             },
         )
 
@@ -275,6 +283,7 @@ def fetch_spotify_track(user_id="", track_id=""):
         .replace("?", "")
         .replace("*", "")
     )
+    update_dl_progress(0)
     stream = session.content_feeder().load(
         strack_id, VorbisOnlyAudioQuality(AudioQuality.VERY_HIGH), False, None
     )
