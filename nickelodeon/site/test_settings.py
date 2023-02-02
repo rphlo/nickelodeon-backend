@@ -5,7 +5,6 @@ try:
 except ImportError:
     pass
 
-import os
 from tempfile import mkdtemp
 
 FILE_UPLOAD_TEMP_DIR = mkdtemp()
