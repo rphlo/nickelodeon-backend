@@ -8,7 +8,6 @@ import nickelodeon.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("nickelodeon", "0005_auto_20210714_1126"),

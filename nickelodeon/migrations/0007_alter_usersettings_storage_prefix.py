@@ -6,7 +6,6 @@ import nickelodeon.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("nickelodeon", "0006_usersettings"),
     ]
