@@ -1,9 +1,10 @@
 import datetime
+import json
 import os.path
 import re
 import urllib
 from random import randint
-import json
+
 from celery.app import control
 from celery.result import AsyncResult
 from django.conf import settings
@@ -226,7 +227,6 @@ def task_status(request, task_id):
         return Response(res.info)
     except Exception:
         return Response({"error": "Something went wrong"})
-
 
 
 @api_view(["POST"])

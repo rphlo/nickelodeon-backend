@@ -1,7 +1,7 @@
 import base64
-from io import BytesIO
 import os.path
 import tempfile
+from io import BytesIO
 
 from django.conf import settings
 from django.contrib.auth.models import User

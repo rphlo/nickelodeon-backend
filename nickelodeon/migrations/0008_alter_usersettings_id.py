@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("nickelodeon", "0007_alter_usersettings_storage_prefix"),
     ]

@@ -58,7 +58,7 @@ def fetch_youtube_video(user_id="", video_id=""):
             "description": "initialized",
         },
     )
-    
+
     try:
         user = User.objects.get(id=user_id)
         root_folder = user.settings.storage_prefix
