@@ -42,7 +42,7 @@ class MP3SongSerializer(serializers.ModelSerializer):
         original_instance = MP3Song(id=instance.id)
         saved_instance = super(MP3SongSerializer, self).update(instance, validated_data)
         if validated_data["filename"] != original_instance.filename:
-            raise Exception(f"{original_instance.id}, {original_instance.filename}, {validated_data["filename"]}")
+            raise Exception(f"{original_instance.id}, {original_instance.filename}, {validated_data['filename']}")
             move_file.s(original_instance.id, original_instance.filename, validated_data["filename"]).delay()
         return saved_instance
 
