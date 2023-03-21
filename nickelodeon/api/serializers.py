@@ -4,11 +4,14 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from nickelodeon.models import MP3Song
+from nickelodeon.tasks import move_file
 
 
 def validate_filename(filename):
     if re.search(r'[:<>\\"|?*]', filename):
         raise ValidationError("Illegal character found")
+    if filename.startswith("/"):
+        raise ValidationError("Illegal first character")
     return True
 
 
@@ -39,7 +42,7 @@ class MP3SongSerializer(serializers.ModelSerializer):
         original_instance = MP3Song(filename=instance.filename, owner=instance.owner)
         saved_instance = super(MP3SongSerializer, self).update(instance, validated_data)
         if validated_data["filename"] != original_instance.filename:
-            saved_instance.move_file_from(original_instance)
+            move_file.s().delay(original_instance.id, validated_data["filename"])
         return saved_instance
 
     class Meta:

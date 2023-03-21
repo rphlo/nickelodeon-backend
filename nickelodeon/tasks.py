@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import os.path
 import tempfile
 
 import youtube_dl
@@ -20,9 +21,23 @@ from nickelodeon.utils import (
     s3_object_exists,
     s3_object_url,
     s3_upload,
+    s3_move_object,
 )
 
 logger = logging.getLogger(__name__)
+
+
+@shared_task()
+def move_file(instance_id, to_filename):
+    song = None
+    try:
+        song = MP3Song.objects.get(id=instance_id)
+    except MP3Song.DoesNotExist:
+        return
+    try:
+        song.move_file_to(to_filename)
+    except Exception:
+        pass
 
 
 @shared_task()
