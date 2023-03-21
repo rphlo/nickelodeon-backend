@@ -39,10 +39,9 @@ class MP3SongSerializer(serializers.ModelSerializer):
             validated_data["filename"], instance.owner
         ):
             raise ValidationError("Filename already used")
-        original_instance = MP3Song(id=instance.id)
+        original_instance = MP3Song.objects.get(id=instance.id)
         saved_instance = super(MP3SongSerializer, self).update(instance, validated_data)
         if validated_data["filename"] != original_instance.filename:
-            raise Exception(f"{original_instance.id}, {original_instance.filename}, {validated_data['filename']}")
             move_file.s(original_instance.id, original_instance.filename, validated_data["filename"]).delay()
         return saved_instance
 
