@@ -42,7 +42,7 @@ class MP3SongSerializer(serializers.ModelSerializer):
         original_instance = MP3Song(filename=instance.filename, owner=instance.owner)
         saved_instance = super(MP3SongSerializer, self).update(instance, validated_data)
         if validated_data["filename"] != original_instance.filename:
-            move_file.s().delay(original_instance.id, validated_data["filename"])
+            move_file.s(original_instance.id, original_instance.filename, validated_data["filename"]).delay()
         return saved_instance
 
     class Meta:

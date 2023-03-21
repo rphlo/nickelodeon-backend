@@ -28,16 +28,17 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task()
-def move_file(instance_id, to_filename):
+def move_file(instance_id, from_filename, to_filename):
     song = None
     try:
         song = MP3Song.objects.get(id=instance_id)
     except MP3Song.DoesNotExist:
         return
+    song.filename = from_filename
     try:
         song.move_file_to(to_filename)
     except Exception:
-        pass
+        song.save()
 
 
 @shared_task()
