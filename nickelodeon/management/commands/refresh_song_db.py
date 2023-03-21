@@ -91,8 +91,8 @@ class Command(BaseCommand):
     def finalize(self):
         nb_songs_to_add = len(self.songs_to_add)
         nb_songs_to_remove = len(self.songs_to_remove)
-        nb_song_to_add_aac = len(self.song_to_add_aac_tag)
-        nb_song_to_remove_aac = len(self.song_to_remove_aac_tag)
+        nb_song_to_add_aac = len(self.songs_to_add_aac_tag)
+        nb_song_to_remove_aac = len(self.songs_to_remove_aac_tag)
         self.stdout.write("\nDiscovered {} new file(s)".format(nb_songs_to_add))
         self.stdout.write("Removing {} file(s)".format(nb_songs_to_remove))
         self.stdout.write("Removing AAC Tag to {} file(s)".format(nb_song_to_remove_aac))
