@@ -9,6 +9,7 @@ from nickelodeon.models import MP3Song, UserSettings
 from nickelodeon.utils import get_s3_client
 
 MP3_FILE_EXT_RE = re.compile(r"(.+)\.mp3$", re.IGNORECASE)
+AAC_FILE_EXT_RE = re.compile(r"(.+)\.mp3$", re.IGNORECASE)
 
 
 class Command(BaseCommand):
@@ -31,35 +32,52 @@ class Command(BaseCommand):
     def handle_folder(self, root):
         self.root = root + "/"
         self.t0 = self.last_flush = time.time()
+        
         self.songs_count = 0
-        self.songs_to_add = []
+        self.songs = []
+        self.songs_with_aac = []
+        
         self.stdout.write("Scanning directory {} for music".format(self.root))
         self.t1 = self.last_flush = time.time()
+
         for filename in self.scan_directory():
             self.process_music_file(filename)
+
         self.t1 = self.last_flush = time.time()
         self.print_scan_status(True)
-        current_song_qs = MP3Song.objects.all()
+
         prefix = self.root
-        root_folder = self.root[: self.root.find("/")]
+        root_folder = self.root[:self.root.find("/")]
         try:
             self.owner = UserSettings.objects.get_or_create(
                 storage_prefix=root_folder
             )[0].user
         except UserSettings.DoesNotExist:
             self.owner = User.objects.get(username=root_folder)
-        current_song_qs = current_song_qs.filter(owner=self.owner)
+
+        current_songs_qs = MP3Song.objects.filter(owner=self.owner)
         prefix = prefix[len(root_folder) + 1 :]
         if prefix:
-            current_song_qs = current_song_qs.filter(filename__startswith=prefix)
-        current_songs = set(current_song_qs.values_list("filename"))
-        current_songs = set([self.owner.settings.storage_prefix + "/" + s[0] for s in current_songs])
-        self.songs_to_add = set(self.songs_to_add)
+            current_songs_qs = current_songs_qs.filter(filename__startswith=prefix)
+
+        current_songs = set([f"{self.owner.settings.storage_prefix}/{s.filename}" for s in current_songs_qs])
+        current_songs_with_aac_tag = set([f"{self.owner.settings.storage_prefix}/{s.filename}" for s in current_songs_qs.filter(aac=True)])
+        current_songs_without_aac_tag = set([f"{self.owner.settings.storage_prefix}/{s.filename}" for s in current_songs_qs.filter(aac=False)])
+        
+        self.aac_set = set(self.aac_list)
+        
+        self.songs = set(self.songs)
         self.songs_to_remove = [
-            song for song in current_songs if song not in self.songs_to_add
+            song for song in current_songs if song not in self.songs
         ]
         self.songs_to_add = [
-            song for song in self.songs_to_add if song not in current_songs
+            song for song in self.songs if song not in current_songs
+        ]
+        self.songs_to_remove_aac_tag = [
+            song for song in current_songs_with_aac if song not in self.aac_set
+        ]
+        self.songs_to_add_aac_tag = [
+            song for song in self.aac_set if song in current_songs_without_aac_tag
         ]
         self.finalize()
 
@@ -73,12 +91,17 @@ class Command(BaseCommand):
     def finalize(self):
         nb_songs_to_add = len(self.songs_to_add)
         nb_songs_to_remove = len(self.songs_to_remove)
+        nb_song_to_add_aac = len(self.song_to_add_aac_tag)
+        nb_song_to_remove_aac = len(self.song_to_remove_aac_tag)
         self.stdout.write("\nDiscovered {} new file(s)".format(nb_songs_to_add))
         self.stdout.write("Removing {} file(s)".format(nb_songs_to_remove))
+        self.stdout.write("Removing AAC Tag to {} file(s)".format(nb_song_to_remove_aac))
+        self.stdout.write("Adding AAC Tag to {} file(s)".format(nb_song_to_add_aac))
         if nb_songs_to_add > 0:
             self.bulk_create()
         if nb_songs_to_remove > 0:
             self.bulk_remove()
+        self.bulk_aac_update()
         self.stdout.write(
             "Task completed in {} seconds".format(round(time.time() - self.t0, 1))
         )
@@ -107,14 +130,15 @@ class Command(BaseCommand):
 
     def process_music_file(self, media_path):
         if not MP3_FILE_EXT_RE.search(media_path):
+            if AAC_FILE_EXT_RE.search(media_path):
+                self.songs_with_aac.append(media_path[:-4])
             return
         if len(media_path) > 255:
             self.stderr.write(
                 "Media path too long, " "255 characters maximum. %s" % media_path
             )
             return
-        new_song = media_path[:-4]
-        self.songs_to_add.append(new_song)
+        self.songs.append(media_path[:-4])
         self.songs_count += 1
         self.print_scan_status()
 
@@ -134,7 +158,6 @@ class Command(BaseCommand):
 
     def bulk_create(self):
         bulk = []
-        self.aac_set = set(self.aac_list)
         for song_file in self.songs_to_add:
             bulk.append(
                 MP3Song(
@@ -151,3 +174,14 @@ class Command(BaseCommand):
         for song_file in self.songs_to_remove:
             files.append(song_file[root_folder_len:])
         MP3Song.objects.filter(owner_id=self.owner.id, filename__in=set(files)).delete()
+    
+    def bulk_aac_update(self):
+        root_folder_len = len(self.owner.settings.storage_prefix) + 1
+        files = []
+        for song_file in self.songs_to_add_aac_tag:
+            files.append(song_file[root_folder_len:])
+        MP3Song.objects.filter(owner_id=self.owner.id, filename__in=set(files)).update(aac=True)
+        files = []
+        for song_file in self.songs_to_remove_aac_tag:
+            files.append(song_file[root_folder_len:])
+        MP3Song.objects.filter(owner_id=self.owner.id, filename__in=set(files)).update(aac=False)
