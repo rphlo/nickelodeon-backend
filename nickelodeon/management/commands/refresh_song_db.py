@@ -45,15 +45,15 @@ class Command(BaseCommand):
         try:
             self.owner = UserSettings.objects.get_or_create(
                 storage_prefix=root_folder
-            ).user
+            )[0].user
         except UserSettings.DoesNotExist:
             self.owner = User.objects.get(username=root_folder)
         current_song_qs = current_song_qs.filter(owner=self.owner)
         prefix = prefix[len(root_folder) + 1 :]
         if prefix:
             current_song_qs = current_song_qs.filter(filename__startswith=prefix)
-        current_songs = set(current_song_qs.values_list("filename", "owner__username"))
-        current_songs = set([s[1] + "/" + s[0] for s in current_songs])
+        current_songs = set(current_song_qs.values_list("filename"))
+        current_songs = set([self.owner.settings.storage_prefix + "/" + s[0] for s in current_songs])
         self.songs_to_add = set(self.songs_to_add)
         self.songs_to_remove = [
             song for song in current_songs if song not in self.songs_to_add
