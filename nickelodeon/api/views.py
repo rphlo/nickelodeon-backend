@@ -209,7 +209,7 @@ class TextSearchApiView(generics.ListAPIView):
 @api_view(["GET"])
 def api_root(request):
     if request.user.is_authenticated:
-        return Response({"status": "logged in", "username": request.user.username})
+        return Response({"status": "logged in", "username": request.user.username, "is_superuser": request.user.is_superuser})
     return Response({"status": "logged out"})
 
 
