@@ -74,7 +74,7 @@ class Command(BaseCommand):
             song for song in self.songs if song not in current_songs
         ]
         self.songs_to_remove_aac_tag = [
-            song for song in current_songs_with_aac if song not in self.aac_set
+            song for song in current_songs_with_aac_tag if song not in self.aac_set
         ]
         self.songs_to_add_aac_tag = [
             song for song in self.aac_set if song in current_songs_without_aac_tag
