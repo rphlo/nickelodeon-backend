@@ -28,7 +28,8 @@ class Command(BaseCommand):
                 mp3_url,
                 output_file_aac=aac_tmp_path,
             )
-            s3_upload(aac_tmp_path, aac_path)
+            with open(aac_tmp_path, mode="rb") as f:
+                s3_upload(aac_tmp_path, aac_path)
         if not song.aac:
             song.aac = True
             song.save()
