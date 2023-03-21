@@ -93,7 +93,7 @@ class MP3Song(models.Model):
         return True
 
     def move_file_to(self, dest_filename):
-        for ext, available in orig.available_formats.items():
+        for ext, available in self.available_formats.items():
             if available:
                 src = self.get_file_format_path(extension=ext)
                 dst = os.path.normpath(f"{self.owner.settings.storage_prefix}/{dest_filename}.{ext}")
