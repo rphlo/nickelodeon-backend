@@ -1,7 +1,7 @@
 Django<5
 djangorestframework
 django-cors-headers>=1.0.0
-youtube-dl
+yt-dlp
 celery[redis]
 django-rest-knox @ git+https://github.com/James1345/django-rest-knox.git@8447cd00358b1a3f76862278711abd2cdcb8837a#egg=django_rest_knox
 raven

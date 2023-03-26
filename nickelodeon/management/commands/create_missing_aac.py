@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = "Create the missing aac files of the songs in the library"
 
     def handle(self, *args, **options):
-        songs = MP3Song.objects.all()
+        songs = MP3Song.objects.filter(aac=False)
         for song in songs:
             try:
                 self.handle_song(song)
@@ -19,6 +19,7 @@ class Command(BaseCommand):
 
     def handle_song(self, song):
         if not song.has_aac and song.has_mp3:
+            print(song.filename)
             mp3_path = song.get_file_format_path("mp3")
             aac_path = song.get_file_format_path("aac")
             mp3_url = s3_object_url(mp3_path)
@@ -29,7 +30,7 @@ class Command(BaseCommand):
                 output_file_aac=aac_tmp_path,
             )
             with open(aac_tmp_path, mode="rb") as f:
-                s3_upload(aac_tmp_path, aac_path)
+                s3_upload(f, aac_path)
         if not song.aac:
             song.aac = True
             song.save()

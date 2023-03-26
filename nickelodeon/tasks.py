@@ -4,7 +4,7 @@ import os
 import os.path
 import tempfile
 
-import youtube_dl
+import yt_dlp
 from celery import current_task, shared_task
 from celery.exceptions import Ignore
 from django.conf import settings
@@ -151,7 +151,7 @@ def fetch_youtube_video(user_id="", video_id=""):
         "ignoreerrors": False,
         "outtmpl": download_path + ".%(ext)s",
     }
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             info_dict = ydl.extract_info(video_id, download=False)
             title = info_dict.get("title", None)
