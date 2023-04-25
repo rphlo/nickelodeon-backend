@@ -96,7 +96,9 @@ class MP3Song(models.Model):
         for ext, available in self.available_formats.items():
             if available:
                 src = self.get_file_format_path(extension=ext)
-                dst = os.path.normpath(f"{self.owner.settings.storage_prefix}/{dest_filename}.{ext}")
+                dst = os.path.normpath(
+                    f"{self.owner.settings.storage_prefix}/{dest_filename}.{ext}"
+                )
                 s3_move_object(src, dst)
 
     def remove_file(self):

@@ -18,10 +18,10 @@ from nickelodeon.utils import (
     AVAILABLE_FORMATS,
     convert_audio,
     ffmpeg_has_lib,
+    s3_move_object,
     s3_object_exists,
     s3_object_url,
     s3_upload,
-    s3_move_object,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ def move_file(instance_id, from_filename, to_filename):
         song.filename = to_filename
     except Exception:
         pass
-    finally:    
+    finally:
         song.save()
 
 
