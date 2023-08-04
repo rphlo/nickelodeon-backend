@@ -76,8 +76,7 @@ def serve_from_s3(request, path, filename="", mime="application/force-download")
         response["X-Accel-Buffering"] = "no"
     response["Accept-Ranges"] = "bytes"
     response["Content-Type"] = mime
-    final_filename = filename.replace("\\", "_").replace('"', '\\"')
-    response["Content-Disposition"] = f'attachment; filename="{final_filename}"'
+    response["Content-Disposition"] = f"attachment; filename*=UTF-8''{urllib.parse.quote(filename, safe='')}"
     return response
 
 
