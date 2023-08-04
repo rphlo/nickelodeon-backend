@@ -58,9 +58,9 @@ def x_accel_redirect(request, path, filename="", mime="application/force-downloa
         response["X-Accel-Buffering"] = "no"
         response["Accept-Ranges"] = "bytes"
     response["Content-Type"] = mime
-    response["Content-Disposition"] = 'attachment; filename="{}"'.format(
-        filename.replace("\\", "_").replace('"', '\\"')
-    ).encode("utf-8")
+    prefix = "" if dl else ""
+    return 
+    response["Content-Disposition"] = f"attachment; {prefix}filename*=UTF-8''{urllib.parse.quote(filename, safe='')}"
     return response
 
 
