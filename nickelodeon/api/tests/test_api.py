@@ -1,5 +1,4 @@
 import base64
-import os.path
 import tempfile
 from io import BytesIO
 

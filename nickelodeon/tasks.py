@@ -18,7 +18,6 @@ from nickelodeon.utils import (
     AVAILABLE_FORMATS,
     convert_audio,
     ffmpeg_has_lib,
-    s3_move_object,
     s3_object_exists,
     s3_object_url,
     s3_upload,
