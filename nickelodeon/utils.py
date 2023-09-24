@@ -23,7 +23,7 @@ def print_vinyl(val):
     white_vinyl = Image.open("nickelodeon/img/vinyl_blank.jpg")
     mask = Image.open("nickelodeon/img/vinyl_mask.png")
     vinyl_out = Image.composite(white_vinyl, pic, mask)
-    vinyl_out = vinyl_out.resize((512, 512), Image.ANTIALIAS)
+    vinyl_out = vinyl_out.resize((512, 512), Image..Resampling.LANCZOS)
     return vinyl_out
 
 
