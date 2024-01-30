@@ -83,7 +83,7 @@ class MP3Song(models.Model):
         )
         return os.path.normpath(file_path)
 
-    def can_move_to_dest(cls, dest):
+    def can_move_to_dest(self, dest):
         new_instance = MP3Song(filename=dest, owner=self.owner)
         for ext, available in self.available_formats.items():
             if available:
