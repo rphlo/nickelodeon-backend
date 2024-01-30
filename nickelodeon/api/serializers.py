@@ -35,18 +35,16 @@ class MP3SongSerializer(serializers.ModelSerializer):
     aac = serializers.ReadOnlyField()
 
     def update(self, instance, validated_data):
-        if not instance.is_filename_available(
-            validated_data["filename"], instance.owner
-        ):
+        if not instance.can_move_to_dest(validated_data["filename"]):
             raise ValidationError("Filename already used")
         original_instance = MP3Song.objects.get(id=instance.id)
-        saved_instance = super(MP3SongSerializer, self).update(instance, validated_data)
         if validated_data["filename"] != original_instance.filename:
             move_file.s(
                 original_instance.id,
                 original_instance.filename,
                 validated_data["filename"],
             ).delay()
+        saved_instance = super(MP3SongSerializer, self).update(instance, validated_data)
         return saved_instance
 
     class Meta:

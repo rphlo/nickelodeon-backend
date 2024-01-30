@@ -83,8 +83,8 @@ class MP3Song(models.Model):
         )
         return os.path.normpath(file_path)
 
-    def is_filename_available(self, filename, owner):
-        new_instance = MP3Song(filename=filename, owner=owner)
+    def can_move_to_dest(cls, dest):
+        new_instance = MP3Song(filename=dest, owner=self.owner)
         for ext, available in self.available_formats.items():
             if available:
                 dst = new_instance.get_file_format_path(extension=ext)
@@ -100,6 +100,7 @@ class MP3Song(models.Model):
                     f"{self.owner.settings.storage_prefix}/{dest_filename}.{ext}"
                 )
                 s3_move_object(src, dst)
+        self.filename = dest_filename
 
     def remove_file(self):
         for ext in ["mp3", "aac"]:

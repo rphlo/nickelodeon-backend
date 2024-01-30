@@ -81,7 +81,7 @@ WSGI_APPLICATION = "nickelodeon.site.wsgi.application"
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": "app_db",
         "USER": "app_user",
         "PASSWORD": "changeme",

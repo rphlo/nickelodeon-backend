@@ -41,37 +41,12 @@ from nickelodeon.utils import print_vinyl, s3_object_url
 MAX_SONGS_LISTED = 999
 
 
-def x_accel_redirect(request, path, filename="", mime="application/force-download"):
-    if settings.DEBUG:
-        import os.path
-        from wsgiref.util import FileWrapper
-
-        path = re.sub(r"^/internal", settings.NICKELODEON_MUSIC_ROOT, path)
-        if not os.path.exists(path):
-            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
-        wrapper = FileWrapper(open(path, "rb"))
-        response = HttpResponse(wrapper)
-        response["Content-Length"] = os.path.getsize(path)
-    else:
-        response = HttpResponse("", status=status.HTTP_206_PARTIAL_CONTENT)
-        response["X-Accel-Redirect"] = urllib.parse.quote(path.encode("utf-8"))
-        response["X-Accel-Buffering"] = "no"
-        response["Accept-Ranges"] = "bytes"
-    response["Content-Type"] = mime
-    response["Content-Disposition"] = (
-        f"attachment; filename*=UTF-8''{urllib.parse.quote(filename, safe='')}"
-    )
-    return response
-
-
 def serve_from_s3(request, path, filename="", mime="application/force-download"):
-    path = re.sub(r"^/internal/", "", path)
     url = s3_object_url(path)
     url = "/s3_proxy{}".format(url[len(settings.S3_ENDPOINT_URL) :])
     response_status = status.HTTP_200_OK
     if request.method == "GET":
         response_status = status.HTTP_206_PARTIAL_CONTENT
-
     response = HttpResponse("", status=response_status)
     if request.method == "GET":
         response["X-Accel-Redirect"] = urllib.parse.quote(url.encode("utf-8"))
@@ -90,12 +65,10 @@ def download_song(request, pk, extension=None):
     if extension is None:
         extension = "mp3"
     song = get_object_or_404(MP3Song.objects.select_related("owner"), pk=pk)
-    # if song.owner != request.user:
-    #    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     file_path = song.filename
     mime = "audio/mpeg" if extension == "mp3" else "audio/x-m4a"
     file_path = "{}.{}".format(file_path, extension)
-    file_path = "/internal/{}/{}".format(song.owner.settings.storage_prefix, file_path)
+    file_path = "{}/{}".format(song.owner.settings.storage_prefix, file_path)
     filename = song.title + "." + extension
     return serve_from_s3(request, file_path, filename=filename, mime=mime)
 
@@ -104,8 +77,6 @@ def download_song(request, pk, extension=None):
 @permission_classes((IsAuthenticated,))
 def download_cover(request, pk):
     song = get_object_or_404(MP3Song.objects.select_related("owner"), pk=pk)
-    # if song.owner != request.user:
-    #    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     file_path = "{}/{}".format(song.owner.settings.storage_prefix, song.filename)
     image = print_vinyl(file_path)
     response = HttpResponse(content_type="image/jpeg")
@@ -117,9 +88,6 @@ class RandomSongView(generics.RetrieveAPIView):
     serializer_class = MP3SongSerializer
     queryset = MP3Song.objects.select_related("owner").all()
     permission_classes = (IsAuthenticated,)
-
-    # def get_queryset(self):
-    #    return super().get_queryset().filter(owner=self.request.user)
 
     @transaction.atomic
     def get_object(self):
@@ -192,13 +160,7 @@ class TextSearchApiView(generics.ListAPIView):
             search_terms = search_text.split(" ")
             query = Q()
             for search_term in search_terms + quoted_terms:
-                if (
-                    settings.DATABASES["default"]["ENGINE"]
-                    == "django.db.backends.postgresql_psycopg2"
-                ):
-                    key = "filename__unaccent__icontains"
-                else:
-                    key = "filename__icontains"
+                key = "filename__unaccent__icontains"
                 query &= Q(**{key: search_term})
             qs = qs.filter(query)
         else:

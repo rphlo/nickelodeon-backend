@@ -36,11 +36,11 @@ def move_file(instance_id, from_filename, to_filename):
     song.filename = from_filename
     try:
         song.move_file_to(to_filename)
-        song.filename = to_filename
     except Exception:
-        pass
+        return
     finally:
-        song.save()
+        self.save()
+    return
 
 
 @shared_task()
