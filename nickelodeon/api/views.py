@@ -58,9 +58,9 @@ def x_accel_redirect(request, path, filename="", mime="application/force-downloa
         response["X-Accel-Buffering"] = "no"
         response["Accept-Ranges"] = "bytes"
     response["Content-Type"] = mime
-    response[
-        "Content-Disposition"
-    ] = f"attachment; filename*=UTF-8''{urllib.parse.quote(filename, safe='')}"
+    response["Content-Disposition"] = (
+        f"attachment; filename*=UTF-8''{urllib.parse.quote(filename, safe='')}"
+    )
     return response
 
 
@@ -78,9 +78,9 @@ def serve_from_s3(request, path, filename="", mime="application/force-download")
         response["X-Accel-Buffering"] = "no"
     response["Accept-Ranges"] = "bytes"
     response["Content-Type"] = mime
-    response[
-        "Content-Disposition"
-    ] = f"attachment; filename*=UTF-8''{urllib.parse.quote(filename, safe='')}"
+    response["Content-Disposition"] = (
+        f"attachment; filename*=UTF-8''{urllib.parse.quote(filename, safe='')}"
+    )
     return response
 
 
