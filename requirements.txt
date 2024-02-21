@@ -10,4 +10,4 @@ boto3
 retricon
 uwsgi
 psycopg
-librespot
+librespot @ git+https://github.com/kokarare1212/librespot-python
