@@ -160,7 +160,13 @@ class TextSearchApiView(generics.ListAPIView):
             search_terms = search_text.split(" ")
             query = Q()
             for search_term in search_terms + quoted_terms:
-                key = "filename__unaccent__icontains"
+                if (
+                    settings.DATABASES["default"]["ENGINE"]
+                    == "django.db.backends.postgresql"
+                ):
+                    key = "filename__unaccent__icontains"
+                else:
+                    key = "filename__icontains"
                 query &= Q(**{key: search_term})
             qs = qs.filter(query)
         else:
