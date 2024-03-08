@@ -39,7 +39,7 @@ def move_file(instance_id, from_filename, to_filename):
     except Exception:
         return
     finally:
-        self.save()
+        song.save()
     return
 
 
