@@ -16,6 +16,8 @@ jobs:
           command: |
             coverage run --source=nickelodeon manage.py test --settings=nickelodeon.site.test_settings
           name: Test
+          environment:
+            PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
       - run:
           command: python3 -m coveralls
           name: Upload coverage
